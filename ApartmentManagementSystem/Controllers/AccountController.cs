@@ -28,7 +28,7 @@ namespace ApartmentManagementSystem.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Login([FromBody] LoginRequestDto request)
         {
-            var tokenResponse = _tokenService.LoginAsync(request);
+            var tokenResponse = await _tokenService.LoginAsync(request);
             return Ok(tokenResponse);
         }
     }

@@ -16,10 +16,12 @@ namespace ApartmentManagementSystem.Services.Impls
     {
         private readonly UserManager<AppUser> _userManager;
         private readonly AuthenticationDbContext _authenticationDbContext;
-        public TokenService(UserManager<AppUser> userManager, AuthenticationDbContext authenticationDbContext)
+        private readonly RoleManager<IdentityRole> _roleManager;
+        public TokenService(UserManager<AppUser> userManager, AuthenticationDbContext authenticationDbContext, RoleManager<IdentityRole> roleManager)
         {
             _userManager = userManager;
             _authenticationDbContext = authenticationDbContext;
+            _roleManager = roleManager;
         }
         public async Task<TokenResponseDto> LoginAsync(LoginRequestDto request)
         {
@@ -90,17 +92,7 @@ namespace ApartmentManagementSystem.Services.Impls
         {
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(AppSettings.JwtSettings.Secret));
 
-            var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.NameIdentifier, user.Id),
-                new Claim(ClaimTypes.Name, user.UserName)
-            };
-
-            var roles = await _userManager.GetRolesAsync(user);
-            if (roles.Any())
-            {
-                claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
-            }
+            var claims = await CreateClaims(user);
             var tokenExpireTime = DateTime.UtcNow.AddHours(1);
             var token = new JwtSecurityToken(
                 issuer: AppSettings.JwtSettings.Issuer,
@@ -119,6 +111,29 @@ namespace ApartmentManagementSystem.Services.Impls
             };
         }
 
+        private async Task<List<Claim>> CreateClaims(AppUser user)
+        {
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.Id),
+                new Claim(ClaimTypes.Name, user.UserName)
+            };
+            var roleNames = await _userManager.GetRolesAsync(user);
+            var roleName = roleNames.FirstOrDefault();
+
+            if (string.IsNullOrEmpty(roleName)) return claims;
+
+            claims.AddRange(roleNames.Select(role => new Claim(ClaimTypes.Role, role)));
+            var role = await _roleManager.FindByNameAsync(roleName);
+
+            if (role == null) return claims;
+            var allClaims = await _roleManager.GetClaimsAsync(role);
+
+            if (allClaims == null) return claims;
+            claims.AddRange(allClaims.Select(claim => new Claim(claim.Type, claim.Value, claim.ValueType, claim.Issuer)));   
+            return claims;
+        }
+        
         private HashToken HashToken(string token)
         {
             using var hmac = new System.Security.Cryptography.HMACSHA256();

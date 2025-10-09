@@ -13,7 +13,7 @@ namespace ApartmentManagementSystem.Identity
             }
             var permissionss = context.User.Claims.Where(x => x.Type == "Permission" &&
                                                                 requirement.Permission == x.Value &&
-                                                                x.Issuer == "LOCAL AUTHORITY");
+                                                                x.Issuer == "ApartmentManagementSystem");
             if (permissionss.Any())
             {
                 context.Succeed(requirement);
