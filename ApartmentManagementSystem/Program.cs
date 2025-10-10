@@ -68,6 +68,9 @@ namespace ApartmentManagementSystem
             var testUserPw = AppSettings.SeedPwd;
             SeedData.SeedData.Initialize(app.Services.CreateScope().ServiceProvider, testUserPw).GetAwaiter().GetResult();
 
+            app.UseCors(
+               options => options.WithOrigins("http://localhost").AllowAnyMethod().AllowAnyHeader().AllowAnyOrigin()
+           );
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
