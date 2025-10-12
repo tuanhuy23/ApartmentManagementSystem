@@ -1,4 +1,6 @@
-﻿namespace ApartmentManagementSystem.Exceptions
+﻿using System.Net;
+
+namespace ApartmentManagementSystem.Exceptions
 {
     public class DomainException : Exception
     {
@@ -11,13 +13,13 @@
         {
             Code = code;
         }
-        public DomainException(string code, string message, int statusCode) : base(message)
+        public DomainException(string code, string message, HttpStatusCode statusCode) : base(message)
         {
             Code = code;
             StatusCode = statusCode;
         }
 
         public string Code { get; }
-        public int StatusCode { get; set; }
+        public HttpStatusCode StatusCode { get; set; }
     }
 }

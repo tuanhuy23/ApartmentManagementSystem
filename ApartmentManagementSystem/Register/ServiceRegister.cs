@@ -21,6 +21,7 @@ namespace ApartmentManagementSystem.Register
         public static void RegisterService(this IServiceCollection services)
         {
             services.AddScoped<ITokenService, TokenService>();
+            services.AddScoped<IAccountService, AccountService>();
         }
         public static void RegisterAuthenticationService(this IServiceCollection services)
         {

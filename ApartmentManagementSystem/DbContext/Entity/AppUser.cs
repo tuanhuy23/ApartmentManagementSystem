@@ -6,5 +6,6 @@ namespace ApartmentManagementSystem.DbContext.Entity
     {
         public string DisplayName { get; set; }
         public string Position { get; set; }
+        public string AppartmentId{ get; set; }
     }
 }

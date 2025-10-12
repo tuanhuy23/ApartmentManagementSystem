@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc;
+using ApartmentManagementSystem.Response;
 
 namespace ApartmentManagementSystem.Exceptions
 {
@@ -10,7 +11,8 @@ namespace ApartmentManagementSystem.Exceptions
             var error = ExtractErrorResponseFromContext(context);
 
             context.HttpContext.Response.StatusCode = (int)error.StatusCode;
-            context.Result = new JsonResult(error);
+
+            context.Result = new JsonResult(new ResponseData<object>(error.StatusCode, null, error, null));
         }
 
         private static ErrorResponse ExtractErrorResponseFromContext(ExceptionContext context)
@@ -19,7 +21,6 @@ namespace ApartmentManagementSystem.Exceptions
             {
                 case DomainException domainValidationEx:
                     return domainValidationEx.CreateErrorResponse();
-                    ;
                 default:
                     return context.Exception.CreateErrorResponse();
             }
