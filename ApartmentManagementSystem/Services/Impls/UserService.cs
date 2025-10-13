@@ -30,6 +30,17 @@ namespace ApartmentManagementSystem.Services.Impls
                 RoleId = request.RoleId,
                 Possition = request.Possition,
             };
+
+            IdentityRole role = null;
+            if (!string.IsNullOrEmpty(request.RoleId))
+            {
+                role = await _roleManager.FindByIdAsync(request.RoleId);
+
+                if (role == null)
+                    throw new DomainException(ErrorCodeConsts.RoleNotFound, ErrorCodeConsts.RoleNotFound, System.Net.HttpStatusCode.NotFound);
+            }
+            
+
             if (string.IsNullOrEmpty(request.UserId))
             {
                 var appUser = new AppUser()
@@ -39,16 +50,13 @@ namespace ApartmentManagementSystem.Services.Impls
                     DisplayName = request.DisplayName,
                     PhoneNumber = request.PhoneNumber,
                     Position = request.Possition,
+                    AppartmentId = request.AppartmentId,
                 };
                 var resultUser = await _userManager.CreateAsync(appUser);
                 if (!resultUser.Succeeded)
                     throw new DomainException(ErrorCodeConsts.ErrorWhenCreateUser, ErrorCodeConsts.ErrorWhenCreateUser, System.Net.HttpStatusCode.NotFound);
 
                 var userNew = await _userManager.FindByEmailAsync(request.Email);
-                var role = await _roleManager.FindByIdAsync(request.RoleId);
-                if (role == null)
-                    throw new DomainException(ErrorCodeConsts.RoleNotFound, ErrorCodeConsts.RoleNotFound, System.Net.HttpStatusCode.NotFound);
-
                 await _userManager.AddToRoleAsync(userNew, role.Name);
                 result.UserId = userNew.Id;
                 result.RoleName = role.Name;
@@ -58,13 +66,52 @@ namespace ApartmentManagementSystem.Services.Impls
             if (user == null)
                 throw new DomainException(ErrorCodeConsts.UserNotFound, ErrorCodeConsts.UserNotFound, System.Net.HttpStatusCode.NotFound);
             user.DisplayName = request.DisplayName;
-            return null;
+            user.PhoneNumber = request.PhoneNumber;
+            user.Position = request.Possition;
+            user.Email = request.Email;
+           
+            if (role != null)
+            {
+                var roleCurrents = await _userManager.GetRolesAsync(user);
+                var roleNameCur = roleCurrents.FirstOrDefault();
+                if (!string.IsNullOrEmpty(roleNameCur))
+                {
+                    await _userManager.RemoveFromRoleAsync(user, roleNameCur);
+                }
+                await _userManager.AddToRoleAsync(user, role.Name);
+                result.RoleId = role.Id;
+            }
+            await _userManager.UpdateAsync(user);
+            result.UserId = result.UserId;
+            result.AppartmentId = user.AppartmentId;
+            return result;
 
         }
 
-        public Task<DeleteUserResponseDto> DeleteUsers(IEnumerable<string> userIds)
+        public async Task<DeleteUserResponseDto> DeleteUsers(IEnumerable<string> userIds)
         {
-            throw new NotImplementedException();
+            var result = new DeleteUserResponseDto()
+            {
+                UserIdsDeleteSuccess = new List<string>(),
+                UserIdsDeleteError = new List<string>()
+            };
+            foreach (var id in userIds)
+            {
+                var user = await _userManager.FindByIdAsync(id);
+                if (user != null)
+                {
+                    var roleNames = await _userManager.GetRolesAsync(user);
+                    var roleName = roleNames.FirstOrDefault();
+                    await _userManager.RemoveFromRoleAsync(user, roleName);
+                    await _userManager.DeleteAsync(user);
+                    result.UserIdsDeleteSuccess.Add(id);
+                }
+                else
+                {
+                    result.UserIdsDeleteError.Add(id);
+                }
+            }
+            return result;
         }
 
         public async Task<UserDto> GetUser(string userId)

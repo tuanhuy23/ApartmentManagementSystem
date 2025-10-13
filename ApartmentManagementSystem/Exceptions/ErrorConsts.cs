@@ -12,6 +12,7 @@
         public static string ErrorWhenUpdateUser = "Error when update user";
         public static string ErrorWhenDeleteUser = "Error when delete user";
         public static string RoleNotFound = "Role not found";
+        public static string RoleIdIsRequire = "Role Id is require";
     }
 
     public static class ErrorCodeConsts
@@ -26,6 +27,7 @@
         public static string ErrorWhenUpdateUser = "ERROR_WHEN_UPDATE_USER";
         public static string ErrorWhenDeleteUser = "ERROR_WHEN_DELETE_USER";
         public static string RoleNotFound = "ROLE_NOT_FOUND";
+        public static string RoleIdIsRequire = "ROLE_ID_IS_REQUIRE";
     }
     }
 }

@@ -2,7 +2,7 @@ namespace ApartmentManagementSystem.Dtos
 {
     public class DeleteUserResponseDto
     {
-        public IEnumerable<string> UserNamesDeleteSuccess { get; set; }
-         public IEnumerable<string> UserNamesDeleteError { get; set; }
+        public List<string> UserIdsDeleteSuccess { get; set; }
+        public List<string> UserIdsDeleteError { get; set; }
     }
 }
