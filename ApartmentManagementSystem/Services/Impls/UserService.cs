@@ -11,12 +11,10 @@ namespace ApartmentManagementSystem.Services.Impls
     class UserService : IUserService
     {
         private readonly UserManager<AppUser> _userManager;
-        private readonly AuthenticationDbContext _authenticationDbContext;
         private readonly RoleManager<IdentityRole> _roleManager;
-        public UserService(UserManager<AppUser> userManager, AuthenticationDbContext authenticationDbContext, RoleManager<IdentityRole> roleManager)
+        public UserService(UserManager<AppUser> userManager, RoleManager<IdentityRole> roleManager)
         {
             _userManager = userManager;
-            _authenticationDbContext = authenticationDbContext;
             _roleManager = roleManager;
         }
         public async Task<UserDto> CreateOrUpdateUser(CreateOrUpdateUserRequestDto request)

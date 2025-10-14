@@ -10,7 +10,9 @@ namespace ApartmentManagementSystem.SeedData
         public static async Task Initialize(IServiceProvider serviceProvider, string testUserPw)
         {
             var adminID = await EnsureUser(serviceProvider, testUserPw, "superadmin@gmail.com");
-            await EnsureRole(serviceProvider, adminID, RoleDefaulConsts.SupperAdmin);
+            await EnsureRole(serviceProvider, RoleDefaulConsts.SupperAdmin, adminID);
+            await EnsureRole(serviceProvider, RoleDefaulConsts.Management, adminID);
+            await EnsureRole(serviceProvider, RoleDefaulConsts.Resident, adminID);
         }
 
         private static async Task<string> EnsureUser(IServiceProvider serviceProvider,
@@ -38,7 +40,7 @@ namespace ApartmentManagementSystem.SeedData
         }
 
         private static async Task<IdentityResult> EnsureRole(IServiceProvider serviceProvider,
-                                                                      string uid, string role)
+                                                                      string role, string uid)
         {
             IdentityResult IR = null;
             var roleManager = serviceProvider.GetService<RoleManager<IdentityRole>>();
@@ -50,21 +52,52 @@ namespace ApartmentManagementSystem.SeedData
             {
                 IR = await roleManager.CreateAsync(new IdentityRole(role));
             }
+            switch (role)
+            {
+                case RoleDefaulConsts.SupperAdmin:
+                    await roleManager.SeedClaimsForSuperAdmin();
+                    break;
+                case RoleDefaulConsts.Management:
+                    await roleManager.SeedClaimForManagement();
+                    break;
+                case RoleDefaulConsts.Resident:
+                    await roleManager.SeedClaimForResident();
+                    break;
+                default:
+                    await roleManager.SeedClaimsForSuperAdmin();
+                    break;
+
+            }
+            
             var userManager = serviceProvider.GetService<UserManager<AppUser>>();
+            if (userManager == null) throw new Exception("userManager is null");
             var user = await userManager.FindByIdAsync(uid);
             if (user == null)
             {
                 throw new Exception("The testUserPw password was probably not strong enough!");
             }
             IR = await userManager.AddToRoleAsync(user, role);
-            await roleManager.SeedClaimsForSuperAdmin();
             return IR;
         }
+
         private async static Task SeedClaimsForSuperAdmin(this RoleManager<IdentityRole> roleManager)
         {
             var adminRole = await roleManager.FindByNameAsync(RoleDefaulConsts.SupperAdmin);
-            await roleManager.AddPermissionClaim(adminRole, "RolePermissions");
-            await roleManager.AddPermissionClaim(adminRole, "UserPermissions");
+            if (adminRole == null) return;
+            await roleManager.AddPermissionClaim(adminRole, "ApartmentBuildingPermissions");
+        }
+        private async static Task SeedClaimForManagement(this RoleManager<IdentityRole> roleManager)
+        {
+            var managementRole = await roleManager.FindByNameAsync(RoleDefaulConsts.Management);
+            if (managementRole == null) return;
+            await roleManager.AddPermissionClaim(managementRole, "RolePermissions");
+            await roleManager.AddPermissionClaim(managementRole, "UserPermissions");
+        }
+        private async static Task SeedClaimForResident(this RoleManager<IdentityRole> roleManager)
+        {
+            var residentRole = await roleManager.FindByNameAsync(RoleDefaulConsts.Resident);
+            if (residentRole == null) return;
+            await roleManager.AddPermissionClaim(residentRole, "RequestPermissions");
         }
         private static List<string> GeneratePermissionsForModule(string module)
         {
@@ -72,7 +105,6 @@ namespace ApartmentManagementSystem.SeedData
             {
                 $"Permissions.{module}.Read",
                 $"Permissions.{module}.ReadWrite",
-                $"Permissions.{module}.ReadWriteAll",
             };
             return result;
         }

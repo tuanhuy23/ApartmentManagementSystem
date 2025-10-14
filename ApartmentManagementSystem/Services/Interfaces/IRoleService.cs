@@ -7,6 +7,6 @@ namespace ApartmentManagementSystem.Services.Interfaces
         Task<IEnumerable<RoleDto>> GetRoles();
         Task<RoleDto> GetRole(string roleId);
         Task<RoleDto> CreateOrUpdateRole(RoleDto request);
-        Task<RoleDto> CreateOrUpdateRole(RoleDto request);
+        Task<DeleteRoleResponse> DeleteRoles(IEnumerable<string> roleIds);
     }
 }

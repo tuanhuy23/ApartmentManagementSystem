@@ -14,14 +14,6 @@ namespace ApartmentManagementSystem.Identity
             }
         }
 
-        public static void GetPermissionsVN(this List<PermissionInfo> allPermissions, Type policy)
-        {
-            FieldInfo[] fields = policy.GetFields(BindingFlags.Static | BindingFlags.Public);
-            foreach (FieldInfo fi in fields)
-            {
-                allPermissions.Add(GetPermissionInfo(fi.GetValue(null).ToString(), policy.Name));
-            }
-        }
         private static PermissionInfo GetPermissionInfo(string permission, string type)
         {
             var perrmissionInfo = new PermissionInfo();
@@ -36,28 +28,29 @@ namespace ApartmentManagementSystem.Identity
         {
             if (permission.Equals(UserPermissions.ReadWrite))
             {
-                return "Xem và chỉnh sửa tài khoản";
-            }
-            if (permission.Equals(UserPermissions.ReadWriteAll))
-            {
-                return "Xem và chỉnh sửa toàn bộ  tài khoản";
+                return "Read and write user";
             }
             if (permission.Equals(UserPermissions.Read))
             {
-                return "Xem tài khoản";
+                return "Read user";
             }
 
             if (permission.Equals(RolePermissions.ReadWrite))
             {
-                return "Xem và chỉnh sửa chức vụ";
-            }
-            if (permission.Equals(RolePermissions.ReadWriteAll))
-            {
-                return "Xem và chỉnh sửa toàn bộ chức vụ";
+                return "Read and write role";
             }
             if (permission.Equals(RolePermissions.Read))
             {
-                return "Xem  chức vụ";
+                return "Read role";
+            }
+
+            if (permission.Equals(ApartmentBuildingPermissions.ReadWrite))
+            {
+                return "Read and write apartment building";
+            }
+            if (permission.Equals(ApartmentBuildingPermissions.Read))
+            {
+                return "Read apartment building";
             }
             return "";
         }
