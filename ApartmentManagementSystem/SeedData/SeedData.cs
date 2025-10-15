@@ -11,8 +11,8 @@ namespace ApartmentManagementSystem.SeedData
         {
             var adminID = await EnsureUser(serviceProvider, testUserPw, "superadmin@gmail.com");
             await EnsureRole(serviceProvider, RoleDefaulConsts.SupperAdmin, adminID);
-            await EnsureRole(serviceProvider, RoleDefaulConsts.Management, adminID);
-            await EnsureRole(serviceProvider, RoleDefaulConsts.Resident, adminID);
+            await EnsureRole(serviceProvider, RoleDefaulConsts.Management);
+            await EnsureRole(serviceProvider, RoleDefaulConsts.Resident);
         }
 
         private static async Task<string> EnsureUser(IServiceProvider serviceProvider,
@@ -40,7 +40,7 @@ namespace ApartmentManagementSystem.SeedData
         }
 
         private static async Task<IdentityResult> EnsureRole(IServiceProvider serviceProvider,
-                                                                      string role, string uid)
+                                                                      string role, string uid = "")
         {
             IdentityResult IR = null;
             var roleManager = serviceProvider.GetService<RoleManager<IdentityRole>>();
@@ -68,15 +68,17 @@ namespace ApartmentManagementSystem.SeedData
                     break;
 
             }
-            
-            var userManager = serviceProvider.GetService<UserManager<AppUser>>();
-            if (userManager == null) throw new Exception("userManager is null");
-            var user = await userManager.FindByIdAsync(uid);
-            if (user == null)
+            if (!string.IsNullOrEmpty(uid))
             {
-                throw new Exception("The testUserPw password was probably not strong enough!");
+                var userManager = serviceProvider.GetService<UserManager<AppUser>>();
+                if (userManager == null) throw new Exception("userManager is null");
+                var user = await userManager.FindByIdAsync(uid);
+                if (user == null)
+                {
+                    throw new Exception("The testUserPw password was probably not strong enough!");
+                }
+                IR = await userManager.AddToRoleAsync(user, role);
             }
-            IR = await userManager.AddToRoleAsync(user, role);
             return IR;
         }
 

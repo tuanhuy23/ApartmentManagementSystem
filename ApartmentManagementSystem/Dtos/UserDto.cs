@@ -7,7 +7,6 @@ namespace ApartmentManagementSystem.Dtos
         public string Email { get; set; }
         public string RoleName { get; set; }
         public string RoleId { get; set; }
-        public string Possition { get; set; }
         public string UserName { get; set; }
         public string AppartmentId { get; set; }
         public string AppartmentName { get; set; }

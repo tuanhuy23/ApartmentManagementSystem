@@ -29,5 +29,5 @@
         public static string RoleNotFound = "ROLE_NOT_FOUND";
         public static string RoleIdIsRequire = "ROLE_ID_IS_REQUIRE";
     }
-    }
+    
 }

@@ -1,11 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using ApartmentManagementSystem.Dtos;
 using ApartmentManagementSystem.Exceptions;
 using ApartmentManagementSystem.Response;
-using ApartmentManagementSystem.Services.Impls;
 using ApartmentManagementSystem.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -46,11 +41,11 @@ namespace ApartmentManagementSystem.Controllers
         }
 
         [HttpDelete()]
-        [ProducesResponseType(typeof(ResponseData<UserDto>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> DeleteUser([FromQuery] CreateOrUpdateUserRequestDto request)
+        [ProducesResponseType(typeof(ResponseData<DeleteUserResponseDto>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> DeleteUser([FromBody] List<string> request)
         {
             var response = await _userService.DeleteUsers(request);
-            return Ok(new ResponseData<UserDto>(System.Net.HttpStatusCode.OK, response, null, null));
+            return Ok(new ResponseData<DeleteUserResponseDto>(System.Net.HttpStatusCode.OK, response, null, null));
         }
     }
 }

@@ -5,7 +5,6 @@ namespace ApartmentManagementSystem.DbContext.Entity
     public class AppUser : IdentityUser
     {
         public string DisplayName { get; set; }
-        public string Position { get; set; }
-        public string AppartmentId{ get; set; }
+        public string AppartmentBuildingId { get; set; }
     }
 }

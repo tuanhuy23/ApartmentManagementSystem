@@ -26,7 +26,6 @@ namespace ApartmentManagementSystem.Services.Impls
                 Email = request.Email,
                 PhoneNumber = request.PhoneNumber,
                 RoleId = request.RoleId,
-                Possition = request.Possition,
             };
 
             IdentityRole role = null;
@@ -47,8 +46,7 @@ namespace ApartmentManagementSystem.Services.Impls
                     Email = request.Email,
                     DisplayName = request.DisplayName,
                     PhoneNumber = request.PhoneNumber,
-                    Position = request.Possition,
-                    AppartmentId = request.AppartmentId,
+                    AppartmentBuildingId = request.AppartmentBuildingId,
                 };
                 var resultUser = await _userManager.CreateAsync(appUser);
                 if (!resultUser.Succeeded)
@@ -65,7 +63,6 @@ namespace ApartmentManagementSystem.Services.Impls
                 throw new DomainException(ErrorCodeConsts.UserNotFound, ErrorCodeConsts.UserNotFound, System.Net.HttpStatusCode.NotFound);
             user.DisplayName = request.DisplayName;
             user.PhoneNumber = request.PhoneNumber;
-            user.Position = request.Possition;
             user.Email = request.Email;
            
             if (role != null)
@@ -81,7 +78,7 @@ namespace ApartmentManagementSystem.Services.Impls
             }
             await _userManager.UpdateAsync(user);
             result.UserId = result.UserId;
-            result.AppartmentId = user.AppartmentId;
+            result.AppartmentId = user.AppartmentBuildingId;
             return result;
 
         }
@@ -134,7 +131,6 @@ namespace ApartmentManagementSystem.Services.Impls
                 RoleName = roleName,
                 RoleId = roleId,
                 DisplayName = user.DisplayName,
-                Possition = user.Position,
                 UserName = user.UserName
             };
             return userDto;
@@ -151,7 +147,6 @@ namespace ApartmentManagementSystem.Services.Impls
                     Email = user.Email,
                     UserId = user.Id,
                     DisplayName = user.DisplayName,
-                    Possition = user.Position,
                     UserName = user.UserName
                 };
                 var roles = await _userManager.GetRolesAsync(user);
