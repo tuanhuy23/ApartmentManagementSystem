@@ -8,8 +8,8 @@ namespace ApartmentManagementSystem.Dtos
         public string RoleName { get; set; }
         public string RoleId { get; set; }
         public string UserName { get; set; }
-        public string AppartmentId { get; set; }
-        public string AppartmentName { get; set; }
+        public string AppartmentBuildingId { get; set; }
+        public string AppartmentBuildingName { get; set; }
         public string PhoneNumber { get; set; }
     }
 }

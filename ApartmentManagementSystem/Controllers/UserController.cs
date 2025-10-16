@@ -24,6 +24,14 @@ namespace ApartmentManagementSystem.Controllers
             return Ok(new ResponseData<IEnumerable<UserDto>>(System.Net.HttpStatusCode.OK, response, null, null));
         }
 
+        [HttpGet("{userId}")]
+        [ProducesResponseType(typeof(ResponseData<UserDto>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetUser([FromQuery] string userId)
+        {
+            var response = await _userService.GetUser(userId);
+            return Ok(new ResponseData<UserDto>(System.Net.HttpStatusCode.OK, response, null, null));
+        }
+
         [HttpPost()]
         [ProducesResponseType(typeof(ResponseData<UserDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> CreateUser([FromBody] CreateOrUpdateUserRequestDto request)

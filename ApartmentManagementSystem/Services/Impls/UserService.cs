@@ -78,7 +78,7 @@ namespace ApartmentManagementSystem.Services.Impls
             }
             await _userManager.UpdateAsync(user);
             result.UserId = result.UserId;
-            result.AppartmentId = user.AppartmentBuildingId;
+            result.AppartmentBuildingId = user.AppartmentBuildingId;
             return result;
 
         }
@@ -142,6 +142,7 @@ namespace ApartmentManagementSystem.Services.Impls
             List<UserDto> userDtos = new List<UserDto>();
             foreach (var user in users)
             {
+                if (user.UserName.Equals("superadmin@gmail.com")) continue;
                 var userDto = new UserDto()
                 {
                     Email = user.Email,
