@@ -1,6 +1,7 @@
 
 using ApartmentManagementSystem.DbContext;
 using ApartmentManagementSystem.Register;
+using ApartmentManagementSystem.EF;
 
 namespace ApartmentManagementSystem
 {
@@ -17,6 +18,7 @@ namespace ApartmentManagementSystem
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.RegisterService();
             builder.Services.RegisterAuthenticationService();
+            builder.Services.RegisterRepository();
             builder.Services.AddSwaggerGen(options =>
             {
                 options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo

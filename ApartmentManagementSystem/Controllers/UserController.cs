@@ -2,6 +2,7 @@ using ApartmentManagementSystem.Dtos;
 using ApartmentManagementSystem.Exceptions;
 using ApartmentManagementSystem.Response;
 using ApartmentManagementSystem.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ApartmentManagementSystem.Controllers
@@ -9,6 +10,7 @@ namespace ApartmentManagementSystem.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [ApiExceptionFilter]
+    [Authorize]
     public class UserController: ControllerBase
     {
         private readonly IUserService _userService;

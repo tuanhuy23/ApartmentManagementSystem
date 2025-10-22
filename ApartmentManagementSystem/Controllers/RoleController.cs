@@ -3,6 +3,7 @@ using ApartmentManagementSystem.Exceptions;
 using ApartmentManagementSystem.Response;
 using ApartmentManagementSystem.Services.Impls;
 using ApartmentManagementSystem.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,6 +12,7 @@ namespace ApartmentManagementSystem.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [ApiExceptionFilter]
+    [Authorize]
     public class RoleController : ControllerBase
     {
         private readonly IRoleService _roleService;

@@ -20,4 +20,8 @@
     <Folder Include="Response\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\ApartmentManagementSystem.EF\ApartmentManagementSystem.EF.csproj" />
+  </ItemGroup>
+
 </Project>

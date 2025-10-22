@@ -1,9 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.12.35707.178 d17.12
+VisualStudioVersion = 17.12.35707.178
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApartmentManagementSystem", "ApartmentManagementSystem\ApartmentManagementSystem.csproj", "{96126D94-A021-4C48-A333-669575BCFFC1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApartmentManagementSystem.EF", "ApartmentManagementSystem.EF\ApartmentManagementSystem.EF.csproj", "{501052D8-48F8-4F54-AEA6-27A90E55494B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DbMigrationTools", "DbMigrationTools\DbMigrationTools.csproj", "{38060F1E-F8F7-4C7F-A942-9158FB8DE2C1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +19,14 @@ Global
 		{96126D94-A021-4C48-A333-669575BCFFC1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{96126D94-A021-4C48-A333-669575BCFFC1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{96126D94-A021-4C48-A333-669575BCFFC1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{501052D8-48F8-4F54-AEA6-27A90E55494B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{501052D8-48F8-4F54-AEA6-27A90E55494B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{501052D8-48F8-4F54-AEA6-27A90E55494B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{501052D8-48F8-4F54-AEA6-27A90E55494B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{38060F1E-F8F7-4C7F-A942-9158FB8DE2C1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{38060F1E-F8F7-4C7F-A942-9158FB8DE2C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{38060F1E-F8F7-4C7F-A942-9158FB8DE2C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{38060F1E-F8F7-4C7F-A942-9158FB8DE2C1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
