@@ -1,16 +1,15 @@
-﻿using ApartmentManagementSystem.DbContext;
+﻿using ApartmentManagementSystem.Common;
+using ApartmentManagementSystem.DbContext;
 using ApartmentManagementSystem.DbContext.Entity;
+using ApartmentManagementSystem.EF;
 using ApartmentManagementSystem.Identity;
 using ApartmentManagementSystem.Services.Impls;
 using ApartmentManagementSystem.Services.Interfaces;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
@@ -24,6 +23,34 @@ namespace ApartmentManagementSystem.Register
             services.AddScoped<IAccountService, AccountService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IRoleService, RoleService>();
+            services.AddScoped<IApartmentBuildingService, ApartmentBuildingService>();
+            services.AddScoped(serviceProvider =>
+            {
+                var context = serviceProvider.GetService<IHttpContextAccessor>()?.HttpContext;
+
+                if (context == null)
+                {
+                    return new UserAudit()
+                    {
+                        UserId = "superadmin@gmail.com",
+                        UserName = "superadmin@gmail.com"
+                    };
+                }
+                var accountInfo = IdentityHelper.GetIdentity(context);
+                if (accountInfo != null)
+                {
+                    return new UserAudit()
+                    {
+                        UserId = accountInfo.Id,
+                        UserName = accountInfo.UserName
+                    };
+                }
+                return new UserAudit()
+                {
+                    UserId = "superadmin@gmail.com",
+                    UserName = "superadmin@gmail.com"
+                };
+            });
         }
         public static void RegisterAuthenticationService(this IServiceCollection services)
         {

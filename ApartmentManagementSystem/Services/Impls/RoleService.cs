@@ -1,6 +1,7 @@
 ﻿using ApartmentManagementSystem.Consts.Permissions;
 using ApartmentManagementSystem.DbContext.Entity;
 using ApartmentManagementSystem.Dtos;
+using ApartmentManagementSystem.Exceptions;
 using ApartmentManagementSystem.Identity;
 using ApartmentManagementSystem.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
@@ -100,6 +101,14 @@ namespace ApartmentManagementSystem.Services.Impls
                 }
             }
             return roleDto;
+        }
+
+        public async Task<string> GetRoleIdByRoleName(string roleName)
+        {
+            var role = await _roleManager.FindByNameAsync(roleName);
+            if (role == null)
+                throw new DomainException(ErrorCodeConsts.RoleNotFound, ErrorCodeConsts.RoleNotFound, System.Net.HttpStatusCode.NotFound);
+            return role.Id;
         }
 
         public async Task<IEnumerable<RoleDto>> GetRoles()

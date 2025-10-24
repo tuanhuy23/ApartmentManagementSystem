@@ -25,6 +25,7 @@ namespace DbMigrationTools.Migrations
                     Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CurrencyUnit = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ApartmentBuildingImgUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    OwnerUserId = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreatedByUserName = table.Column<string>(type: "nvarchar(max)", nullable: true),

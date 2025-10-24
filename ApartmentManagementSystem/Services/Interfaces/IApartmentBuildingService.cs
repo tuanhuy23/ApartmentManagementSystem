@@ -5,6 +5,6 @@ namespace ApartmentManagementSystem.Services.Interfaces
     public interface IApartmentBuildingService
     {
         public IEnumerable<ApartmentBuildingDto> GetApartmentBuildings();
-        public Task CreateOrUpdateApartmentBuilding(CreateApartmentBuildingDto request);
+        public Task CreateApartmentBuilding(CreateApartmentBuildingDto request);
     }
 }

@@ -12,4 +12,9 @@
         public const string Management = "Management";
         public const string Resident = "Resident";
     }
+    public static class StatusConsts
+    {
+        public const string Active = "Active";
+        public const string InActive = "InActive";
+    }
 }

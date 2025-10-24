@@ -14,5 +14,6 @@ namespace ApartmentManagementSystem.EF.Context
         public string CurrencyUnit { get; set; }
         public string ApartmentBuildingImgUrl { get; set; }
         public ICollection<AppartmentBuildingImage> Images { get; set; }
+        public string OwnerUserId { get; set; }
     }
 }

@@ -12,6 +12,7 @@ namespace ApartmentManagementSystem.Identity
         {
             _permissionMap.GetPermissions(typeof(RolePermissions));
             _permissionMap.GetPermissions(typeof(UserPermissions));
+            _permissionMap.GetPermissions(typeof(ApartmentBuildingPermissions));
             FallbackPolicyProvider = new DefaultAuthorizationPolicyProvider(options);
         }
         public Task<AuthorizationPolicy> GetDefaultPolicyAsync() => FallbackPolicyProvider.GetDefaultPolicyAsync();

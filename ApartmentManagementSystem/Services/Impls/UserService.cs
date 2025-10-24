@@ -36,7 +36,6 @@ namespace ApartmentManagementSystem.Services.Impls
                 if (role == null)
                     throw new DomainException(ErrorCodeConsts.RoleNotFound, ErrorCodeConsts.RoleNotFound, System.Net.HttpStatusCode.NotFound);
             }
-            
 
             if (string.IsNullOrEmpty(request.UserId))
             {
@@ -47,8 +46,16 @@ namespace ApartmentManagementSystem.Services.Impls
                     DisplayName = request.DisplayName,
                     PhoneNumber = request.PhoneNumber,
                     AppartmentBuildingId = request.AppartmentBuildingId,
-                };
-                var resultUser = await _userManager.CreateAsync(appUser);
+                };       
+                IdentityResult resultUser = null;
+                if (!string.IsNullOrEmpty(request.Password))
+                {
+                    resultUser = await _userManager.CreateAsync(appUser, request.Password);
+                }
+                else
+                {
+                    resultUser = await _userManager.CreateAsync(appUser);
+                }
                 if (!resultUser.Succeeded)
                     throw new DomainException(ErrorCodeConsts.ErrorWhenCreateUser, ErrorCodeConsts.ErrorWhenCreateUser, System.Net.HttpStatusCode.NotFound);
 

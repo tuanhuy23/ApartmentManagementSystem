@@ -12,5 +12,11 @@ namespace ApartmentManagementSystem.DbContext
         }
         public DbSet<AppUser> AppUser { get; set; }
         public DbSet<RefreshToken> RefreshToken { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
+            builder.Entity<AppUser>().HasIndex(o => new { o.AppartmentBuildingId });
+        }
     }
 }
