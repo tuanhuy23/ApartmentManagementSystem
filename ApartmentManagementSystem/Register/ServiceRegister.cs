@@ -51,6 +51,10 @@ namespace ApartmentManagementSystem.Register
                     UserName = "superadmin@gmail.com"
                 };
             });
+            services.AddScoped<ICloudinaryService, CloudinaryService>(serviceProvider =>
+            {
+                return new CloudinaryService(AppSettings.Cloudinary);
+            });
         }
         public static void RegisterAuthenticationService(this IServiceCollection services)
         {
