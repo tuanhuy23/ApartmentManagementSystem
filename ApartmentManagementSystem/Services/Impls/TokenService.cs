@@ -125,26 +125,18 @@ namespace ApartmentManagementSystem.Services.Impls
                 throw new DomainException(ErrorCodeConsts.ConfirmNewPasswordNotInCorrect, ErrorMessageConsts.ConfirmNewPasswordNotInCorrect, System.Net.HttpStatusCode.BadRequest);
 
             var result = await _userManager.ChangePasswordAsync(user, request.OldPassword, request.NewPassword);
-
+            
             if (result == null)
                 throw new DomainException(ErrorCodeConsts.ErrorWhenChangePassword, ErrorMessageConsts.ErrorWhenChangePassword, System.Net.HttpStatusCode.InternalServerError);
+            if (!user.IsActive)
+            {
+                user.IsActive = true;
+                await _userManager.UpdateAsync(user);
+            }
 
             return new ChangePasswordResponseDto()
             {
                 IsSuccess = result.Succeeded
-            };
-        }
-        
-        public async Task<UpdatePasswordInFristTimeLoginResponseDto> UpdatePasswordInFristTimeLogin(UpdatePasswordInFristTimeLoginRequestDto request)
-        {
-            var user = await _userManager.FindByNameAsync(request.UserName);
-
-            if (user == null) throw new DomainException(ErrorCodeConsts.UserNameOrPasswordNotInCorrect, ErrorMessageConsts.UserNameOrPasswordNotInCorrect, System.Net.HttpStatusCode.BadRequest);
-
-            var result = _userManager.AddPasswordAsync(user, request.NewPassword);
-            return new UpdatePasswordInFristTimeLoginResponseDto()
-            {
-                IsSuccess = result != null ? true : false
             };
         }
 
@@ -168,6 +160,7 @@ namespace ApartmentManagementSystem.Services.Impls
                 AccessToken = accessToken,
                 ExpireTime = tokenExpireTime,
                 RefreshToken = refreshToken,
+                IsActive = user.IsActive
             };
         }
 
@@ -178,7 +171,8 @@ namespace ApartmentManagementSystem.Services.Impls
                 new Claim(ClaimTypes.NameIdentifier, user.Id),
                 new Claim(ClaimTypes.Name, user.UserName),
                 new Claim(ClaimTypes.Email, user.Email),
-                new Claim("DisplayName", user.DisplayName)
+                new Claim("DisplayName", user.DisplayName),
+                new Claim("IsActive", user.IsActive.ToString())
             };
             var roleNames = await _userManager.GetRolesAsync(user);
             var roleName = roleNames.FirstOrDefault();

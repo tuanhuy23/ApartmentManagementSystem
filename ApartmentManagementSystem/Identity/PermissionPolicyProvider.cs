@@ -20,7 +20,6 @@ namespace ApartmentManagementSystem.Identity
         {
             if (_permissionMap.TryGetValue(policyName, out var permission))
             {
-
                 var policy = new AuthorizationPolicyBuilder();
                 policy.AddRequirements(new PermissionRequirement(policyName));
                 return Task.FromResult(policy.Build());

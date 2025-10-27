@@ -9,6 +9,5 @@ namespace ApartmentManagementSystem.Services.Interfaces
         Task<TokenResponseDto> RefreshTokenAsync(string refreshToken);
         Task LogoutAsync(string refreshToken);
         Task<ChangePasswordResponseDto> ChangePassword(ChangePasswordRequestDto request);
-        Task<UpdatePasswordInFristTimeLoginResponseDto> UpdatePasswordInFristTimeLogin(UpdatePasswordInFristTimeLoginRequestDto request);
     }
 }

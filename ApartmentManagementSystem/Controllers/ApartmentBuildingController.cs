@@ -31,7 +31,7 @@ namespace ApartmentManagementSystem.Controllers
         [HttpPost()]
         [ProducesResponseType(typeof(ResponseData<>), StatusCodes.Status200OK)]
         [Authorize(Policy = "Permissions.ApartmentBuildingPermissions.ReadWrite")]
-        public async Task<IActionResult> CreateApartmentBuilding(CreateApartmentBuildingDto request)
+        public async Task<IActionResult> CreateApartmentBuilding([FromBody] CreateApartmentBuildingDto request)
         {
             await _apartmentBuildingService.CreateApartmentBuilding(request);
             return Ok(new ResponseData<object>(System.Net.HttpStatusCode.OK, null, null, null));

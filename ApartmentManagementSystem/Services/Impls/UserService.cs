@@ -47,15 +47,7 @@ namespace ApartmentManagementSystem.Services.Impls
                     PhoneNumber = request.PhoneNumber,
                     AppartmentBuildingId = request.AppartmentBuildingId,
                 };       
-                IdentityResult resultUser = null;
-                if (!string.IsNullOrEmpty(request.Password))
-                {
-                    resultUser = await _userManager.CreateAsync(appUser, request.Password);
-                }
-                else
-                {
-                    resultUser = await _userManager.CreateAsync(appUser);
-                }
+                IdentityResult resultUser = await _userManager.CreateAsync(appUser, request.Password);
                 if (!resultUser.Succeeded)
                     throw new DomainException(ErrorCodeConsts.ErrorWhenCreateUser, ErrorCodeConsts.ErrorWhenCreateUser, System.Net.HttpStatusCode.NotFound);
 

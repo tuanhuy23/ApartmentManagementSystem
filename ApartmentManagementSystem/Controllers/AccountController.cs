@@ -64,14 +64,5 @@ namespace ApartmentManagementSystem.Controllers
             var response = await _tokenService.ChangePassword(request);
             return Ok(new ResponseData<ChangePasswordResponseDto>(System.Net.HttpStatusCode.OK, response, null, null));
         }
-
-        [HttpPost("changePasswordInFristTimeLogin")]
-        [AllowAnonymous]
-        [ProducesResponseType(typeof(ResponseData<UpdatePasswordInFristTimeLoginResponseDto>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> ChangePasswordInFristTimeLogin([FromBody] UpdatePasswordInFristTimeLoginRequestDto request)
-        {
-            var response = await _tokenService.UpdatePasswordInFristTimeLogin(request);
-            return Ok(new ResponseData<UpdatePasswordInFristTimeLoginResponseDto>(System.Net.HttpStatusCode.OK, response, null, null));
-        }
     }
 }

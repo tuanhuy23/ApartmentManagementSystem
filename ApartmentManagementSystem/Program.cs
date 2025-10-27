@@ -61,6 +61,7 @@ namespace ApartmentManagementSystem
                 };
 
                 options.AddSecurityRequirement(securityRequirement);
+                options.SupportNonNullableReferenceTypes();
             });
 
             var app = builder.Build();

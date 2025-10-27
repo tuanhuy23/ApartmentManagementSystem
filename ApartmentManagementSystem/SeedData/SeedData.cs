@@ -27,7 +27,9 @@ namespace ApartmentManagementSystem.SeedData
                     Email = email,
                     EmailConfirmed = true,
                     DisplayName = email,
-                    UserName = email
+                    UserName = email,
+                    IsActive = true,
+                    AppartmentBuildingId = "root"
                 };
                 await userManager.CreateAsync(user, testUserPw);
             }
@@ -87,6 +89,8 @@ namespace ApartmentManagementSystem.SeedData
             var adminRole = await roleManager.FindByNameAsync(RoleDefaulConsts.SupperAdmin);
             if (adminRole == null) return;
             await roleManager.AddPermissionClaim(adminRole, "ApartmentBuildingPermissions");
+            await roleManager.AddPermissionClaim(adminRole, "RolePermissions");
+            await roleManager.AddPermissionClaim(adminRole, "UserPermissions");
         }
         private async static Task SeedClaimForManagement(this RoleManager<IdentityRole> roleManager)
         {

@@ -17,4 +17,11 @@
         public string ManagementPhoneNumber { get; set; }
         public string ManagementPassword { get; set; }
     }
+    public class UploadAppartmentBuildingImageDto
+    {
+        public string Id { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public string Src { get; set; }
+    }
 }
