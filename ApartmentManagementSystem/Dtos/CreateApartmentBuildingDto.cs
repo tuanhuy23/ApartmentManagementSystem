@@ -10,7 +10,7 @@
         public string ContactPhone { get; set; }
         public string CurrencyUnit { get; set; }
         public string ApartmentBuildingImgUrl { get; set; }
-        public List<AppartmentBuildingImageDto> Images { get; set; }
+        public List<UploadAppartmentBuildingImageDto> Images { get; set; }
         public string ManagementDisplayName { get; set; }
         public string ManagementEmail { get; set; }
         public string ManagementUserName { get; set; }
@@ -19,7 +19,6 @@
     }
     public class UploadAppartmentBuildingImageDto
     {
-        public string Id { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
         public string Src { get; set; }

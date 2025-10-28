@@ -92,7 +92,7 @@ namespace ApartmentManagementSystem.Services.Impls
             }
             return dtos;
         }
-        private IEnumerable<AppartmentBuildingImage> MapAppartmentBuildingImageEntity(IEnumerable<AppartmentBuildingImageDto> imgs)
+        private IEnumerable<AppartmentBuildingImage> MapAppartmentBuildingImageEntity(IEnumerable<UploadAppartmentBuildingImageDto> imgs)
         {
             var entities = new List<AppartmentBuildingImage>();
             foreach (var imgsItem in imgs)
@@ -102,7 +102,6 @@ namespace ApartmentManagementSystem.Services.Impls
                     Description = imgsItem.Description,
                     Name = imgsItem.Name,
                     Src = imgsItem.Src,
-                    Id = Guid.NewGuid(),
                 });
             }
             return entities;
