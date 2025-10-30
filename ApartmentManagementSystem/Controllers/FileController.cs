@@ -7,7 +7,7 @@ namespace ApartmentManagementSystem.Controllers
 {
     [Produces("application/json")]
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("{appartmentBuilding}/[controller]")]
     public class FileController : ControllerBase
     {
         private readonly ICloudinaryService _cloudinaryService;

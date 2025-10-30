@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ApartmentManagementSystem.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]/")]
     [ApiController]
     [ApiExceptionFilter]
     public class AccountController : ControllerBase

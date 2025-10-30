@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ApartmentManagementSystem.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("{appartmentBuilding}/[controller]")]
     [ApiController]
     [Authorize]
     public class ApartmentBuildingController : ControllerBase
