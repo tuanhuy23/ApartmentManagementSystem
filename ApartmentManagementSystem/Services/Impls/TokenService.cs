@@ -173,7 +173,7 @@ namespace ApartmentManagementSystem.Services.Impls
                 new Claim(ClaimTypes.Email, user.Email),
                 new Claim("DisplayName", user.DisplayName),
                 new Claim("IsActive", user.IsActive.ToString()),
-                new Claim("ApartmentBuilding", user.DisplayName),
+                new Claim("ApartmentBuildingId", user.AppartmentBuildingId),
             };
             var roleNames = await _userManager.GetRolesAsync(user);
             var roleName = roleNames.FirstOrDefault();
