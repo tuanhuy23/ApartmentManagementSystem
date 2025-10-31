@@ -1,13 +1,12 @@
 ﻿using ApartmentManagementSystem.EF.Context.Base;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ApartmentManagementSystem.EF.Context
 {
     public class BillingCycleSetting : AuditEntity<Guid>
     {
+        public Guid ApartmentBuildingId { get; set; }
+        public ApartmentBuilding ApartmentBuilding { get; set; }
+        public int ClosingDayOfMonth { get; set; }
+        public int PaymentDueDate { get; set; }
     }
 }

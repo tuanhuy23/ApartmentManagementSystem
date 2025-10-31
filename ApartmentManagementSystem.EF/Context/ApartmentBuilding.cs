@@ -15,7 +15,8 @@ namespace ApartmentManagementSystem.EF.Context
         public string ApartmentBuildingImgUrl { get; set; }
         public ICollection<ApartmentBuildingImage> Images { get; set; }
         public ICollection<FeeType>? FeeTypes { get; set; }
-        public ICollection<FeeRateConfig>? FeeRateConfigs { get; set; }
+        public ICollection<Apartment>? Apartments { get; set; }
+        public BillingCycleSetting BillingCycleSetting { get; set; }
         public string OwnerUserId { get; set; }
     }
 }

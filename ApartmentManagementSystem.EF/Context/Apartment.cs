@@ -8,6 +8,7 @@ namespace ApartmentManagementSystem.EF.Context
         public ApartmentBuilding ApartmentBuilding { get; set; }
         public double Area {  get; set; }
         public ICollection<ParkingRegistration> ParkingRegistrations { get; set; }
-
+        public ICollection<UtilityReading> UtilityReadings { get; set; }
+        public ICollection<FeeNotice> FeeNotices { get; set; }
     }
 }
