@@ -2,7 +2,7 @@
 
 namespace ApartmentManagementSystem.EF.Context
 {
-    public class AppartmentBuildingImage : EntityBase<Guid>
+    public class ApartmentBuildingImage : EntityBase<Guid>
     {
         public string Name { get; set; }
         public string Description { get; set; }

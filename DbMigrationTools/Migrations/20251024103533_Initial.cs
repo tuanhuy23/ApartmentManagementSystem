@@ -39,7 +39,7 @@ namespace DbMigrationTools.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "AppartmentBuildingImage",
+                name: "ApartmentBuildingImage",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -61,7 +61,7 @@ namespace DbMigrationTools.Migrations
 
             migrationBuilder.CreateIndex(
                 name: "IX_AppartmentBuildingImage_ApartmentBuildingId",
-                table: "AppartmentBuildingImage",
+                table: "ApartmentBuildingImage",
                 column: "ApartmentBuildingId");
         }
 
@@ -69,7 +69,7 @@ namespace DbMigrationTools.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "AppartmentBuildingImage");
+                name: "ApartmentBuildingImage");
 
             migrationBuilder.DropTable(
                 name: "ApartmentBuildings");

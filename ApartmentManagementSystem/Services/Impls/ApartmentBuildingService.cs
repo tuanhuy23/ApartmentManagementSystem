@@ -77,7 +77,7 @@ namespace ApartmentManagementSystem.Services.Impls
             await _unitOfWork.CommitAsync();
 
         }
-        private IEnumerable<AppartmentBuildingImageDto> MapAppartmentBuildingImageDto(IEnumerable<AppartmentBuildingImage> imgs)
+        private IEnumerable<AppartmentBuildingImageDto> MapAppartmentBuildingImageDto(IEnumerable<ApartmentBuildingImage> imgs)
         {
             var dtos = new List<AppartmentBuildingImageDto>();
             foreach (var imgsItem in imgs)
@@ -92,12 +92,12 @@ namespace ApartmentManagementSystem.Services.Impls
             }
             return dtos;
         }
-        private IEnumerable<AppartmentBuildingImage> MapAppartmentBuildingImageEntity(IEnumerable<UploadAppartmentBuildingImageDto> imgs)
+        private IEnumerable<ApartmentBuildingImage> MapAppartmentBuildingImageEntity(IEnumerable<UploadAppartmentBuildingImageDto> imgs)
         {
-            var entities = new List<AppartmentBuildingImage>();
+            var entities = new List<ApartmentBuildingImage>();
             foreach (var imgsItem in imgs)
             {
-                entities.Add(new AppartmentBuildingImage()
+                entities.Add(new ApartmentBuildingImage()
                 {
                     Description = imgsItem.Description,
                     Name = imgsItem.Name,

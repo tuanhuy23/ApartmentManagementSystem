@@ -94,7 +94,7 @@ namespace DbMigrationTools.Migrations
                     b.ToTable("ApartmentBuildings");
                 });
 
-            modelBuilder.Entity("ApartmentManagementSystem.EF.Context.AppartmentBuildingImage", b =>
+            modelBuilder.Entity("ApartmentManagementSystem.EF.Context.ApartmentBuildingImage", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -119,10 +119,10 @@ namespace DbMigrationTools.Migrations
 
                     b.HasIndex("ApartmentBuildingId");
 
-                    b.ToTable("AppartmentBuildingImage");
+                    b.ToTable("ApartmentBuildingImage");
                 });
 
-            modelBuilder.Entity("ApartmentManagementSystem.EF.Context.AppartmentBuildingImage", b =>
+            modelBuilder.Entity("ApartmentManagementSystem.EF.Context.ApartmentBuildingImage", b =>
                 {
                     b.HasOne("ApartmentManagementSystem.EF.Context.ApartmentBuilding", "ApartmentBuilding")
                         .WithMany("Images")
