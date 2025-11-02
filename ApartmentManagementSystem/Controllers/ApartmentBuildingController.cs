@@ -1,16 +1,19 @@
-﻿using ApartmentManagementSystem.Dtos;
+﻿using ApartmentManagementSystem.Consts.Permissions;
+using ApartmentManagementSystem.Dtos;
+using ApartmentManagementSystem.Exceptions;
+using ApartmentManagementSystem.Filters;
 using ApartmentManagementSystem.Response;
-using ApartmentManagementSystem.Services.Impls;
 using ApartmentManagementSystem.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ApartmentManagementSystem.Controllers
 {
-    [Route("{appartmentBuilding}/[controller]")]
+    [Route("{appartmentBuildingId}/[controller]")]
     [ApiController]
     [Authorize]
+    [ApiExceptionFilter]
+    [ServiceFilter(typeof(ApartmentBuildingValidationFilter))]
     public class ApartmentBuildingController : ControllerBase
     {
         private readonly IApartmentBuildingService _apartmentBuildingService;
@@ -21,7 +24,7 @@ namespace ApartmentManagementSystem.Controllers
 
         [HttpGet()]
         [ProducesResponseType(typeof(ResponseData<IEnumerable<ApartmentBuildingDto>>), StatusCodes.Status200OK)]
-        [Authorize(Policy = "Permissions.ApartmentBuildingPermissions.Read")]
+        [Authorize(Policy = ApartmentBuildingPermissions.Read)]
         public async Task<IActionResult> GetApartmentBuildings()
         {
             var response = _apartmentBuildingService.GetApartmentBuildings();
@@ -30,7 +33,7 @@ namespace ApartmentManagementSystem.Controllers
 
         [HttpPost()]
         [ProducesResponseType(typeof(ResponseData<>), StatusCodes.Status200OK)]
-        [Authorize(Policy = "Permissions.ApartmentBuildingPermissions.ReadWrite")]
+        [Authorize(Policy = ApartmentBuildingPermissions.ReadWrite)]
         public async Task<IActionResult> CreateApartmentBuilding([FromBody] CreateApartmentBuildingDto request)
         {
             await _apartmentBuildingService.CreateApartmentBuilding(request);

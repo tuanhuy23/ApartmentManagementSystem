@@ -1,4 +1,5 @@
-﻿using ApartmentManagementSystem.Consts.Permissions;
+﻿using ApartmentManagementSystem.Consts;
+using ApartmentManagementSystem.Consts.Permissions;
 using ApartmentManagementSystem.Dtos;
 using ApartmentManagementSystem.EF.Context;
 using ApartmentManagementSystem.EF.Repositories.Interfaces;

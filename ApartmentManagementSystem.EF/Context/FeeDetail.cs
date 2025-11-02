@@ -8,9 +8,11 @@ namespace ApartmentManagementSystem.EF.Context
         public FeeNotice FeeNotice { get; set; }
         public FeeType FeeType { get; set; }
         public Guid FeeTypeId { get; set; }
-        public decimal Consumption { get; set; }
+        public double? Consumption { get; set; }
         public decimal SubTotal { get; set; }
-        public decimal PreviousReading { get; set; }
-        public decimal CurrentReading { get; set; }
+        public DateTime? PreviousReadingDate{ get; set; }
+        public double? PreviousReading { get; set; }
+        public DateTime? CurrentReadingDate{ get; set; }
+        public double? CurrentReading { get; set; }
     }
 }

@@ -1,5 +1,7 @@
+using ApartmentManagementSystem.Consts.Permissions;
 using ApartmentManagementSystem.Dtos;
 using ApartmentManagementSystem.Exceptions;
+using ApartmentManagementSystem.Filters;
 using ApartmentManagementSystem.Response;
 using ApartmentManagementSystem.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -7,10 +9,11 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ApartmentManagementSystem.Controllers
 {
-    [Route("{appartmentBuilding}/[controller]")]
+    [Route("{appartmentBuildingId}/[controller]")]
     [ApiController]
-    [ApiExceptionFilter]
     [Authorize]
+    [ApiExceptionFilter]
+    [ServiceFilter(typeof(ApartmentBuildingValidationFilter))]
     public class UserController: ControllerBase
     {
         private readonly IUserService _userService;
@@ -20,6 +23,7 @@ namespace ApartmentManagementSystem.Controllers
         }
         [HttpGet()]
         [ProducesResponseType(typeof(ResponseData<IEnumerable<UserDto>>), StatusCodes.Status200OK)]
+        [Authorize(Policy = UserPermissions.Read)]
         public async Task<IActionResult> Get()
         {
             var response = await _userService.GetUsers();
@@ -28,6 +32,7 @@ namespace ApartmentManagementSystem.Controllers
 
         [HttpGet("{userId}")]
         [ProducesResponseType(typeof(ResponseData<UserDto>), StatusCodes.Status200OK)]
+        [Authorize(Policy = UserPermissions.Read)]
         public async Task<IActionResult> GetUser([FromQuery] string userId)
         {
             var response = await _userService.GetUser(userId);
@@ -36,6 +41,7 @@ namespace ApartmentManagementSystem.Controllers
 
         [HttpPost()]
         [ProducesResponseType(typeof(ResponseData<UserDto>), StatusCodes.Status200OK)]
+        [Authorize(Policy = UserPermissions.ReadWrite)]
         public async Task<IActionResult> CreateUser([FromBody] CreateOrUpdateUserRequestDto request)
         {
             var response = await _userService.CreateOrUpdateUser(request);
@@ -44,6 +50,7 @@ namespace ApartmentManagementSystem.Controllers
 
         [HttpPut()]
         [ProducesResponseType(typeof(ResponseData<UserDto>), StatusCodes.Status200OK)]
+        [Authorize(Policy = UserPermissions.ReadWrite)]
         public async Task<IActionResult> UpdateUser([FromBody] CreateOrUpdateUserRequestDto request)
         {
             var response = await _userService.CreateOrUpdateUser(request);
@@ -52,6 +59,7 @@ namespace ApartmentManagementSystem.Controllers
 
         [HttpDelete()]
         [ProducesResponseType(typeof(ResponseData<DeleteUserResponseDto>), StatusCodes.Status200OK)]
+        [Authorize(Policy = UserPermissions.ReadWrite)]
         public async Task<IActionResult> DeleteUser([FromBody] List<string> request)
         {
             var response = await _userService.DeleteUsers(request);

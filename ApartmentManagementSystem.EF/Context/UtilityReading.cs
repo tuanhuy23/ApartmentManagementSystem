@@ -8,7 +8,7 @@ namespace ApartmentManagementSystem.EF.Context
         public Apartment Apartment { get; set; }
         public FeeType FeeType { get; set; }
         public Guid FeeTypeId { get; set; }
-        public decimal CurrentReading { get; set; }
+        public double CurrentReading { get; set; }
         public DateTime ReadingDate { get; set; }
         public Guid ApartmentBuildingId { get; set; }
     }

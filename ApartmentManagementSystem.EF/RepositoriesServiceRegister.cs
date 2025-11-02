@@ -14,6 +14,13 @@ namespace ApartmentManagementSystem.EF
         public static void RegisterRepository(this IServiceCollection services)
         {
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>)).AddScoped<IApartmentBuildingRepository, ApartmentBuildingRepository>();
+            services.AddScoped(typeof(IRepository<>), typeof(Repository<>)).AddScoped<IApartmentRepository, ApartmentRepository>();
+            services.AddScoped(typeof(IRepository<>), typeof(Repository<>)).AddScoped<IBillingCycleSettingRepository, BillingCycleSettingRepository>();
+            services.AddScoped(typeof(IRepository<>), typeof(Repository<>)).AddScoped<IFeeTypeRepository, FeeTypeRepository>();
+            services.AddScoped(typeof(IRepository<>), typeof(Repository<>)).AddScoped<IFeeRateConfigRepository, FeeRateConfigRepository>();
+            services.AddScoped(typeof(IRepository<>), typeof(Repository<>)).AddScoped<IParkingRegistrationRepository, ParkingRegistrationRepository>();
+            services.AddScoped(typeof(IRepository<>), typeof(Repository<>)).AddScoped<IUtilityReadingRepository, UtilityReadingRepository>();
+                 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
         }
         public static void RegisterDbContextApartmentManagementService(this IServiceCollection services, string connectionString)

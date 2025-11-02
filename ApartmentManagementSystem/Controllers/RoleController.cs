@@ -1,18 +1,19 @@
-﻿using ApartmentManagementSystem.Dtos;
+﻿using ApartmentManagementSystem.Consts.Permissions;
+using ApartmentManagementSystem.Dtos;
 using ApartmentManagementSystem.Exceptions;
+using ApartmentManagementSystem.Filters;
 using ApartmentManagementSystem.Response;
-using ApartmentManagementSystem.Services.Impls;
 using ApartmentManagementSystem.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ApartmentManagementSystem.Controllers
 {
-    [Route("{appartmentBuilding}/[controller]")]
+    [Route("{appartmentBuildingId}/[controller]")]
     [ApiController]
-    [ApiExceptionFilter]
     [Authorize]
+    [ApiExceptionFilter]
+    [ServiceFilter(typeof(ApartmentBuildingValidationFilter))]
     public class RoleController : ControllerBase
     {
         private readonly IRoleService _roleService;
@@ -22,6 +23,7 @@ namespace ApartmentManagementSystem.Controllers
         }
         [HttpGet()]
         [ProducesResponseType(typeof(ResponseData<IEnumerable<RoleDto>>), StatusCodes.Status200OK)]
+        [Authorize(Policy = RolePermissions.Read)]
         public async Task<IActionResult> Get()
         {
             var response = await _roleService.GetRoles();
@@ -30,6 +32,7 @@ namespace ApartmentManagementSystem.Controllers
 
         [HttpPost()]
         [ProducesResponseType(typeof(ResponseData<RoleDto>), StatusCodes.Status200OK)]
+        [Authorize(Policy = RolePermissions.ReadWrite)]
         public async Task<IActionResult> CreateUser([FromBody] RoleDto request)
         {
             var response = await _roleService.CreateOrUpdateRole(request);
@@ -38,6 +41,7 @@ namespace ApartmentManagementSystem.Controllers
 
         [HttpPut()]
         [ProducesResponseType(typeof(ResponseData<RoleDto>), StatusCodes.Status200OK)]
+        [Authorize(Policy = RolePermissions.ReadWrite)]
         public async Task<IActionResult> UpdateUser([FromBody] RoleDto request)
         {
             var response = await _roleService.CreateOrUpdateRole(request);
@@ -46,6 +50,7 @@ namespace ApartmentManagementSystem.Controllers
 
         [HttpDelete()]
         [ProducesResponseType(typeof(ResponseData<DeleteRoleResponse>), StatusCodes.Status200OK)]
+        [Authorize(Policy = RolePermissions.ReadWrite)]
         public async Task<IActionResult> DeleteUser([FromBody] List<string> request)
         {
             var response = await _roleService.DeleteRoles(request);

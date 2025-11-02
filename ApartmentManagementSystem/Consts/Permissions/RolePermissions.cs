@@ -2,7 +2,7 @@
 {
     public static class RolePermissions
     {
-        public static string Read = $"Permissions.RolePermissions.{Consts.ReadPermissionName}";
-        public static string ReadWrite = $"Permissions.RolePermissions.{Consts.ReadWritePermissionName}";
+        public const string Read = $"Permissions.RolePermissions.{Consts.ReadPermissionName}";
+        public const string ReadWrite = $"Permissions.RolePermissions.{Consts.ReadWritePermissionName}";
     }
 }

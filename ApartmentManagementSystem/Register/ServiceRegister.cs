@@ -2,6 +2,7 @@
 using ApartmentManagementSystem.DbContext;
 using ApartmentManagementSystem.DbContext.Entity;
 using ApartmentManagementSystem.EF;
+using ApartmentManagementSystem.Filters;
 using ApartmentManagementSystem.Identity;
 using ApartmentManagementSystem.Services.Impls;
 using ApartmentManagementSystem.Services.Interfaces;
@@ -24,6 +25,10 @@ namespace ApartmentManagementSystem.Register
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<IApartmentBuildingService, ApartmentBuildingService>();
+            services.AddScoped<IApartmentService, ApartmentService>();
+            services.AddScoped<IParkingRegistrationService, ParkingRegistrationService>();
+            services.AddScoped<IBillingCycleSettingService, BillingCycleSettingService>();
+            services.AddScoped<IFeeConfigurationService, FeeConfigurationService>();
             services.AddScoped(serviceProvider =>
             {
                 var context = serviceProvider.GetService<IHttpContextAccessor>()?.HttpContext;
@@ -55,6 +60,7 @@ namespace ApartmentManagementSystem.Register
             {
                 return new CloudinaryService(AppSettings.Cloudinary);
             });
+            services.AddScoped<ApartmentBuildingValidationFilter>();
         }
         public static void RegisterAuthenticationService(this IServiceCollection services)
         {

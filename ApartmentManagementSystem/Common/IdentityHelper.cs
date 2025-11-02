@@ -35,6 +35,11 @@ namespace ApartmentManagementSystem.Common
             {
                 accountInfo.DisplayName = claimDisplayName.Value;
             }
+            var claimApartmentBuildingId = identity.FindFirst("ApartmentBuildingId");
+            if (claimApartmentBuildingId != null)
+            {
+                accountInfo.ApartmentBuildingId = claimApartmentBuildingId.Value;
+            }
             var claimRole = identity.FindFirst(ClaimTypes.Role);
             if (claimRole != null)
             {

@@ -1,10 +1,10 @@
-﻿namespace ApartmentManagementSystem.Consts.Permissions
+﻿namespace ApartmentManagementSystem.Consts
 {
     public static class Consts
     {
-        public static readonly string ReadPermissionName = "Read";
-        public static readonly string ReadWritePermissionName = "ReadWrite";
-        public static readonly string PublishApprovePermissionName = "PublishApprove";
+        public const string ReadPermissionName = "Read";
+        public const string ReadWritePermissionName = "ReadWrite";
+        public const string PublishApprovePermissionName = "PublishApprove";
     }
     public static class RoleDefaulConsts
     {

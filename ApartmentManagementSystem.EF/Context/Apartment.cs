@@ -6,6 +6,8 @@ namespace ApartmentManagementSystem.EF.Context
     {
         public Guid ApartmentBuildingId { get; set; }
         public ApartmentBuilding ApartmentBuilding { get; set; }
+        public string Name { get; set; }
+        public int Floor { get; set; }
         public double Area {  get; set; }
         public ICollection<ParkingRegistration> ParkingRegistrations { get; set; }
         public ICollection<UtilityReading> UtilityReadings { get; set; }

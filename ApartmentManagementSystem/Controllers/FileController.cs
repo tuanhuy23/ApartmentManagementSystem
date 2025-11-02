@@ -1,13 +1,19 @@
 using ApartmentManagementSystem.Dtos;
+using ApartmentManagementSystem.Exceptions;
+using ApartmentManagementSystem.Filters;
 using ApartmentManagementSystem.Response;
 using ApartmentManagementSystem.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ApartmentManagementSystem.Controllers
 {
     [Produces("application/json")]
+    [Route("{appartmentBuildingId}/[controller]")]
     [ApiController]
-    [Route("{appartmentBuilding}/[controller]")]
+    [Authorize]
+    [ApiExceptionFilter]
+    [ServiceFilter(typeof(ApartmentBuildingValidationFilter))]
     public class FileController : ControllerBase
     {
         private readonly ICloudinaryService _cloudinaryService;

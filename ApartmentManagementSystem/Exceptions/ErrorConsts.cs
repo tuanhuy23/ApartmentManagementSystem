@@ -13,6 +13,15 @@
         public static string ErrorWhenDeleteUser = "Error when delete user";
         public static string RoleNotFound = "Role not found";
         public static string RoleIdIsRequire = "Role Id is require";
+        public static string NoPermissionAccessApartmentBuilding = "No permission access Apartment Building";
+        public static string ApartmentNotFoud = "Apartment not found";
+        public static string BillingCycleIsSet = "Billing cycle is set";
+        public static string FeeTierIsRequired = "Fee tier is required";
+        public static string FeeTypeNotFound = "Fee type not found";
+        public static string FeeRateConfigNotfound = "Fee rate config not found";
+        public static string CurentUtilityReadingDateNotEarlierPrevious = "The current utility value entry date cannot be earlier than the previous utility value entry date";
+        public static string FeeTypeNotConfig = "Fee has not been set up yet";
+        public static string BillingCycleSettingIsNotFound = "Billing cycle setting is not found";     
     }
 
     public static class ErrorCodeConsts
@@ -28,6 +37,15 @@
         public static string ErrorWhenDeleteUser = "ERROR_WHEN_DELETE_USER";
         public static string RoleNotFound = "ROLE_NOT_FOUND";
         public static string RoleIdIsRequire = "ROLE_ID_IS_REQUIRE";
+        public static string NoPermissionAccessApartmentBuilding = "NO_PERMISSION_ACCESS_APARTMENT_BUILDING";
+        public static string ApartmentNotFoud = "APARTMENT_NOT_FOUND";
+        public static string BillingCycleIsSet = "BILLING_CYCLE_IS_SET";
+        public static string BillingCycleSettingIsNotFound = "BILLING_CYCLE_IS_SET";
+        public static string FeeTypeNotFound = "FEETYPE_NOT_FOUND";
+        public static string FeeTypeNotConfig = "FEETYPE_NOT_CONFIG";
+        public static string FeeTierIsRequired = "FEETIER_IS_REQUIRED";
+        public static string FeeRateConfigNotfound = "FEERATE_CONFIG_NOTFOUND";
+        public static string CurentUtilityReadingDateNotEarlierPrevious = "CURENT_UTILITY_READING_DATE_NOT_EARLIER_PREVIOUS";       
     }
     
 }

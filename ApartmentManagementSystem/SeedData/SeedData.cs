@@ -1,4 +1,4 @@
-﻿using ApartmentManagementSystem.Consts.Permissions;
+﻿using ApartmentManagementSystem.Consts;
 using ApartmentManagementSystem.DbContext.Entity;
 using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
@@ -89,7 +89,6 @@ namespace ApartmentManagementSystem.SeedData
             var adminRole = await roleManager.FindByNameAsync(RoleDefaulConsts.SupperAdmin);
             if (adminRole == null) return;
             await roleManager.AddPermissionClaim(adminRole, "ApartmentBuildingPermissions");
-            await roleManager.AddPermissionClaim(adminRole, "RolePermissions");
             await roleManager.AddPermissionClaim(adminRole, "UserPermissions");
         }
         private async static Task SeedClaimForManagement(this RoleManager<IdentityRole> roleManager)
@@ -98,14 +97,21 @@ namespace ApartmentManagementSystem.SeedData
             if (managementRole == null) return;
             await roleManager.AddPermissionClaim(managementRole, "RolePermissions");
             await roleManager.AddPermissionClaim(managementRole, "UserPermissions");
+            await roleManager.AddPermissionClaim(managementRole, "ApartmentPermissions");
+            await roleManager.AddPermissionClaim(managementRole, "FeeConfigurationPermissions");
+            await roleManager.AddPermissionClaim(managementRole, "FeeNoticePermissions");
+            await roleManager.AddPermissionClaim(managementRole, "NotificationPermissions");
+            await roleManager.AddPermissionClaim(managementRole, "RequestPermissions");
         }
         private async static Task SeedClaimForResident(this RoleManager<IdentityRole> roleManager)
         {
             var residentRole = await roleManager.FindByNameAsync(RoleDefaulConsts.Resident);
             if (residentRole == null) return;
             await roleManager.AddPermissionClaim(residentRole, "RequestPermissions");
+            await roleManager.AddPermissionClaim(residentRole, "FeeNoticePermissions", false);
+            await roleManager.AddPermissionClaim(residentRole, "NotificationPermissions", false);
         }
-        private static List<string> GeneratePermissionsForModule(string module)
+        private static List<string> GenerateAllPermissionsForModule(string module)
         {
             var result = new List<string>()
             {
@@ -114,10 +120,18 @@ namespace ApartmentManagementSystem.SeedData
             };
             return result;
         }
-        public static async Task AddPermissionClaim(this RoleManager<IdentityRole> roleManager, IdentityRole role, string module)
+        private static List<string> GenerateReadPermissionsForModule(string module)
+        {
+            var result = new List<string>()
+            {
+                $"Permissions.{module}.Read",
+            };
+            return result;
+        }
+        public static async Task AddPermissionClaim(this RoleManager<IdentityRole> roleManager, IdentityRole role, string module,  bool getAll = true)
         {
             var allClaims = await roleManager.GetClaimsAsync(role);
-            var allPermissions = GeneratePermissionsForModule(module);
+            var allPermissions = getAll ? GenerateAllPermissionsForModule(module) : GenerateReadPermissionsForModule(module);
             foreach (var permission in allPermissions)
             {
                 if (!allClaims.Any(a => a.Type == "Permission" && a.Value == permission))
