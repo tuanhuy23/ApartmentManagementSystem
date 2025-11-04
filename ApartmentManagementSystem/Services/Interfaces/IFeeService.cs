@@ -9,5 +9,6 @@ namespace ApartmentManagementSystem.Services.Interfaces
     public interface IFeeService
     {
         Task CreateFeeNotice(CreateFeeNoticeDto request);
+        Task<FeeNoticeDto> GetFeeDtail(Guid id);
     }
 }

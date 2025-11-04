@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using ApartmentManagementSystem.Dtos;
@@ -8,6 +9,7 @@ using ApartmentManagementSystem.EF.Repositories.Interfaces;
 using ApartmentManagementSystem.EF.Repositories.Interfaces.Base;
 using ApartmentManagementSystem.Exceptions;
 using ApartmentManagementSystem.Services.Interfaces;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 
 namespace ApartmentManagementSystem.Services.Impls
@@ -32,6 +34,18 @@ namespace ApartmentManagementSystem.Services.Impls
         }
         public async Task CreateFeeNotice(CreateFeeNoticeDto request)
         {
+            var billingCycleExtract = ExtractBillingCyle(request.BillingCycle);
+
+            if (billingCycleExtract == null)
+                throw new DomainException(ErrorCodeConsts.BillingCycleInvalidFormat, ErrorCodeConsts.BillingCycleInvalidFormat, System.Net.HttpStatusCode.BadRequest);
+
+            if (request.UtilityReadings == null)
+                throw new DomainException(ErrorCodeConsts.FeeTypeIsRequired, ErrorCodeConsts.FeeTypeIsRequired, System.Net.HttpStatusCode.BadRequest);
+
+            var feeTypeIds = request.FeeTypeIds
+
+            var lastFeeNotice = _feeNoticeRepository.List().Include(f => f.FeeDetails).OrderByDescending(f => f.BillingCycle).FirstOrDefault(f => f.ApartmentId.Equals(request.ApartmentId) && f.ApartmentBuildingId.Equals(request.ApartmentBuildingId) && f.);
+
             var feeNotice = new FeeNotice()
             {
                 ApartmentBuildingId = request.ApartmentBuildingId,
@@ -81,6 +95,11 @@ namespace ApartmentManagementSystem.Services.Impls
             feeNotice.FeeDetails = feeDetails;
             await _feeNoticeRepository.Add(feeNotice);
             await _unitOfWork.CommitAsync();
+        }
+
+        public Task<FeeNoticeDto> GetFeeDtail(Guid id)
+        {
+            throw new NotImplementedException();
         }
 
         private async Task<FeeDetail> CreateFeeDetailByFeeTypeTier(FeeType feeType, UtilityReadingDto utilityReadingDto)
@@ -144,5 +163,23 @@ namespace ApartmentManagementSystem.Services.Impls
 
            
         }
+        private BillingCycleExtract ExtractBillingCyle(string billingCycle)
+        {
+            string format = "yyyy-MM";
+            if (DateTime.TryParseExact(billingCycle, format,CultureInfo.InvariantCulture,DateTimeStyles.None, out DateTime parsedDate))
+            {
+                return new BillingCycleExtract()
+                {
+                    Month = parsedDate.Month,
+                    Year = parsedDate.Year
+                };
+            }
+            return null;
+        }
+    }
+    internal class BillingCycleExtract
+    {
+        public int Year { get; set; }
+        public int Month { get; set; }
     }
 }

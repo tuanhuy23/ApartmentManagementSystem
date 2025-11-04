@@ -10,6 +10,7 @@ namespace ApartmentManagementSystem.EF.Context
         public Guid FeeTypeId { get; set; }
         public double? Consumption { get; set; }
         public decimal SubTotal { get; set; }
+        public int QuantityUseChange { get; set; }
         public DateTime? PreviousReadingDate{ get; set; }
         public double? PreviousReading { get; set; }
         public DateTime? CurrentReadingDate{ get; set; }

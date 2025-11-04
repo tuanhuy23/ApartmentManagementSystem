@@ -21,7 +21,10 @@
         public static string FeeRateConfigNotfound = "Fee rate config not found";
         public static string CurentUtilityReadingDateNotEarlierPrevious = "The current utility value entry date cannot be earlier than the previous utility value entry date";
         public static string FeeTypeNotConfig = "Fee has not been set up yet";
-        public static string BillingCycleSettingIsNotFound = "Billing cycle setting is not found";     
+        public static string BillingCycleSettingIsNotFound = "Billing cycle setting is not found";
+        public static string BillingCycleInvalidFormat = "Billing cycle invalid format. Expected format is YYYY-MM";
+        public static string FeeTypeIsRequired = "Fee type is required";
+        public static string UtilityReadingDataIsRequired = "Utility reading data is required";
     }
 
     public static class ErrorCodeConsts
@@ -40,12 +43,14 @@
         public static string NoPermissionAccessApartmentBuilding = "NO_PERMISSION_ACCESS_APARTMENT_BUILDING";
         public static string ApartmentNotFoud = "APARTMENT_NOT_FOUND";
         public static string BillingCycleIsSet = "BILLING_CYCLE_IS_SET";
+        public static string BillingCycleInvalidFormat = "BILLING_CYCLE_INVALID_FORMAT";
         public static string BillingCycleSettingIsNotFound = "BILLING_CYCLE_IS_SET";
         public static string FeeTypeNotFound = "FEETYPE_NOT_FOUND";
         public static string FeeTypeNotConfig = "FEETYPE_NOT_CONFIG";
         public static string FeeTierIsRequired = "FEETIER_IS_REQUIRED";
         public static string FeeRateConfigNotfound = "FEERATE_CONFIG_NOTFOUND";
-        public static string CurentUtilityReadingDateNotEarlierPrevious = "CURENT_UTILITY_READING_DATE_NOT_EARLIER_PREVIOUS";       
+        public static string CurentUtilityReadingDateNotEarlierPrevious = "CURENT_UTILITY_READING_DATE_NOT_EARLIER_PREVIOUS";
+        public static string UtilityReadingDataIsRequired = "UTILITYREADING_IS_REQUIRED";
     }
     
 }

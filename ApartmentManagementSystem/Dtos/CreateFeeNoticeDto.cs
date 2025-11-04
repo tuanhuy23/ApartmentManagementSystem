@@ -4,7 +4,6 @@ namespace ApartmentManagementSystem.Dtos
     {
         public Guid ApartmentId { get; set; }
         public Guid ApartmentBuildingId { get; set; }
-        public List<Guid> FeeTypeIds { get; set; }
         public string BillingCycle { get; set; }
         public IEnumerable<UtilityReadingDto> UtilityReadings { get; set; }
     }
