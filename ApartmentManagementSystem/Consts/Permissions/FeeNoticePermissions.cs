@@ -1,8 +1,8 @@
 namespace ApartmentManagementSystem.Consts.Permissions
 {
-    public class FeeNoticePermissions
+    public static class FeeNoticePermissions
     {
-        public static string Read = $"Permissions.FeeNoticePermissions.{Consts.ReadPermissionName}";
-        public static string ReadWrite = $"Permissions.FeeNoticePermissions.{Consts.ReadWritePermissionName}";
+        public const string Read = $"Permissions.FeeNoticePermissions.{Consts.ReadPermissionName}";
+        public const string ReadWrite = $"Permissions.FeeNoticePermissions.{Consts.ReadWritePermissionName}";
     }
 }

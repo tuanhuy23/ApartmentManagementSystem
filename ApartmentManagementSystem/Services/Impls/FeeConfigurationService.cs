@@ -189,7 +189,7 @@ namespace ApartmentManagementSystem.Services.Impls
         {
             var feeRateConfig = _feeRateConfigRepository.List().Include(f => f.FeeTiers).FirstOrDefault(f => f.Id.Equals(request.Id));
             if (feeRateConfig == null)
-                throw new DomainException(ErrorCodeConsts.FeeRateConfigNotfound, ErrorCodeConsts.FeeRateConfigNotfound, System.Net.HttpStatusCode.NotFound);
+                throw new DomainException(ErrorCodeConsts.FeeRateConfigNotFound, ErrorCodeConsts.FeeRateConfigNotFound, System.Net.HttpStatusCode.NotFound);
             feeRateConfig.Name = request.Name;
             feeRateConfig.VATRate = request.VATRate;
             if (request.FeeTiers == null)

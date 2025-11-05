@@ -2,63 +2,66 @@
 {
     public static class ErrorMessageConsts
     {
-        public static string UserNotFound = "Use is not found";
-        public static string UserNameOrPasswordNotInCorrect = "UserName or Password is not incorrect";
+        public static string UserNotFound = "User not found";
+        public static string UserNameOrPasswordIncorrect = "Username or password is incorrect";
         public static string RefreshTokenInvalid = "Refresh token is invalid";
-        public static string ConfirmNewPasswordNotInCorrect = "Confirm new password not incorrect";
-        public static string OldPasswordNotInCorrect = "Old password not incorrect";
-        public static string ErrorWhenChangePassword = "Error when change password";
-        public static string ErrorWhenCreateUser = "Error when create user";
-        public static string ErrorWhenUpdateUser = "Error when update user";
-        public static string ErrorWhenDeleteUser = "Error when delete user";
+        public static string ConfirmNewPasswordIncorrect = "Confirmation password is incorrect";
+        public static string OldPasswordIncorrect = "Old password is incorrect";
+        public static string ErrorChangingPassword = "An error occurred while changing the password";
+        public static string ErrorCreatingUser = "An error occurred while creating the user";
+        public static string ErrorUpdatingUser = "An error occurred while updating the user";
+        public static string ErrorDeletingUser = "An error occurred while deleting the user";
         public static string RoleNotFound = "Role not found";
-        public static string RoleIdIsRequire = "Role Id is require";
-        public static string NoPermissionAccessApartmentBuilding = "No permission access Apartment Building";
-        public static string ApartmentNotFoud = "Apartment not found";
-        public static string BillingCycleIsSet = "Billing cycle is set";
+        public static string RoleIdIsRequired = "Role ID is required";
+        public static string NoPermissionAccessApartmentBuilding = "You do not have permission to access this apartment building";
+        public static string ApartmentNotFound = "Apartment not found";
+        public static string BillingCycleAlreadySet = "Billing cycle has already been set";
         public static string FeeTierIsRequired = "Fee tier is required";
         public static string FeeTypeNotFound = "Fee type not found";
-        public static string FeeRateConfigNotfound = "Fee rate config not found";
-        public static string CurentUtilityReadingDateNotEarlierPrevious = "The current utility value entry date cannot be earlier than the previous utility value entry date";
-        public static string FeeTypeNotConfig = "Fee has not been set up yet";
-        public static string BillingCycleSettingIsNotFound = "Billing cycle setting is not found";
+        public static string FeeRateConfigNotFound = "Fee rate configuration not found";
+        public static string CurrentUtilityReadingDateCannotBeEarlier = "The current utility reading date cannot be earlier than the previous reading date";
+        public static string FeeTypeNotConfigured = "Fee type has not been configured";
+        public static string BillingCycleSettingIsNotFound = "Billing cycle setting not found";
         public static string BillingCycleInvalidFormat = "Billing cycle invalid format. Expected format is YYYY-MM";
         public static string FeeTypeIsRequired = "Fee type is required";
         public static string UtilityReadingDataIsRequired = "Utility reading data is required";
         public static string FeeDetailIsRequired = "Fee detail data is required";
-        public static string FeeNoticeHasBeenExisted = "The fee invoice for this billing period already exists";
-        public static string FeeNoticeIsNotDue = "The fee invoice is not yet due";
-        public static string FeeNoticeIsNotFound = "Fee notice is not found";
+        public static string FeeNoticeAlreadyExists = "A fee notice for this billing cycle already exists";
+        public static string FeeNoticeNotDue = "The fee notice is not yet due";
+        public static string FeeNoticeNotFound = "Fee notice not found";
+        public static string FeeNoticeIdIsRequired = "Fee notice ID is required";
+        public static string FeeNoticeCannotBeModified = "The fee notice cannot be modified based on its current status";
     }
 
     public static class ErrorCodeConsts
     {
         public static string UserNotFound = "USER_NOT_FOUND";
-        public static string UserNameOrPasswordNotInCorrect = "USERNAME_OR_PASSWORD_NOT_IN_CORRECT";
+        public static string UserNameOrPasswordIncorrect = "USERNAME_OR_PASSWORD_INCORRECT";
         public static string RefreshTokenInvalid = "REFRESH_TOKEN_INVALID";
-        public static string ConfirmNewPasswordNotInCorrect = "CONFIRM_NEW_PASSWORD_NOT_IN_CORRECT";
-        public static string OldPasswordNotInCorrect = "OLD_PASSWORD_NOT_IN_CORRECT";
-        public static string ErrorWhenChangePassword = "ERROR_WHEN_CHANGE_PASSWORD";
-        public static string ErrorWhenCreateUser = "ERROR_WHEN_CREATE_USER";
-        public static string ErrorWhenUpdateUser = "ERROR_WHEN_UPDATE_USER";
-        public static string ErrorWhenDeleteUser = "ERROR_WHEN_DELETE_USER";
+        public static string ConfirmNewPasswordIncorrect = "CONFIRM_NEW_PASSWORD_INCORRECT";
+        public static string OldPasswordIncorrect = "OLD_PASSWORD_INCORRECT";
+        public static string ErrorChangingPassword = "ERROR_CHANGING_PASSWORD";
+        public static string ErrorCreatingUser = "ERROR_CREATING_USER";
+        public static string ErrorUpdatingUser = "ERROR_UPDATING_USER";
+        public static string ErrorDeletingUser = "ERROR_DELETING_USER";
         public static string RoleNotFound = "ROLE_NOT_FOUND";
-        public static string RoleIdIsRequire = "ROLE_ID_IS_REQUIRE";
+        public static string RoleIdIsRequired = "ROLE_ID_IS_REQUIRED";
         public static string NoPermissionAccessApartmentBuilding = "NO_PERMISSION_ACCESS_APARTMENT_BUILDING";
-        public static string ApartmentNotFoud = "APARTMENT_NOT_FOUND";
-        public static string BillingCycleIsSet = "BILLING_CYCLE_IS_SET";
+        public static string ApartmentNotFound = "APARTMENT_NOT_FOUND";
+        public static string BillingCycleAlreadySet = "BILLING_CYCLE_ALREADY_SET";
         public static string BillingCycleInvalidFormat = "BILLING_CYCLE_INVALID_FORMAT";
-        public static string BillingCycleSettingIsNotFound = "BILLING_CYCLE_IS_SET";
-        public static string FeeTypeNotFound = "FEETYPE_NOT_FOUND";
-        public static string FeeTypeNotConfig = "FEETYPE_NOT_CONFIG";
-        public static string FeeTierIsRequired = "FEETIER_IS_REQUIRED";
-        public static string FeeRateConfigNotfound = "FEERATE_CONFIG_NOTFOUND";
-        public static string CurentUtilityReadingDateNotEarlierPrevious = "CURENT_UTILITY_READING_DATE_NOT_EARLIER_PREVIOUS";
-        public static string UtilityReadingDataIsRequired = "UTILITYREADING_IS_REQUIRED";
-        public static string FeeDetailIsRequired = "FEEDETAIL_IS_REQUIRED";
-        public static string FeeNoticeHasBeenExisted = "FEENOTICE_HAS_BEEN_EXISTED";
-        public static string FeeNoticeIsNotDue = "FEENOTICE_IS_NOT_DUE";
-        public static string FeeNoticeIsNotFound = "FEENOTICE_IS_NOT_FOUND";
+        public static string BillingCycleSettingIsNotFound = "BILLING_CYCLE_SETTING_NOT_FOUND"; 
+        public static string FeeTypeNotFound = "FEE_TYPE_NOT_FOUND";
+        public static string FeeTypeNotConfigured = "FEE_TYPE_NOT_CONFIGURED";
+        public static string FeeTierIsRequired = "FEE_TIER_IS_REQUIRED";
+        public static string FeeRateConfigNotFound = "FEE_RATE_CONFIG_NOT_FOUND";
+        public static string CurrentUtilityReadingDateCannotBeEarlier = "CURRENT_UTILITY_READING_DATE_CANNOT_BE_EARLIER";
+        public static string UtilityReadingDataIsRequired = "UTILITY_READING_DATA_IS_REQUIRED";
+        public static string FeeDetailIsRequired = "FEE_DETAIL_IS_REQUIRED";
+        public static string FeeNoticeAlreadyExists = "FEE_NOTICE_ALREADY_EXISTS";
+        public static string FeeNoticeNotDue = "FEE_NOTICE_NOT_DUE";
+        public static string FeeNoticeNotFound = "FEE_NOTICE_NOT_FOUND";
+        public static string FeeNoticeIdIsRequired = "FEE_NOTICE_ID_IS_REQUIRED";
+        public static string FeeNoticeCannotBeModified = "FEE_NOTICE_CANNOT_BE_MODIFIED";
     }
-    
 }

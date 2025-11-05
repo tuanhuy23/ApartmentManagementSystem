@@ -20,7 +20,7 @@ namespace ApartmentManagementSystem.Services.Impls
         public async Task CreateBillingCycleSetting(BillingCycleSettingDto request)
         {
             if (_billingCycleSettingRepository.List(b => b.ApartmentBuildingId.Equals(request.ApartmentBuildingId)).Any())
-                throw new DomainException(ErrorCodeConsts.BillingCycleIsSet, ErrorCodeConsts.BillingCycleIsSet, System.Net.HttpStatusCode.BadRequest);
+                throw new DomainException(ErrorCodeConsts.BillingCycleAlreadySet, ErrorCodeConsts.BillingCycleAlreadySet, System.Net.HttpStatusCode.BadRequest);
 
             var billingCycleSetting = new BillingCycleSetting()
             {

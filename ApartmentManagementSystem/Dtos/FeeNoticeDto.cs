@@ -16,7 +16,6 @@
 
     public class FeeDetailDto
     {
-        public Guid Id { get; set; }
         public Guid FeeNoticeId { get; set; }
         public Guid FeeTypeId { get; set; }
         public double? Consumption { get; set; }
@@ -27,5 +26,6 @@
         public double? PreviousReading { get; set; }
         public DateTime? CurrentReadingDate { get; set; }
         public double? CurrentReading { get; set; }
+        public Guid? UtilityCurentReadingId{ get; set; }
     }
 }

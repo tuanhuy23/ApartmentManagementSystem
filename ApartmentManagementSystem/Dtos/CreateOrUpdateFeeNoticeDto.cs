@@ -1,17 +1,16 @@
 namespace ApartmentManagementSystem.Dtos
 {
-    public class CreateFeeNoticeDto
+    public class CreateOrUpdateFeeNoticeDto
     {
-        public Guid Id { get; set; }
+        public Guid? Id { get; set; }
         public Guid ApartmentId { get; set; }
         public Guid ApartmentBuildingId { get; set; }
         public string BillingCycle { get; set; }
         public IEnumerable<Guid> FeeTypeIds{ get; set; }
-        public IEnumerable<CreateFeeDetailDto> FeeDetails { get; set; }
+        public IEnumerable<CreateOrUpdateFeeDetailDto> FeeDetails { get; set; }
     }
-    public class CreateFeeDetailDto
+    public class CreateOrUpdateFeeDetailDto
     {
-        public Guid Id { get; set; }
         public Guid ApartmentId { get; set; }
         public Guid FeeTypeId { get; set; }
         public int QuantityUseChange { get; set; }
@@ -19,6 +18,7 @@ namespace ApartmentManagementSystem.Dtos
     }
     public class UtilityReadingDto
     {
+         public Guid? UtilityCurentReadingId{ get; set; }
         public double CurrentReading { get; set; }
         public DateTime ReadingDate { get; set; }
     }

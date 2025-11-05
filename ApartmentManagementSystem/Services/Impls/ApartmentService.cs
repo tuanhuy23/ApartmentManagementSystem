@@ -38,7 +38,7 @@ namespace ApartmentManagementSystem.Services.Impls
         {
             var apartments = _apartmentRepository.List(a => a.Id.Equals(id)).FirstOrDefault();
             if (apartments == null) 
-                throw new DomainException(ErrorCodeConsts.ApartmentNotFoud, ErrorCodeConsts.ApartmentNotFoud, System.Net.HttpStatusCode.NotFound);
+                throw new DomainException(ErrorCodeConsts.ApartmentNotFound, ErrorCodeConsts.ApartmentNotFound, System.Net.HttpStatusCode.NotFound);
             return new ApartmentDto()
             {
                 Id = apartments.Id,

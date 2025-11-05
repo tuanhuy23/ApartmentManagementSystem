@@ -8,8 +8,9 @@ namespace ApartmentManagementSystem.Services.Interfaces
 {
     public interface IFeeService
     {
-        Task CreateFeeNotice(CreateFeeNoticeDto request);
-        Task<FeeNoticeDto> GetFeeDtail(Guid id);
-        Task UpdateFeeNotice(CreateFeeNoticeDto id);
+        Task CreateFeeNotice(CreateOrUpdateFeeNoticeDto request);
+        Task<FeeNoticeDto> GetFeeDetail(Guid id);
+        Task<IEnumerable<FeeNoticeDto>> GetFeeNotices(Guid apartmentId);
+        Task UpdateFeeNotice(CreateOrUpdateFeeNoticeDto request);
     }
 }

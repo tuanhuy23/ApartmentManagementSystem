@@ -33,10 +33,10 @@ namespace ApartmentManagementSystem.Services.Impls
         {
             var user = await _userManager.FindByNameAsync(request.UserName);
 
-            if (user == null) throw new DomainException(ErrorCodeConsts.UserNameOrPasswordNotInCorrect, ErrorMessageConsts.UserNameOrPasswordNotInCorrect, System.Net.HttpStatusCode.BadRequest);
+            if (user == null) throw new DomainException(ErrorCodeConsts.UserNameOrPasswordIncorrect, ErrorMessageConsts.UserNameOrPasswordIncorrect, System.Net.HttpStatusCode.BadRequest);
 
             if (!await _userManager.CheckPasswordAsync(user, request.Password))
-                throw new DomainException(ErrorCodeConsts.UserNameOrPasswordNotInCorrect, ErrorMessageConsts.UserNameOrPasswordNotInCorrect, System.Net.HttpStatusCode.BadRequest);
+                throw new DomainException(ErrorCodeConsts.UserNameOrPasswordIncorrect, ErrorMessageConsts.UserNameOrPasswordIncorrect, System.Net.HttpStatusCode.BadRequest);
 
             var tokenResponse = await GenerateTokenAsync(user);
             var hashToken = CreateHasToken(tokenResponse.RefreshToken);
@@ -119,15 +119,15 @@ namespace ApartmentManagementSystem.Services.Impls
                 throw new DomainException(ErrorCodeConsts.UserNotFound, ErrorMessageConsts.UserNotFound, System.Net.HttpStatusCode.BadRequest);
 
             if (!await _userManager.CheckPasswordAsync(user, request.OldPassword))
-                throw new DomainException(ErrorCodeConsts.OldPasswordNotInCorrect, ErrorMessageConsts.OldPasswordNotInCorrect, System.Net.HttpStatusCode.BadRequest);
+                throw new DomainException(ErrorCodeConsts.OldPasswordIncorrect, ErrorMessageConsts.OldPasswordIncorrect, System.Net.HttpStatusCode.BadRequest);
 
             if (!request.NewPassword.Equals(request.ConfirmNewPassword, System.StringComparison.OrdinalIgnoreCase))
-                throw new DomainException(ErrorCodeConsts.ConfirmNewPasswordNotInCorrect, ErrorMessageConsts.ConfirmNewPasswordNotInCorrect, System.Net.HttpStatusCode.BadRequest);
+                throw new DomainException(ErrorCodeConsts.ConfirmNewPasswordIncorrect, ErrorMessageConsts.ConfirmNewPasswordIncorrect, System.Net.HttpStatusCode.BadRequest);
 
             var result = await _userManager.ChangePasswordAsync(user, request.OldPassword, request.NewPassword);
             
             if (result == null)
-                throw new DomainException(ErrorCodeConsts.ErrorWhenChangePassword, ErrorMessageConsts.ErrorWhenChangePassword, System.Net.HttpStatusCode.InternalServerError);
+                throw new DomainException(ErrorCodeConsts.ErrorChangingPassword, ErrorMessageConsts.ErrorChangingPassword, System.Net.HttpStatusCode.InternalServerError);
             if (!user.IsActive)
             {
                 user.IsActive = true;

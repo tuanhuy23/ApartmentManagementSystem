@@ -49,7 +49,7 @@ namespace ApartmentManagementSystem.Services.Impls
                 };       
                 IdentityResult resultUser = await _userManager.CreateAsync(appUser, request.Password);
                 if (!resultUser.Succeeded)
-                    throw new DomainException(ErrorCodeConsts.ErrorWhenCreateUser, ErrorCodeConsts.ErrorWhenCreateUser, System.Net.HttpStatusCode.NotFound);
+                    throw new DomainException(ErrorCodeConsts.ErrorCreatingUser, ErrorCodeConsts.ErrorCreatingUser, System.Net.HttpStatusCode.NotFound);
 
                 var userNew = await _userManager.FindByEmailAsync(request.Email);
                 await _userManager.AddToRoleAsync(userNew, role.Name);
