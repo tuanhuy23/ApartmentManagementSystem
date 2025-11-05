@@ -25,8 +25,10 @@
         public static string BillingCycleInvalidFormat = "Billing cycle invalid format. Expected format is YYYY-MM";
         public static string FeeTypeIsRequired = "Fee type is required";
         public static string UtilityReadingDataIsRequired = "Utility reading data is required";
+        public static string FeeDetailIsRequired = "Fee detail data is required";
         public static string FeeNoticeHasBeenExisted = "The fee invoice for this billing period already exists";
-        public static string FeeNoticeIsNotDue = "The fee invoice is not yet due.";
+        public static string FeeNoticeIsNotDue = "The fee invoice is not yet due";
+        public static string FeeNoticeIsNotFound = "Fee notice is not found";
     }
 
     public static class ErrorCodeConsts
@@ -53,8 +55,10 @@
         public static string FeeRateConfigNotfound = "FEERATE_CONFIG_NOTFOUND";
         public static string CurentUtilityReadingDateNotEarlierPrevious = "CURENT_UTILITY_READING_DATE_NOT_EARLIER_PREVIOUS";
         public static string UtilityReadingDataIsRequired = "UTILITYREADING_IS_REQUIRED";
+        public static string FeeDetailIsRequired = "FEEDETAIL_IS_REQUIRED";
         public static string FeeNoticeHasBeenExisted = "FEENOTICE_HAS_BEEN_EXISTED";
         public static string FeeNoticeIsNotDue = "FEENOTICE_IS_NOT_DUE";
+        public static string FeeNoticeIsNotFound = "FEENOTICE_IS_NOT_FOUND";
     }
     
 }

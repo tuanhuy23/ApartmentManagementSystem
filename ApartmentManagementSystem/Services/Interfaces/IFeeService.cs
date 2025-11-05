@@ -10,5 +10,6 @@ namespace ApartmentManagementSystem.Services.Interfaces
     {
         Task CreateFeeNotice(CreateFeeNoticeDto request);
         Task<FeeNoticeDto> GetFeeDtail(Guid id);
+        Task UpdateFeeNotice(CreateFeeNoticeDto id);
     }
 }

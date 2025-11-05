@@ -9,6 +9,7 @@ using ApartmentManagementSystem.EF.Repositories.Interfaces;
 using ApartmentManagementSystem.EF.Repositories.Interfaces.Base;
 using ApartmentManagementSystem.Exceptions;
 using ApartmentManagementSystem.Services.Interfaces;
+using Azure.Core;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 
@@ -39,11 +40,12 @@ namespace ApartmentManagementSystem.Services.Impls
             if (billingCycleReqExtract == null)
                 throw new DomainException(ErrorCodeConsts.BillingCycleInvalidFormat, ErrorCodeConsts.BillingCycleInvalidFormat, System.Net.HttpStatusCode.BadRequest);
 
-            if (request.UtilityReadings == null)
-                throw new DomainException(ErrorCodeConsts.UtilityReadingDataIsRequired, ErrorCodeConsts.UtilityReadingDataIsRequired, System.Net.HttpStatusCode.BadRequest);
+            if (request.FeeDetails == null)
+                throw new DomainException(ErrorCodeConsts.FeeDetailIsRequired, ErrorCodeConsts.FeeDetailIsRequired, System.Net.HttpStatusCode.BadRequest);
 
             var lastFeeNotice = _feeNoticeRepository.List().FirstOrDefault(f => f.ApartmentId.Equals(request.ApartmentId)
-                                                                                        && f.ApartmentBuildingId.Equals(request.ApartmentBuildingId) && request.BillingCycle.Equals(f.BillingCycle));
+                                    && f.ApartmentBuildingId.Equals(request.ApartmentBuildingId) && request.BillingCycle.Equals(f.BillingCycle) 
+                                    && !FeeNoticeStatus.Canceled.Equals(f.Status) && !FeeNoticeStatus.UnPaid.Equals(f.PaymentStatus));
             if (lastFeeNotice != null)
                 throw new DomainException(ErrorCodeConsts.FeeNoticeHasBeenExisted, ErrorCodeConsts.FeeNoticeHasBeenExisted, System.Net.HttpStatusCode.BadRequest);
 
@@ -69,7 +71,9 @@ namespace ApartmentManagementSystem.Services.Impls
             {
                 var feeType = _feeTypeRepository.List().Include(f => f.FeeRateConfigs).ThenInclude(f => f.FeeTiers).FirstOrDefault(f => feeTypeId.Equals(f.Id) && f.IsActive);
                 if (feeType == null) continue;
-
+                if (request.FeeDetails == null) continue;
+                var feeDetailReq = request.FeeDetails.FirstOrDefault(u => u.FeeTypeId.Equals(feeTypeId));
+                if (feeDetailReq == null) continue;
                 if (feeType.CalculationType.Equals(CalculationType.Area))
                 {
                     feeDetails.Add(new FeeDetail()
@@ -88,13 +92,9 @@ namespace ApartmentManagementSystem.Services.Impls
                     });
                     continue;
                 }
-                if (request.UtilityReadings == null) continue;
-                var utilityReadingDto = request.UtilityReadings.FirstOrDefault(u => u.FeeTypeId.Equals(feeTypeId));
-                if (utilityReadingDto == null) continue;
-
-                if (feeType.CalculationType.Equals(CalculationType.TIERED) && feeType.FeeRateConfigs != null)
+                if (feeType.CalculationType.Equals(CalculationType.TIERED) && feeType.FeeRateConfigs != null && feeDetailReq.UtilityReading != null)
                 {
-                    var feeDetail = await CreateFeeDetailByFeeTypeTier(feeType, utilityReadingDto);
+                    var feeDetail = await CreateFeeDetailByFeeTypeTier(feeType, feeDetailReq.UtilityReading, feeDetailReq);
                     feeDetails.Add(feeDetail);
                 }
             }
@@ -105,12 +105,49 @@ namespace ApartmentManagementSystem.Services.Impls
             await _unitOfWork.CommitAsync();
         }
 
-        public Task<FeeNoticeDto> GetFeeDtail(Guid id)
+        public async Task<FeeNoticeDto> GetFeeDtail(Guid id)
         {
-            throw new NotImplementedException();
+            var feeNotice = _feeNoticeRepository.List().Include(f => f.FeeDetails).ThenInclude(fd => fd.FeeType).FirstOrDefault(f => f.Id.Equals(id));
+            if (feeNotice == null)
+                throw new DomainException(ErrorCodeConsts.FeeNoticeIsNotFound, ErrorCodeConsts.FeeNoticeIsNotFound, System.Net.HttpStatusCode.BadRequest);
+            var response = new FeeNoticeDto()
+            {
+                ApartmentBuildingId = feeNotice.ApartmentBuildingId,
+                Id = feeNotice.Id,
+                ApartmentId = feeNotice.ApartmentId,
+                BillingCycle = feeNotice.BillingCycle,
+                DueDate = feeNotice.DueDate,
+                IssueDate = feeNotice.IssueDate,
+                PaymentStatus = feeNotice.PaymentStatus,
+                Status = feeNotice.Status,
+                TotalAmount = feeNotice.TotalAmount,
+            };
+            if (feeNotice.FeeDetails == null) return response;
+            var feeDetailDtos = new List<FeeDetailDto>();
+            foreach(var feeDetail in feeNotice.FeeDetails)
+            {
+                if (feeDetail.FeeType == null) continue;
+                var feeDetailDto = new FeeDetailDto()
+                {
+                    Id = feeDetail.Id,
+                    FeeNoticeId = feeDetail.FeeNoticeId,
+                    FeeTypeId = feeDetail.FeeTypeId,
+                    SubTotal = feeDetail.SubTotal,
+                    IsFeeTypeActive = feeDetail.FeeType.IsActive,
+                    QuantityUseChange = feeDetail.QuantityUseChange,
+                    Consumption = feeDetail.Consumption,
+                    CurrentReadingDate = feeDetail.CurrentReadingDate,
+                    CurrentReading = feeDetail.CurrentReading,
+                    PreviousReading = feeDetail.PreviousReading,
+                    PreviousReadingDate = feeDetail.PreviousReadingDate,
+                };
+                feeDetailDtos.Add(feeDetailDto);
+            }
+            response.FeeDetails = feeDetailDtos;
+            return response;
         }
 
-        private async Task<FeeDetail> CreateFeeDetailByFeeTypeTier(FeeType feeType, UtilityReadingDto utilityReadingDto)
+        private async Task<FeeDetail> CreateFeeDetailByFeeTypeTier(FeeType feeType, UtilityReadingDto utilityReadingDto, CreateFeeDetailDto feeDetailReq)
         {
             if (feeType.FeeRateConfigs == null)
                 throw new DomainException(ErrorCodeConsts.FeeTypeNotConfig, ErrorCodeConsts.FeeTypeNotConfig, System.Net.HttpStatusCode.BadRequest);
@@ -121,7 +158,7 @@ namespace ApartmentManagementSystem.Services.Impls
                 throw new DomainException(ErrorCodeConsts.FeeTypeNotConfig, ErrorCodeConsts.FeeTypeNotConfig, System.Net.HttpStatusCode.BadRequest);
 
            var previousUtilityReading = _utilityReadingRepository.List().OrderByDescending(u => u.ReadingDate)
-                                .FirstOrDefault(u => u.ApartmentBuildingId.Equals(feeRateConfig.ApartmentBuildingId) && u.ApartmentId.Equals(utilityReadingDto.ApartmentId) && u.FeeTypeId.Equals(feeRateConfig.Id));
+                                .FirstOrDefault(u => u.ApartmentBuildingId.Equals(feeRateConfig.ApartmentBuildingId) && u.ApartmentId.Equals(feeDetailReq.ApartmentId) && u.FeeTypeId.Equals(feeRateConfig.Id));
             double previousReading = 0;
             double actualUserTotalDays = 30;
             if (previousUtilityReading != null)

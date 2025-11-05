@@ -16,10 +16,12 @@
 
     public class FeeDetailDto
     {
+        public Guid Id { get; set; }
         public Guid FeeNoticeId { get; set; }
         public Guid FeeTypeId { get; set; }
         public double? Consumption { get; set; }
         public decimal SubTotal { get; set; }
+        public bool IsFeeTypeActive { get; set; }
         public int QuantityUseChange { get; set; }
         public DateTime? PreviousReadingDate { get; set; }
         public double? PreviousReading { get; set; }
