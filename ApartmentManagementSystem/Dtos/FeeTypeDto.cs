@@ -31,4 +31,15 @@ namespace ApartmentManagementSystem.Dtos
         public decimal UnitRate { get; set; }
         public string UnitName { get; set; }
     }
+
+    public class QuantityRateConfigDto
+    {
+        public Guid Id { get; set; }
+        public Guid ApartmentBuildingId { get; set; }
+        public Guid FeeTypeId { get; set; }
+        public float VATRate { get; set; }
+        public bool IsActive { get; set; }
+        public string ItemType { get; set; }
+        public decimal UnitRate { get; set; }
+    }
 }

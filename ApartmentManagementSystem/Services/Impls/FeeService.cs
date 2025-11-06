@@ -163,7 +163,7 @@ namespace ApartmentManagementSystem.Services.Impls
             var feeDetails = new List<FeeDetail>();
             foreach (var feeTypeId in request.FeeTypeIds)
             {
-                var feeType = _feeTypeRepository.List().Include(f => f.FeeRateConfigs).ThenInclude(f => f.FeeTiers).FirstOrDefault(f => feeTypeId.Equals(f.Id) && f.IsActive);
+                var feeType = _feeTypeRepository.List().Include(f => f.QuantityRateConfigs).Include(f => f.FeeRateConfigs).ThenInclude(f => f.FeeTiers).FirstOrDefault(f => feeTypeId.Equals(f.Id) && f.IsActive);
                 if (feeType == null) continue;
                 if (request.FeeDetails == null) continue;
                 var feeDetailReq = request.FeeDetails.FirstOrDefault(u => u.FeeTypeId.Equals(feeTypeId));
@@ -179,6 +179,7 @@ namespace ApartmentManagementSystem.Services.Impls
                 }
                 else if (feeType.CalculationType.Equals(CalculationType.QUANTITY) && apartment.ParkingRegistrations != null)
                 {
+
                     feeDetails.Add(new FeeDetail()
                     {
                         FeeTypeId = feeType.Id,
@@ -269,6 +270,11 @@ namespace ApartmentManagementSystem.Services.Impls
                 CurrentReading = utilityReadingDto.CurrentReading,
                 CurrentReadingDate = utilityReadingDto.ReadingDate
             };
+        }
+        private async Task<FeeDetail> CreateFeeDetailByFeeTypeQuantity(FeeType feeType, CreateOrUpdateFeeDetailDto feeDetailReq, IEnumerable<ParkingRegistration> parkings)
+        {
+            if(feeType.QuantityRateConfigs == null)
+
         }
         private BillingCycleExtract ExtractBillingCyle(string billingCycle)
         {

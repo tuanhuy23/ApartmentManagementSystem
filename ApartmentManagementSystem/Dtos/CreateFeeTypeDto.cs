@@ -8,6 +8,7 @@ namespace ApartmentManagementSystem.Dtos
         public bool IsVATApplicable { get; set; }
         public decimal DefaultRate { get; set; }
         public List<CreateFeeRateConfigDto> FeeRateConfigs{ get; set; }
+        public List<CreateQuantityRateConfigDto> QuantityRateConfigs { get; set; }
     }
     public class CreateFeeRateConfigDto
     {
@@ -22,5 +23,12 @@ namespace ApartmentManagementSystem.Dtos
         public int ConsumptionEnd { get; set;}
         public decimal UnitRate { get; set; }
         public string UnitName { get; set; }
+    }
+    public class CreateQuantityRateConfigDto
+    {
+        public float VATRate { get; set; }
+        public bool IsActive { get; set; }
+        public string ItemType { get; set; }
+        public decimal UnitRate { get; set; }
     }
 }

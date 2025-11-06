@@ -53,6 +53,12 @@ namespace ApartmentManagementSystem.EF.Context
               .HasForeignKey(c => c.FeeTypeId)
               .OnDelete(DeleteBehavior.Cascade);
 
+            builder.Entity<FeeType>().HasMany(c => c.QuantityRateConfigs)
+             .WithOne(ci => ci.FeeType)
+             .HasPrincipalKey(ci => ci.Id)
+             .HasForeignKey(c => c.FeeTypeId)
+             .OnDelete(DeleteBehavior.Cascade);
+
             builder.Entity<FeeType>().HasMany(c => c.UtilityReadings)
               .WithOne(ci => ci.FeeType)
               .HasPrincipalKey(ci => ci.Id)

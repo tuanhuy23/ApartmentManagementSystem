@@ -83,6 +83,22 @@ namespace ApartmentManagementSystem.Services.Impls
                 }
                 feeType.FeeRateConfigs = feeRateConfigs;
             }
+            if (CalculationType.QUANTITY.Equals(request.CalculationType) && request.QuantityRateConfigs != null)
+            {
+                var quantityRateConfigs = new List<QuantityRateConfig>();
+                foreach (var reqQuantityRateconfig in request.QuantityRateConfigs)
+                {
+                    quantityRateConfigs.Add(new QuantityRateConfig()
+                    {
+                        ApartmentBuildingId = request.ApartmentBuildingId,
+                        ItemType = reqQuantityRateconfig.ItemType,
+                        VATRate = reqQuantityRateconfig.VATRate,
+                        IsActive = false,
+                        UnitRate = reqQuantityRateconfig.UnitRate,
+                    });
+                }
+                feeType.QuantityRateConfigs = quantityRateConfigs;
+            }
             await _feeTypeRepository.Add(feeType);
             await _unitOfWork.CommitAsync();
         }
