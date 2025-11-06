@@ -11,138 +11,54 @@ namespace ApartmentManagementSystem.Services.Impls
     internal class FeeConfigurationService : IFeeConfigurationService
     {
         private readonly IFeeTypeRepository _feeTypeRepository;
-        private readonly IFeeRateConfigRepository _feeRateConfigRepository;
         private readonly IUnitOfWork _unitOfWork;
-        public FeeConfigurationService(IFeeTypeRepository feeTypeRepository, IFeeRateConfigRepository feeRateConfigRepository, IUnitOfWork unitOfWork)
+        public FeeConfigurationService(IFeeTypeRepository feeTypeRepository, IUnitOfWork unitOfWork)
         {
-            _feeRateConfigRepository = feeRateConfigRepository;
             _feeTypeRepository = feeTypeRepository;
             _unitOfWork = unitOfWork;
         }
-        public async Task CreateFeeRateConfig(CreateFeeRateConfigDto request, Guid feeTypeId)
-        {
-            var feeType = _feeTypeRepository.List().FirstOrDefault(f => f.Id.Equals(feeTypeId));
-            if (feeType == null)
-                throw new DomainException(ErrorCodeConsts.FeeTypeNotFound, ErrorCodeConsts.FeeTypeNotFound, System.Net.HttpStatusCode.NotFound);
-            var feeRateConfig = new FeeRateConfig()
-            {
-                ApartmentBuildingId = feeType.ApartmentBuildingId,
-                FeeTypeId = feeType.Id,
-                IsActive = false,
-                Name = request.Name,
-                VATRate = request.VATRate
-            };
-            if (request.FeeTiers != null)
-            {
-                feeRateConfig.FeeTiers = request.FeeTiers.Select(ft => new FeeTier()
-                {
-                    ConsumptionEnd = ft.ConsumptionEnd,
-                    ConsumptionStart = ft.ConsumptionStart,
-                    TierOrder = ft.TierOrder,
-                    UnitName = ft.UnitName,
-                    UnitRate = ft.UnitRate
-                }).ToList();
-            }
-            await _feeRateConfigRepository.Add(feeRateConfig);
-            await _unitOfWork.CommitAsync();
-        }
 
-        public async Task CreateFeeType(CreateFeeTypeDto request)
+        public async Task CreateOrUpdateFeeType(CreateOrUpdateFeeTypeDto request)
         {
-            var feeType = new FeeType()
+            FeeType feeType = new FeeType()
             {
                 ApartmentBuildingId = request.ApartmentBuildingId,
                 CalculationType = request.CalculationType,
                 DefaultRate = request.DefaultRate,
                 IsActive = false,
                 IsVATApplicable = request.IsVATApplicable,
-                Name = request.Name,
+                Name = request.Name,     
             };
-            if (CalculationType.TIERED.Equals(request.CalculationType) && request.FeeRateConfigs != null)
+            if (request.Id != null)
             {
-                var feeRateConfigs = new List<FeeRateConfig>();
-                foreach (var reqFeeRateconfig in request.FeeRateConfigs)
-                {
-                    if (reqFeeRateconfig.FeeTiers == null)
-                        throw new DomainException(ErrorCodeConsts.FeeTierIsRequired, ErrorCodeConsts.FeeTierIsRequired, System.Net.HttpStatusCode.BadRequest);
-                    feeRateConfigs.Add(new FeeRateConfig()
-                    {
-                        ApartmentBuildingId = request.ApartmentBuildingId,
-                        Name = reqFeeRateconfig.Name,
-                        VATRate = reqFeeRateconfig.VATRate,
-                        IsActive = false,
-                        FeeTiers = reqFeeRateconfig.FeeTiers.Select(t => new FeeTier()
-                        {
-                            ConsumptionEnd = t.ConsumptionEnd,
-                            ConsumptionStart = t.ConsumptionStart,
-                            TierOrder = t.TierOrder,
-                            UnitName = t.UnitName,
-                            UnitRate = t.UnitRate
-                        }).ToList()
-                    });
-                }
-                feeType.FeeRateConfigs = feeRateConfigs;
+                feeType = _feeTypeRepository.List().Include(f => f.QuantityRateConfigs).Include(f => f.FeeRateConfigs).ThenInclude(f => f.FeeTiers).FirstOrDefault(f => f.Id.Equals(request.Id.Value));
+                if (feeType == null)
+                    throw new DomainException(ErrorCodeConsts.FeeTypeNotFound, ErrorCodeConsts.FeeTypeNotFound, System.Net.HttpStatusCode.NotFound);
+            }
+
+            if (CalculationType.TIERED.Equals(feeType.CalculationType) && request.FeeRateConfigs != null)
+            {
+                feeType.FeeRateConfigs = CreateOrUpdateFeeRateConfig(feeType, request.FeeRateConfigs).ToList();
             }
             if (CalculationType.QUANTITY.Equals(request.CalculationType) && request.QuantityRateConfigs != null)
             {
-                var quantityRateConfigs = new List<QuantityRateConfig>();
-                foreach (var reqQuantityRateconfig in request.QuantityRateConfigs)
-                {
-                    quantityRateConfigs.Add(new QuantityRateConfig()
-                    {
-                        ApartmentBuildingId = request.ApartmentBuildingId,
-                        ItemType = reqQuantityRateconfig.ItemType,
-                        VATRate = reqQuantityRateconfig.VATRate,
-                        IsActive = false,
-                        UnitRate = reqQuantityRateconfig.UnitRate,
-                    });
-                }
-                feeType.QuantityRateConfigs = quantityRateConfigs;
+                feeType.QuantityRateConfigs = CreateOrUpdateQuantityRateConfig(feeType, request.QuantityRateConfigs).ToList();
             }
-            await _feeTypeRepository.Add(feeType);
+            if (CalculationType.Area.Equals(request.CalculationType))
+            {
+                feeType.DefaultRate = request.DefaultRate;
+            }
+            if (request.Id == null)
+            {
+                await _feeTypeRepository.Add(feeType);
+            }
+            else
+            {
+                _feeTypeRepository.Update(feeType);
+            }
             await _unitOfWork.CommitAsync();
         }
-
-        public Task DeleteFeeRateConfig(Guid id)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task<IEnumerable<FeeRateConfigDto>> GetFeeRateConfigs(Guid feeTypeId)
-        {
-            var feeRateConfigs = _feeRateConfigRepository.List().Include(fc => fc.FeeTiers).Where(f => f.FeeTypeId.Equals(feeTypeId));
-            if (feeRateConfigs == null) return new List<FeeRateConfigDto>();
-            var feeRateConfigDtos = new List<FeeRateConfigDto>();
-
-            foreach (var feeRateConfig in feeRateConfigs)
-            {
-                var feeRateConfigDto = new FeeRateConfigDto()
-                {
-                    ApartmentBuildingId = feeRateConfig.ApartmentBuildingId,
-                    FeeTypeId = feeRateConfig.FeeTypeId,
-                    Id = feeRateConfig.Id,
-                    IsActive = feeRateConfig.IsActive,
-                    Name = feeRateConfig.Name,
-                    VATRate = feeRateConfig.VATRate
-                };
-                if (feeRateConfig.FeeTiers != null)
-                {
-                    feeRateConfigDto.FeeTiers = feeRateConfig.FeeTiers.Select(ft => new FeeTierDto()
-                    {
-                        ConsumptionEnd = ft.ConsumptionEnd,
-                        ConsumptionStart = ft.ConsumptionStart,
-                        FeeRateConfigId = ft.FeeRateConfigId,
-                        Id = ft.Id,
-                        TierOrder = ft.TierOrder,
-                        UnitName = ft.UnitName,
-                        UnitRate = ft.UnitRate
-                    });
-                }
-                feeRateConfigDtos.Add(feeRateConfigDto);
-            }
-            return feeRateConfigDtos;
-        }
-
+        
         public async Task<FeeTypeDto> GetFeeType(Guid id)
         {
             var feeType = _feeTypeRepository.List().FirstOrDefault(f => f.Id.Equals(id));
@@ -163,7 +79,6 @@ namespace ApartmentManagementSystem.Services.Impls
                 CalculationType = feeType.CalculationType,
                 DefaultRate = feeType.DefaultRate,
                 Id = feeType.Id,
-                FeeRateConfigIdApplicable = feeRateConfigIdApplicable,
                 IsActive = feeType.IsActive,
                 Name = feeType.Name,
                 IsVATApplicable = feeType.IsVATApplicable
@@ -195,37 +110,112 @@ namespace ApartmentManagementSystem.Services.Impls
                     IsActive = feeType.IsActive,
                     IsVATApplicable = feeType.IsVATApplicable,
                     Name = feeType.Name,
-                    FeeRateConfigIdApplicable = feeRateConfigIdApplicable
                 });
             }
             return feeTypeDtos;
         }
 
-        public async Task UpdateFeeRateConfig(UpdateFeeRateConfigDto request)
+        private IEnumerable<FeeRateConfig> CreateOrUpdateFeeRateConfig(FeeType feeType, IEnumerable<CreateOrUpdateFeeRateConfigDto> request)
         {
-            var feeRateConfig = _feeRateConfigRepository.List().Include(f => f.FeeTiers).FirstOrDefault(f => f.Id.Equals(request.Id));
-            if (feeRateConfig == null)
-                throw new DomainException(ErrorCodeConsts.FeeRateConfigNotFound, ErrorCodeConsts.FeeRateConfigNotFound, System.Net.HttpStatusCode.NotFound);
-            feeRateConfig.Name = request.Name;
-            feeRateConfig.VATRate = request.VATRate;
-            if (request.FeeTiers == null)
+            var feeRateConfigs = feeType.FeeRateConfigs;
+            if (request == null) return new List<FeeRateConfig>();
+
+            if (feeRateConfigs == null)
             {
-                feeRateConfig.FeeTiers = null;
+                feeRateConfigs = new List<FeeRateConfig>();
             }
-            else
+
+            foreach (var feeRateConfigDto in request)
             {
-                feeRateConfig.FeeTiers = request.FeeTiers.Select(ft => new FeeTier()
+                if (feeRateConfigDto.Id == null)
                 {
-                    Id = ft.Id,
-                    ConsumptionEnd = ft.ConsumptionEnd,
-                    ConsumptionStart = ft.ConsumptionStart,
-                    TierOrder = ft.TierOrder,
-                    UnitName = ft.UnitName,
-                    UnitRate = ft.UnitRate,
-                }).ToList();
+                    var inCommingFeeRateConfig = new FeeRateConfig()
+                    {
+                        ApartmentBuildingId = feeType.ApartmentBuildingId,
+                        FeeTypeId = feeType.Id,
+                        IsActive = false,
+                        Name = feeRateConfigDto.Name,
+                        VATRate = feeRateConfigDto.VATRate
+                    };
+                    inCommingFeeRateConfig.FeeTiers = CreateOrUpdateFeeRateConfig(inCommingFeeRateConfig, feeRateConfigDto.FeeTiers).ToList();
+                    feeRateConfigs.Add(inCommingFeeRateConfig);
+                    continue;
+                }
+                var feeRateConfig = feeRateConfigs.FirstOrDefault(f => f.Id.Equals(feeRateConfigDto.Id.Value));
+                if (feeRateConfig == null) continue;
+                feeRateConfig.FeeTiers = CreateOrUpdateFeeRateConfig(feeRateConfig, feeRateConfigDto.FeeTiers).ToList();
+                feeRateConfig.Name = feeRateConfigDto.Name;
+                feeRateConfig.VATRate = feeRateConfigDto.VATRate;
             }
-            _feeRateConfigRepository.Update(feeRateConfig);
-            await _unitOfWork.CommitAsync();
+            return feeRateConfigs;
+        }
+        private IEnumerable<FeeTier> CreateOrUpdateFeeRateConfig(FeeRateConfig feeRateConfig, IEnumerable<CreateOrUpdateFeeRateTierDto> request)
+        {
+            if (request == null) return new List<FeeTier>();
+            var feeTiers = feeRateConfig.FeeTiers;
+            if (feeTiers == null)
+            {
+                feeTiers = new List<FeeTier>();
+            }
+            foreach (var feeTierDto in request)
+            {
+                if (feeTierDto.Id == null)
+                {
+                    feeTiers.Add(new FeeTier()
+                    {
+                        ConsumptionEnd = feeTierDto.ConsumptionEnd,
+                        ConsumptionStart = feeTierDto.ConsumptionStart,
+                        FeeRateConfigId = feeRateConfig.Id,
+                        TierOrder = feeTierDto.TierOrder,
+                        UnitName = feeTierDto.UnitName,
+                        UnitRate = feeTierDto.UnitRate,
+                    });
+                    continue;
+                }
+                var feeTier = feeTiers.FirstOrDefault(f => f.Id.Equals(feeTierDto.Id.Value));
+                if (feeTier == null) continue;
+                feeTier.ConsumptionEnd = feeTierDto.ConsumptionEnd;
+                feeTier.ConsumptionStart = feeTierDto.ConsumptionStart;
+                feeTier.UnitName = feeTierDto.UnitName;
+                feeTier.UnitRate = feeTierDto.UnitRate;
+                feeTier.TierOrder = feeTierDto.TierOrder;
+            }
+            return feeTiers;
+        }
+        
+        private IEnumerable<QuantityRateConfig> CreateOrUpdateQuantityRateConfig(FeeType feeType, IEnumerable<CreateOrUpdateQuantityRateConfigDto> request)
+        {
+            var quantityRateConfigs = feeType.QuantityRateConfigs;
+            if (request == null) return new List<QuantityRateConfig>();
+
+            if (quantityRateConfigs == null)
+            {
+                quantityRateConfigs = new List<QuantityRateConfig>();
+            }
+
+            foreach (var quantityRateConfigDto in request)
+            {
+                if (quantityRateConfigDto.Id == null)
+                {
+                    var inCommingQuantityRateConfig = new QuantityRateConfig()
+                    {
+                        ApartmentBuildingId = feeType.ApartmentBuildingId,
+                        FeeTypeId = feeType.Id,
+                        IsActive = false,
+                        ItemType = quantityRateConfigDto.ItemType,
+                        VATRate = quantityRateConfigDto.VATRate,
+                        UnitRate = quantityRateConfigDto.UnitRate
+                    };
+                    quantityRateConfigs.Add(inCommingQuantityRateConfig);
+                    continue;
+                }
+                var quantityRateConfig = quantityRateConfigs.FirstOrDefault(f => f.Id.Equals(quantityRateConfigDto.Id.Value));
+                if (quantityRateConfig == null) continue;
+                quantityRateConfig.ItemType = quantityRateConfigDto.ItemType;
+                quantityRateConfig.VATRate = quantityRateConfigDto.VATRate;
+                quantityRateConfig.UnitRate = quantityRateConfigDto.UnitRate;
+            }
+            return quantityRateConfigs;
         }
     }
 }

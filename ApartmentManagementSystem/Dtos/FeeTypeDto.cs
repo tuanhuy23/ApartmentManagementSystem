@@ -9,7 +9,7 @@ namespace ApartmentManagementSystem.Dtos
         public bool IsVATApplicable { get; set; }
         public bool IsActive { get; set; }
         public decimal DefaultRate { get; set; }
-        public string FeeRateConfigIdApplicable { get; set; }
+        public IEnumerable<FeeRateConfigDto> FeeRateConfigs { get; set; }
     }
     public class FeeRateConfigDto
     {

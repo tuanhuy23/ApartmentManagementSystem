@@ -273,7 +273,7 @@ namespace ApartmentManagementSystem.Services.Impls
         }
         private async Task<FeeDetail> CreateFeeDetailByFeeTypeQuantity(FeeType feeType, CreateOrUpdateFeeDetailDto feeDetailReq, IEnumerable<ParkingRegistration> parkings)
         {
-            if(feeType.QuantityRateConfigs == null)
+            return null
 
         }
         private BillingCycleExtract ExtractBillingCyle(string billingCycle)

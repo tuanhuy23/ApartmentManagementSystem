@@ -17,7 +17,6 @@ namespace ApartmentManagementSystem.EF
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>)).AddScoped<IApartmentRepository, ApartmentRepository>();
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>)).AddScoped<IBillingCycleSettingRepository, BillingCycleSettingRepository>();
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>)).AddScoped<IFeeTypeRepository, FeeTypeRepository>();
-            services.AddScoped(typeof(IRepository<>), typeof(Repository<>)).AddScoped<IFeeRateConfigRepository, FeeRateConfigRepository>();
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>)).AddScoped<IParkingRegistrationRepository, ParkingRegistrationRepository>();
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>)).AddScoped<IUtilityReadingRepository, UtilityReadingRepository>();
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>)).AddScoped<IFeeNoticeRepository, FeeNoticeRepository>();
