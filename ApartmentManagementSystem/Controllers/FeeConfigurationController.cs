@@ -43,45 +43,18 @@ namespace ApartmentManagementSystem.Controllers
         [HttpPost()]
         [ProducesResponseType(typeof(ResponseData<>), StatusCodes.Status200OK)]
         [Authorize(Policy = FeeConfigurationPermissions.ReadWrite)]
-        public async Task<IActionResult> CreateFeeType([FromBody] CreateFeeTypeDto request)
+        public async Task<IActionResult> CreateFeeType([FromBody] CreateOrUpdateFeeTypeDto request)
         {
-            await _feeConfigurationService.CreateFeeType(request);
+            await _feeConfigurationService.CreateOrUpdateFeeType(request);
             return Ok(new ResponseData<object>(System.Net.HttpStatusCode.OK, null, null, null));
         }
 
-        [HttpGet("{feeTypeId:Guid}/getFeeRateConfigs")]
-        [ProducesResponseType(typeof(ResponseData<IEnumerable<FeeRateConfigDto>>), StatusCodes.Status200OK)]
-        [Authorize(Policy = ApartmentPermissions.Read)]
-        public async Task<IActionResult> GetFeeRateConfigs(Guid feeTypeId)
-        {
-            var response = await _feeConfigurationService.GetFeeRateConfigs(feeTypeId);
-            return Ok(new ResponseData<IEnumerable<FeeRateConfigDto>>(System.Net.HttpStatusCode.OK, response, null, null));
-        }
-
-        [HttpPost("{feeTypeId:Guid}/createFeeRateConfigs")]
+        [HttpPut()]
         [ProducesResponseType(typeof(ResponseData<>), StatusCodes.Status200OK)]
         [Authorize(Policy = FeeConfigurationPermissions.ReadWrite)]
-        public async Task<IActionResult> CreateFeeRateConfig(Guid feeTypeId, [FromBody] CreateFeeRateConfigDto request)
+        public async Task<IActionResult> UpdateFeeType([FromBody] CreateOrUpdateFeeTypeDto request)
         {
-            await _feeConfigurationService.CreateFeeRateConfig(request, feeTypeId);
-            return Ok(new ResponseData<object>(System.Net.HttpStatusCode.OK, null, null, null));
-        }
-
-        [HttpPut("{feeTypeId:Guid}/updateFeeRateConfigs")]
-        [ProducesResponseType(typeof(ResponseData<>), StatusCodes.Status200OK)]
-        [Authorize(Policy = FeeConfigurationPermissions.ReadWrite)]
-        public async Task<IActionResult> UpdateFeeRateConfig(Guid feeTypeId, [FromBody] UpdateFeeRateConfigDto request)
-        {
-            await _feeConfigurationService.UpdateFeeRateConfig(request);
-            return Ok(new ResponseData<object>(System.Net.HttpStatusCode.OK, null, null, null));
-        }
-
-        [HttpPut("{feeTypeId:Guid}/deleteFeeRateConfigs/{id:Guid}")]
-        [ProducesResponseType(typeof(ResponseData<>), StatusCodes.Status200OK)]
-        [Authorize(Policy = FeeConfigurationPermissions.ReadWrite)]
-        public async Task<IActionResult> DeleteFeeRateConfig(Guid feeTypeId, Guid id)
-        {
-            await _feeConfigurationService.DeleteFeeRateConfig(id);
+            await _feeConfigurationService.CreateOrUpdateFeeType(request);
             return Ok(new ResponseData<object>(System.Net.HttpStatusCode.OK, null, null, null));
         }
 

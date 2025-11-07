@@ -20,12 +20,26 @@
         public Guid FeeTypeId { get; set; }
         public double? Consumption { get; set; }
         public decimal SubTotal { get; set; }
-        public bool IsFeeTypeActive { get; set; }
-        public int QuantityUseChange { get; set; }
+        public decimal GrossCost { get; set; }
+        public float VATRate { get; set; }
+        public decimal VATCost { get; set; }
         public DateTime? PreviousReadingDate { get; set; }
         public double? PreviousReading { get; set; }
         public DateTime? CurrentReadingDate { get; set; }
         public double? CurrentReading { get; set; }
         public Guid? UtilityCurentReadingId{ get; set; }
+        public double? Proration { get; set; }
+        public IEnumerable<FeeTierDetail>? FeeTierDetails { get; set; }
+    }
+    public class FeeTierDetail
+    {
+        public int TierOrder { get; set; }
+        public double ConsumptionStart { get; set; }
+        public double ConsumptionEnd { get; set; }
+        public double ConsumptionStartOriginal { get; set; }
+        public double ConsumptionEndOriginal { get; set; }
+        public decimal UnitRate { get; set; }
+        public string UnitName { get; set; }
+        public double Consumption { get; set; }
     }
 }

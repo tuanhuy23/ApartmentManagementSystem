@@ -7,8 +7,8 @@ namespace ApartmentManagementSystem.EF.Context
         public Guid FeeRateConfigId { get; set; }
         public FeeRateConfig FeeRateConfig { get; set; }
         public int TierOrder { get; set; }
-        public int ConsumptionStart { get; set; }
-        public int ConsumptionEnd { get; set;}
+        public double ConsumptionStart { get; set; }
+        public double ConsumptionEnd { get; set;}
         public decimal UnitRate { get; set; }
         public string UnitName { get; set; }
     }

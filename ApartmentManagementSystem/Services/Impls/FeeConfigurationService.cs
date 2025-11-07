@@ -27,6 +27,7 @@ namespace ApartmentManagementSystem.Services.Impls
                 DefaultRate = request.DefaultRate,
                 IsActive = false,
                 IsVATApplicable = request.IsVATApplicable,
+                DefaultVATRate = request.DefaultVATRate,
                 Name = request.Name,     
             };
             if (request.Id != null)
@@ -203,7 +204,6 @@ namespace ApartmentManagementSystem.Services.Impls
                         FeeTypeId = feeType.Id,
                         IsActive = false,
                         ItemType = quantityRateConfigDto.ItemType,
-                        VATRate = quantityRateConfigDto.VATRate,
                         UnitRate = quantityRateConfigDto.UnitRate
                     };
                     quantityRateConfigs.Add(inCommingQuantityRateConfig);
@@ -212,7 +212,6 @@ namespace ApartmentManagementSystem.Services.Impls
                 var quantityRateConfig = quantityRateConfigs.FirstOrDefault(f => f.Id.Equals(quantityRateConfigDto.Id.Value));
                 if (quantityRateConfig == null) continue;
                 quantityRateConfig.ItemType = quantityRateConfigDto.ItemType;
-                quantityRateConfig.VATRate = quantityRateConfigDto.VATRate;
                 quantityRateConfig.UnitRate = quantityRateConfigDto.UnitRate;
             }
             return quantityRateConfigs;

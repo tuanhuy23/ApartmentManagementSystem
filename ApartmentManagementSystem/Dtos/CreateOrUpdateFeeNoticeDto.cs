@@ -13,7 +13,6 @@ namespace ApartmentManagementSystem.Dtos
     {
         public Guid ApartmentId { get; set; }
         public Guid FeeTypeId { get; set; }
-        public int QuantityUseChange { get; set; }
         public UtilityReadingDto? UtilityReading { get; set; }
     }
     public class UtilityReadingDto

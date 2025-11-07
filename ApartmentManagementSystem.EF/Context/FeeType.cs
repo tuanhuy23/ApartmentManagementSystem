@@ -11,6 +11,7 @@ namespace ApartmentManagementSystem.EF.Context
         public bool IsVATApplicable { get; set; }
         public bool IsActive { get; set; } 
         public decimal DefaultRate { get; set; }
+        public float DefaultVATRate { get; set; }
         public ICollection<FeeRateConfig> FeeRateConfigs { get; set; }
         public ICollection<QuantityRateConfig> QuantityRateConfigs { get; set; }
         public ICollection<UtilityReading> UtilityReadings { get; set; }

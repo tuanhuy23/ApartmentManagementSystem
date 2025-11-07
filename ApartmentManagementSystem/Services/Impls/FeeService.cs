@@ -72,7 +72,8 @@ namespace ApartmentManagementSystem.Services.Impls
 
         public async Task<FeeNoticeDto> GetFeeDetail(Guid id)
         {
-            var feeNotice = _feeNoticeRepository.List().Include(f => f.FeeDetails).ThenInclude(fd => fd.FeeType).FirstOrDefault(f => f.Id.Equals(id));
+            var feeNotice = _feeNoticeRepository.List().Include(f => f.FeeDetails).ThenInclude(fd => fd.FeeDetailTiers)
+                                                       .Include(f => f.FeeDetails).ThenInclude(f => f.FeeType).FirstOrDefault(f => f.Id.Equals(id));
             if (feeNotice == null)
                 throw new DomainException(ErrorCodeConsts.FeeNoticeNotFound, ErrorCodeConsts.FeeNoticeNotFound, System.Net.HttpStatusCode.BadRequest);
             var response = new FeeNoticeDto()
@@ -105,15 +106,31 @@ namespace ApartmentManagementSystem.Services.Impls
                     FeeNoticeId = feeDetail.FeeNoticeId,
                     FeeTypeId = feeDetail.FeeTypeId,
                     SubTotal = feeDetail.SubTotal,
-                    IsFeeTypeActive = feeDetail.FeeType.IsActive,
-                    QuantityUseChange = feeDetail.QuantityUseChange,
                     Consumption = feeDetail.Consumption,
                     CurrentReadingDate = feeDetail.CurrentReadingDate,
                     CurrentReading = feeDetail.CurrentReading,
                     PreviousReading = feeDetail.PreviousReading,
                     PreviousReadingDate = feeDetail.PreviousReadingDate,
-                    UtilityCurentReadingId = string.IsNullOrEmpty(currentUtilityReadingId) ? null : new Guid(currentUtilityReadingId)
+                    UtilityCurentReadingId = string.IsNullOrEmpty(currentUtilityReadingId) ? null : new Guid(currentUtilityReadingId),
+                    Proration = feeDetail.Proration,
+                    GrossCost = feeDetail.GrossCost,
+                    VATRate = feeDetail.VATRate,
+                    VATCost = feeDetail.VATCost,
                 };
+                if (feeDetail.FeeType.CalculationType.Equals(CalculationType.TIERED) && feeDetail.FeeDetailTiers != null)
+                {
+                    feeDetailDto.FeeTierDetails = feeDetail.FeeDetailTiers.Select(f => new FeeTierDetail()
+                    {
+                        Consumption = f.Consumption,
+                        ConsumptionEnd = f.ConsumptionEnd,
+                        ConsumptionStart = f.ConsumptionStart,
+                        TierOrder = f.TierOrder,
+                        UnitName = f.UnitName,
+                        UnitRate = f.UnitRate,
+                        ConsumptionEndOriginal = f.ConsumptionEndOriginal,
+                        ConsumptionStartOriginal = f.ConsumptionStartOriginal,
+                    });
+                }
                 feeDetailDtos.Add(feeDetailDto);
             }
             response.FeeDetails = feeDetailDtos;
@@ -179,17 +196,13 @@ namespace ApartmentManagementSystem.Services.Impls
                 }
                 else if (feeType.CalculationType.Equals(CalculationType.QUANTITY) && apartment.ParkingRegistrations != null)
                 {
-
-                    feeDetails.Add(new FeeDetail()
-                    {
-                        FeeTypeId = feeType.Id,
-                        SubTotal = (decimal)apartment.ParkingRegistrations.Count * feeType.DefaultRate
-                    });
+                    var feeDetail = CreateFeeDetailByFeeTypeQuantity(feeType, feeDetailReq, apartment.ParkingRegistrations);
+                    feeDetails.Add(feeDetail);
                     continue;
                 }
                 if (feeType.CalculationType.Equals(CalculationType.TIERED) && feeType.FeeRateConfigs != null && feeDetailReq.UtilityReading != null)
                 {
-                    var feeDetail = await CreateFeeDetailByFeeTypeTier(feeType, feeDetailReq);
+                    var feeDetail = CreateFeeDetailByFeeTypeTier(feeType, feeDetailReq);
                     feeDetails.Add(feeDetail);
                 }
             }
@@ -197,7 +210,7 @@ namespace ApartmentManagementSystem.Services.Impls
             return feeNotice;
         }
 
-        private async Task<FeeDetail> CreateFeeDetailByFeeTypeTier(FeeType feeType, CreateOrUpdateFeeDetailDto feeDetailReq)
+        private FeeDetail CreateFeeDetailByFeeTypeTier(FeeType feeType, CreateOrUpdateFeeDetailDto feeDetailReq)
         {
             if (feeType.FeeRateConfigs == null)
                 throw new DomainException(ErrorCodeConsts.FeeTypeNotConfigured, ErrorCodeConsts.FeeTypeNotConfigured, System.Net.HttpStatusCode.BadRequest);
@@ -231,6 +244,7 @@ namespace ApartmentManagementSystem.Services.Impls
             }
             double remainCons = consumption;
             decimal cost = 0;
+            var feeDetailTiers = new List<FeeDetailTier>();
             foreach (var feeTier in feeRateConfig.FeeTiers.OrderBy(f => f.TierOrder))
             {
                 if (remainCons <= 0) break;
@@ -244,6 +258,17 @@ namespace ApartmentManagementSystem.Services.Impls
                 {
                     cost = cost + ((decimal)adjustedTierLimit * feeTier.UnitRate);
                 }
+                feeDetailTiers.Add(new FeeDetailTier()
+                {
+                    TierOrder = feeTier.TierOrder,
+                    UnitName = feeTier.UnitName,
+                    UnitRate = feeTier.UnitRate,
+                    Consumption = adjustedTierLimit,
+                    ConsumptionEnd = feeTier.ConsumptionEnd * ratioChange,
+                    ConsumptionStart = feeTier.ConsumptionStart * ratioChange,
+                    ConsumptionStartOriginal = feeTier.ConsumptionStart,
+                    ConsumptionEndOriginal = feeTier.ConsumptionEnd,
+                });
             }
             decimal subTotal = cost;
             if (feeType.IsActive && feeRateConfig.VATRate != 0)
@@ -268,13 +293,34 @@ namespace ApartmentManagementSystem.Services.Impls
                 PreviousReadingDate = previousUtilityReading != null ? previousUtilityReading.ReadingDate : null,
                 SubTotal = subTotal,
                 CurrentReading = utilityReadingDto.CurrentReading,
-                CurrentReadingDate = utilityReadingDto.ReadingDate
+                CurrentReadingDate = utilityReadingDto.ReadingDate,
+                Proration = ratioChange,
+                FeeDetailTiers = feeDetailTiers,
             };
         }
-        private async Task<FeeDetail> CreateFeeDetailByFeeTypeQuantity(FeeType feeType, CreateOrUpdateFeeDetailDto feeDetailReq, IEnumerable<ParkingRegistration> parkings)
+        private FeeDetail CreateFeeDetailByFeeTypeQuantity(FeeType feeType, CreateOrUpdateFeeDetailDto feeDetailReq, IEnumerable<ParkingRegistration> parkings)
         {
-            return null
-
+            if(feeType.QuantityRateConfigs == null)
+                throw new DomainException(ErrorCodeConsts.FeeTypeNotConfigured, ErrorCodeConsts.FeeTypeNotConfigured, System.Net.HttpStatusCode.BadRequest);
+            var quantityRateConfigActives = feeType.QuantityRateConfigs.Where(f => f.IsActive);
+            var feeDetail = new FeeDetail()
+            {
+                FeeTypeId = feeType.Id,
+            };
+            decimal subTotal = 0;
+            foreach (var quantityRateConfig in quantityRateConfigActives)
+            {
+                var countItemType = parkings.Where(p => p.VehicleType.Equals(quantityRateConfig.ItemType)).Count();
+                if (countItemType <= 0) continue;
+                decimal costByType = countItemType * quantityRateConfig.UnitRate;
+                subTotal += costByType;
+            }
+            if (feeType.IsVATApplicable && feeType.DefaultVATRate != 0)
+            {
+                subTotal = subTotal * (decimal)feeType.DefaultVATRate;
+            }
+            feeDetail.SubTotal = subTotal;
+            return feeDetail;
         }
         private BillingCycleExtract ExtractBillingCyle(string billingCycle)
         {

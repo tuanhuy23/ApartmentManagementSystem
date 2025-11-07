@@ -106,7 +106,13 @@ namespace ApartmentManagementSystem.EF.Context
               .HasPrincipalKey(ci => ci.Id)
               .HasForeignKey(c => c.FeeNoticeId)
               .OnDelete(DeleteBehavior.Cascade);
-            
+
+            builder.Entity<FeeDetail>().HasMany(c => c.FeeDetailTiers)
+             .WithOne(ci => ci.FeeDetail)
+             .HasPrincipalKey(ci => ci.Id)
+             .HasForeignKey(c => c.FeeDetailId)
+             .OnDelete(DeleteBehavior.Cascade);
+
             #endregion
         }
     }
