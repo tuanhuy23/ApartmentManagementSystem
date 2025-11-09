@@ -9,5 +9,6 @@ namespace ApartmentManagementSystem.Services.Interfaces
     public interface IAccountService
     {
         Task<AccountInfoResponseDto> GetAccountInfo();
+        Task<ApartmentBuildingDto> GetCurrentApartment();
     }
 }

@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ApartmentManagementSystem.Controllers
 {
-    [Route("{appartmentBuildingId}/[controller]")]
+    [Route("apartment-building")]
     [ApiController]
     [Authorize]
     [ApiExceptionFilter]

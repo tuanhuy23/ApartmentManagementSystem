@@ -24,11 +24,7 @@ namespace ApartmentManagementSystem.Services.Impls
             {
                 ApartmentBuildingId = request.ApartmentBuildingId,
                 CalculationType = request.CalculationType,
-                DefaultRate = request.DefaultRate,
                 IsActive = false,
-                IsVATApplicable = request.IsVATApplicable,
-                DefaultVATRate = request.DefaultVATRate,
-                Name = request.Name,     
             };
             if (request.Id != null)
             {
@@ -49,12 +45,17 @@ namespace ApartmentManagementSystem.Services.Impls
             {
                 feeType.DefaultRate = request.DefaultRate;
             }
+            feeType.DefaultRate = request.DefaultRate;
+            feeType.IsVATApplicable = request.IsVATApplicable;
+            feeType.DefaultVATRate = request.DefaultVATRate;
+            feeType.Name = request.Name;
             if (request.Id == null)
             {
                 await _feeTypeRepository.Add(feeType);
             }
             else
             {
+                feeType.IsActive = request.IsActive;
                 _feeTypeRepository.Update(feeType);
             }
             await _unitOfWork.CommitAsync();
@@ -62,19 +63,10 @@ namespace ApartmentManagementSystem.Services.Impls
         
         public async Task<FeeTypeDto> GetFeeType(Guid id)
         {
-            var feeType = _feeTypeRepository.List().FirstOrDefault(f => f.Id.Equals(id));
+            var feeType = _feeTypeRepository.List().Include(f => f.QuantityRateConfigs).Include(f => f.FeeRateConfigs).ThenInclude(f =>f.FeeTiers).FirstOrDefault(f => f.Id.Equals(id));
             if (feeType == null)
                 throw new DomainException(ErrorCodeConsts.FeeTypeNotFound, ErrorCodeConsts.FeeTypeNotFound, System.Net.HttpStatusCode.NotFound);
-            string feeRateConfigIdApplicable = string.Empty;
-            if (feeType.FeeRateConfigs != null)
-            {
-                var feeRateConfig = feeType.FeeRateConfigs.FirstOrDefault(f => f.IsActive);
-                if (feeRateConfig != null)
-                {
-                    feeRateConfigIdApplicable = feeRateConfig.Id.ToString();
-                }            
-            }
-            return new FeeTypeDto()
+            var feeTypeDto = new FeeTypeDto()
             {
                 ApartmentBuildingId = feeType.ApartmentBuildingId,
                 CalculationType = feeType.CalculationType,
@@ -82,13 +74,57 @@ namespace ApartmentManagementSystem.Services.Impls
                 Id = feeType.Id,
                 IsActive = feeType.IsActive,
                 Name = feeType.Name,
-                IsVATApplicable = feeType.IsVATApplicable
+                IsVATApplicable = feeType.IsVATApplicable,
+                DefaultVATRate = feeType.DefaultVATRate
             };
+            if (feeType.QuantityRateConfigs != null && feeType.CalculationType.Equals(CalculationType.QUANTITY))
+            {
+                feeTypeDto.QuantityRateConfigs = feeType.QuantityRateConfigs.Select(q => new QuantityRateConfigDto()
+                {
+                    Id = q.Id,
+                    FeeTypeId = q.FeeTypeId,
+                    ApartmentBuildingId = q.ApartmentBuildingId,
+                    IsActive = q.IsActive,
+                    ItemType = q.ItemType,
+                    UnitRate = q.UnitRate,
+                }).ToList();
+            }
+            else if (feeType.FeeRateConfigs != null && feeType.CalculationType.Equals(CalculationType.TIERED))
+            {
+                var feeRateConfigDtos = new List<FeeRateConfigDto>();
+                foreach (var feeRateConfig in feeType.FeeRateConfigs)
+                {
+                    var feeRateConfigDto = new FeeRateConfigDto();
+                    if (feeRateConfig.FeeTiers != null)
+                    {
+                        feeRateConfigDto.FeeTiers = feeRateConfig.FeeTiers.Select(f => new FeeTierDto()
+                        {
+                            ConsumptionEnd = f.ConsumptionEnd,
+                            ConsumptionStart = f.ConsumptionStart,
+                            FeeRateConfigId = f.FeeRateConfigId,
+                            Id = f.Id,
+                            TierOrder = f.TierOrder,
+                            UnitName = f.UnitName,
+                            UnitRate = f.UnitRate
+                        }).ToList();
+                    }
+                    feeRateConfigDto.ApartmentBuildingId = feeRateConfig.ApartmentBuildingId;
+                    feeRateConfigDto.Id = feeRateConfig.Id;
+                    feeRateConfigDto.Name = feeRateConfig.Name;
+                    feeRateConfigDto.FeeTypeId = feeRateConfig.FeeTypeId;
+                    feeRateConfigDto.VATRate = feeRateConfig.VATRate;
+                    feeRateConfigDto.Name = feeRateConfig.Name;
+                    feeRateConfigDto.UnitName = feeRateConfig.UnitName;
+                    feeRateConfigDtos.Add(feeRateConfigDto);
+                }
+                feeTypeDto.FeeRateConfigs = feeRateConfigDtos;
+            }
+            return feeTypeDto;
         }
 
         public async Task<IEnumerable<FeeTypeDto>> GetFeeTypes(string apartmentBuildingId)
         {
-            var feeTypes = _feeTypeRepository.List().Include(f => f.FeeRateConfigs).Where(f => f.ApartmentBuilding.Equals(new Guid(apartmentBuildingId)));
+            var feeTypes = _feeTypeRepository.List().Include(f => f.FeeRateConfigs).Where(f => f.ApartmentBuildingId.Equals(new Guid(apartmentBuildingId)));
             var feeTypeDtos = new List<FeeTypeDto>();
             foreach (var feeType in feeTypes)
             {
@@ -125,16 +161,22 @@ namespace ApartmentManagementSystem.Services.Impls
             {
                 feeRateConfigs = new List<FeeRateConfig>();
             }
-
+            bool setActived = false;
             foreach (var feeRateConfigDto in request)
             {
+                bool isActive = false;
+                if (feeRateConfigDto.IsActive && !setActived)
+                {
+                    setActived = true;
+                    isActive = true;
+                }
                 if (feeRateConfigDto.Id == null)
                 {
                     var inCommingFeeRateConfig = new FeeRateConfig()
                     {
                         ApartmentBuildingId = feeType.ApartmentBuildingId,
                         FeeTypeId = feeType.Id,
-                        IsActive = false,
+                        IsActive = isActive,
                         Name = feeRateConfigDto.Name,
                         VATRate = feeRateConfigDto.VATRate
                     };
@@ -144,9 +186,10 @@ namespace ApartmentManagementSystem.Services.Impls
                 }
                 var feeRateConfig = feeRateConfigs.FirstOrDefault(f => f.Id.Equals(feeRateConfigDto.Id.Value));
                 if (feeRateConfig == null) continue;
+                feeRateConfig.IsActive = isActive;
                 feeRateConfig.FeeTiers = CreateOrUpdateFeeRateConfig(feeRateConfig, feeRateConfigDto.FeeTiers).ToList();
                 feeRateConfig.Name = feeRateConfigDto.Name;
-                feeRateConfig.VATRate = feeRateConfigDto.VATRate;
+                feeRateConfig.VATRate = feeRateConfigDto.VATRate; 
             }
             return feeRateConfigs;
         }
@@ -193,16 +236,22 @@ namespace ApartmentManagementSystem.Services.Impls
             {
                 quantityRateConfigs = new List<QuantityRateConfig>();
             }
-
+            bool setActived = false;
             foreach (var quantityRateConfigDto in request)
             {
+                bool isActive = false;
+                if (quantityRateConfigDto.IsActive && !setActived)
+                {
+                    setActived = true;
+                    isActive = true;
+                }
                 if (quantityRateConfigDto.Id == null)
                 {
                     var inCommingQuantityRateConfig = new QuantityRateConfig()
                     {
                         ApartmentBuildingId = feeType.ApartmentBuildingId,
                         FeeTypeId = feeType.Id,
-                        IsActive = false,
+                        IsActive = isActive,
                         ItemType = quantityRateConfigDto.ItemType,
                         UnitRate = quantityRateConfigDto.UnitRate
                     };
@@ -213,6 +262,7 @@ namespace ApartmentManagementSystem.Services.Impls
                 if (quantityRateConfig == null) continue;
                 quantityRateConfig.ItemType = quantityRateConfigDto.ItemType;
                 quantityRateConfig.UnitRate = quantityRateConfigDto.UnitRate;
+                quantityRateConfig.IsActive = isActive;
             }
             return quantityRateConfigs;
         }

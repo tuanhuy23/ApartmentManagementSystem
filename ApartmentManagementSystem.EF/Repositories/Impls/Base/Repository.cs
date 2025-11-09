@@ -25,7 +25,11 @@ namespace ApartmentManagementSystem.EF.Repositories.Impls.Base
             {
                 if (typeof(IEntityBase<Guid>).IsAssignableFrom(typeof(T)))
                 {
-                    ((IEntityBase<Guid>)entity).Id = Guid.NewGuid();
+                    if (((IEntityBase<Guid>)entity).Id != Guid.Empty)
+                    {
+                        ((IEntityBase<Guid>)entity).Id = Guid.NewGuid();
+                    }
+                    
                 }
                 ((IAuditEntity)entity).CreatedDate = DateTime.Now;
                 ((IAuditEntity)entity).CreatedBy = _userAudit.UserId;
@@ -43,7 +47,10 @@ namespace ApartmentManagementSystem.EF.Repositories.Impls.Base
                 {
                     if (typeof(IEntityBase<Guid>).IsAssignableFrom(typeof(T)))
                     {
-                        ((IEntityBase<Guid>)entity).Id = Guid.NewGuid();
+                        if (((IEntityBase<Guid>)entity).Id != Guid.Empty)
+                        {
+                            ((IEntityBase<Guid>)entity).Id = Guid.NewGuid();
+                        }
                     }
                     ((IAuditEntity)entity).CreatedDate = DateTime.Now;
                     ((IAuditEntity)entity).CreatedBy = _userAudit.UserId;

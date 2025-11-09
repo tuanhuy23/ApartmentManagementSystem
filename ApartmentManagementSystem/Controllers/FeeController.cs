@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using ApartmentManagementSystem.Consts.Permissions;
 using ApartmentManagementSystem.Dtos;
 using ApartmentManagementSystem.Exceptions;
@@ -14,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace ApartmentManagementSystem.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("{appartmentBuildingId}/fee")]
     [Authorize]
     [ApiExceptionFilter]
     [ServiceFilter(typeof(ApartmentBuildingValidationFilter))]
@@ -38,12 +34,21 @@ namespace ApartmentManagementSystem.Controllers
         [HttpGet()]
         [ProducesResponseType(typeof(ResponseData<FeeNoticeDto>), StatusCodes.Status200OK)]
         [Authorize(Policy = FeeNoticePermissions.Read)]
-        public async Task<IActionResult> GetFeeNotice([FromQuery]Guid id)
+        public async Task<IActionResult> GetFeeNotice([FromQuery] Guid id)
         {
             var feeNoticeDetail = await _feeSerivce.GetFeeDetail(id);
             return Ok(new ResponseData<FeeNoticeDto>(System.Net.HttpStatusCode.OK, feeNoticeDetail, null, null));
         }
 
+        [HttpGet("utility-reading/{apartmentId:Guid}")]
+        [ProducesResponseType(typeof(ResponseData<IEnumerable<UtilityReadingDto>>), StatusCodes.Status200OK)]
+        [Authorize(Policy = FeeNoticePermissions.Read)]
+        public async Task<IActionResult> GetUtilityReading(Guid apartmentId)
+        {
+            var utilityReadings = await _feeSerivce.GetUtilityReadings(apartmentId);
+            return Ok(new ResponseData<IEnumerable<UtilityReadingDto>>(System.Net.HttpStatusCode.OK, utilityReadings, null, null));
+        }
+        
         [HttpPost()]
         [ProducesResponseType(typeof(ResponseData<>), StatusCodes.Status200OK)]
         [Authorize(Policy = FeeNoticePermissions.Read)]

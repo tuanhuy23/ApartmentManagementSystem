@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace ApartmentManagementSystem.Controllers
 {
     [ApiController]
-    [Route("{appartmentBuildingId}/[controller]")]
+    [Route("{appartmentBuildingId}/parking-registration")]
     [Authorize]
     [ApiExceptionFilter]
     [ServiceFilter(typeof(ApartmentBuildingValidationFilter))]

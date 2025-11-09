@@ -39,6 +39,7 @@ namespace ApartmentManagementSystem.Services.Impls
 
             return new BillingCycleSettingDto()
             {
+                Id = billingCycleSetting.Id,
                 ApartmentBuildingId = billingCycleSetting.ApartmentBuildingId,
                 ClosingDayOfMonth = billingCycleSetting.ClosingDayOfMonth,
                 PaymentDueDate = billingCycleSetting.PaymentDueDate

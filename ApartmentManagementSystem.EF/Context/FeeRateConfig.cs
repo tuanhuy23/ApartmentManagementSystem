@@ -9,7 +9,8 @@ namespace ApartmentManagementSystem.EF.Context
         public FeeType FeeType { get; set; }
         public float VATRate {  get; set; }
         public bool IsActive { get; set; }
-        public string Name { get;set; }
+        public string Name { get; set; }
+        public string UnitName{ get; set; }
         public ICollection<FeeTier> FeeTiers { get; set; }
     }
 }

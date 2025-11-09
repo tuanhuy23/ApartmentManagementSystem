@@ -23,4 +23,11 @@ namespace ApartmentManagementSystem.EF.Context
         public const string QUANTITY = "QUANTITY";
         public const string TIERED = "TIERED";
     }
+
+    public static class QuantityType
+    {
+        public const string CAR = "Car";
+        public const string MOTOCYCLE = "Motocycle";
+        public const string BICYCLE = "Bicycle";
+    }
 }

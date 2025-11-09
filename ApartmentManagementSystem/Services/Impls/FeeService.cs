@@ -62,7 +62,9 @@ namespace ApartmentManagementSystem.Services.Impls
             {
                 ApartmentBuildingId = request.ApartmentBuildingId,
                 ApartmentId = request.ApartmentId,
-                BillingCycle = request.BillingCycle
+                BillingCycle = request.BillingCycle,
+                Status = FeeNoticeStatus.Draft,
+                PaymentStatus = FeeNoticeStatus.NA
             };
             feeNotice = await CreateOrUpdateFeeNotice(feeNotice, request);          
             feeNotice.DueDate = DateTime.UtcNow.AddDays(billingSetting.PaymentDueDate);
@@ -153,7 +155,7 @@ namespace ApartmentManagementSystem.Services.Impls
             _feeNoticeRepository.Update(feeNotice);
             await _unitOfWork.CommitAsync();
         }
-        
+
         public async Task<IEnumerable<FeeNoticeDto>> GetFeeNotices(Guid apartmentId)
         {
             var feeNotice = _feeNoticeRepository.List().Where(f => f.ApartmentId.Equals(apartmentId));
@@ -171,6 +173,21 @@ namespace ApartmentManagementSystem.Services.Impls
                 IssueDate = f.IssueDate,
                 TotalAmount = f.TotalAmount
             });
+        }
+        
+        public async Task<IEnumerable<UtilityReadingDto>> GetUtilityReadings(Guid apartmentId)
+        {
+            var utilityReading = _utilityReadingRepository.List().Include(u => u.FeeType).Where(u => apartmentId.Equals(u.ApartmentId));
+            if (utilityReading == null)
+                throw new DomainException(ErrorCodeConsts.UtilityReadingDataNotFound, ErrorCodeConsts.UtilityReadingDataNotFound, System.Net.HttpStatusCode.NotFound);
+            return utilityReading.Select(u => new UtilityReadingDto()
+            {
+                ApartmentId = u.ApartmentId,
+                CurrentReading = u.CurrentReading,
+                FeeTypeId = u.FeeTypeId,
+                FeeTypeName = u.FeeType.Name,
+                Id = u.Id
+            }).ToList();
         }
 
         private async Task<FeeNotice> CreateOrUpdateFeeNotice(FeeNotice feeNotice, CreateOrUpdateFeeNoticeDto request)
@@ -207,6 +224,7 @@ namespace ApartmentManagementSystem.Services.Impls
                 }
             }
             feeNotice.FeeDetails = feeDetails;
+            feeNotice.TotalAmount = feeDetails.Sum(f => f.SubTotal);
             return feeNotice;
         }
 
@@ -284,6 +302,16 @@ namespace ApartmentManagementSystem.Services.Impls
                     currentUtilityReading.ReadingDate = utilityReadingDto.ReadingDate;
                     _utilityReadingRepository.Update(currentUtilityReading);
                 }
+            }
+            else
+            {
+                _utilityReadingRepository.Add(new UtilityReading()
+                {
+                    ApartmentBuildingId = feeType.ApartmentBuildingId,
+                    ApartmentId = feeDetailReq.ApartmentId,
+                    CurrentReading = utilityReadingDto.CurrentReading,
+                    ReadingDate = utilityReadingDto.ReadingDate
+                });
             }
             return new FeeDetail()
             {

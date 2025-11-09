@@ -9,6 +9,7 @@ namespace ApartmentManagementSystem.Dtos
         public bool IsVATApplicable { get; set; }
         public decimal DefaultRate { get; set; }
         public float DefaultVATRate { get; set; }
+        public bool IsActive { get; set; }
         public List<CreateOrUpdateFeeRateConfigDto> FeeRateConfigs{ get; set; }
         public List<CreateOrUpdateQuantityRateConfigDto> QuantityRateConfigs { get; set; }
     }
@@ -16,7 +17,8 @@ namespace ApartmentManagementSystem.Dtos
     {
         public Guid? Id { get; set; }
         public string Name { get; set; }
-        public float VATRate {  get; set; }
+        public float VATRate { get; set; }
+        public bool IsActive { get; set; }
         public List<CreateOrUpdateFeeRateTierDto> FeeTiers{ get; set; }
     }
     public class CreateOrUpdateFeeRateTierDto

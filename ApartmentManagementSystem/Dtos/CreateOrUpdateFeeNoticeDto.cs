@@ -13,11 +13,11 @@ namespace ApartmentManagementSystem.Dtos
     {
         public Guid ApartmentId { get; set; }
         public Guid FeeTypeId { get; set; }
-        public UtilityReadingDto? UtilityReading { get; set; }
+        public CreateUtilityReadingDto? UtilityReading { get; set; }
     }
-    public class UtilityReadingDto
+    public class CreateUtilityReadingDto
     {
-         public Guid? UtilityCurentReadingId{ get; set; }
+        public Guid? UtilityCurentReadingId{ get; set; }
         public double CurrentReading { get; set; }
         public DateTime ReadingDate { get; set; }
     }

@@ -22,5 +22,6 @@ namespace ApartmentManagementSystem.EF.Context
         public const string Paid = "PAID";
         public const string Canceled = "CANCELED";
         public const string UnPaid = "UNPAID";
+        public const string NA = "N/A";
     }
 }

@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ApartmentManagementSystem.Controllers
 {
-    [Route("[controller]/")]
+    [Route("account/")]
     [ApiController]
     [ApiExceptionFilter]
     public class AccountController : ControllerBase
@@ -21,12 +21,20 @@ namespace ApartmentManagementSystem.Controllers
             _accountService = accountService;
         }
 
-        [HttpGet("accountInfo")]
+        [HttpGet("account-info")]
         [ProducesResponseType(typeof(ResponseData<AccountInfoResponseDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> Get()
         {
             var response = await _accountService.GetAccountInfo();
             return Ok(new ResponseData<AccountInfoResponseDto>(System.Net.HttpStatusCode.OK, response, null, null));
+        }
+
+        [HttpGet("apartment-building")]
+        [ProducesResponseType(typeof(ResponseData<ApartmentBuildingDto>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetApartment()
+        {
+            var response = await _accountService.GetCurrentApartment();
+            return Ok(new ResponseData<ApartmentBuildingDto>(System.Net.HttpStatusCode.OK, response, null, null));
         }
 
         [HttpPost("login")]
@@ -38,7 +46,7 @@ namespace ApartmentManagementSystem.Controllers
             return Ok(new ResponseData<TokenResponseDto>(System.Net.HttpStatusCode.OK, tokenResponse, null, null));
         }
 
-        [HttpPost("refreshToken")]
+        [HttpPost("refresh-token")]
         [AllowAnonymous]
         [ProducesResponseType(typeof(ResponseData<TokenResponseDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequestDto request)
@@ -56,7 +64,7 @@ namespace ApartmentManagementSystem.Controllers
             return Ok(new ResponseData<TokenResponseDto>(System.Net.HttpStatusCode.OK, null, null, null));
         }
 
-        [HttpPost("changePassword")]
+        [HttpPost("change-password")]
         [AllowAnonymous]
         [ProducesResponseType(typeof(ResponseData<ChangePasswordResponseDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequestDto request)

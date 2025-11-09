@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace ApartmentManagementSystem.Controllers
 {
     [ApiController]
-    [Route("{appartmentBuildingId}/[controller]")]
+    [Route("{appartmentBuildingId}/fee-configuration")]
     [Authorize]
     [ApiExceptionFilter]
     [ServiceFilter(typeof(ApartmentBuildingValidationFilter))]
@@ -55,22 +55,6 @@ namespace ApartmentManagementSystem.Controllers
         public async Task<IActionResult> UpdateFeeType([FromBody] CreateOrUpdateFeeTypeDto request)
         {
             await _feeConfigurationService.CreateOrUpdateFeeType(request);
-            return Ok(new ResponseData<object>(System.Net.HttpStatusCode.OK, null, null, null));
-        }
-
-        [HttpPut("{id:Guid}/acticeFeeType")]
-        [ProducesResponseType(typeof(ResponseData<>), StatusCodes.Status200OK)]
-        [Authorize(Policy = FeeConfigurationPermissions.ReadWrite)]
-        public async Task<IActionResult> ActiveFeeType(Guid id)
-        {
-            return Ok(new ResponseData<object>(System.Net.HttpStatusCode.OK, null, null, null));
-        }
-        
-        [HttpPut("{feeTypeId:Guid}/acticeFeeRateConfig/{id:Guid}")]
-        [ProducesResponseType(typeof(ResponseData<>), StatusCodes.Status200OK)]
-        [Authorize(Policy = FeeConfigurationPermissions.ReadWrite)]
-        public async Task<IActionResult> ActiveFeeRateConfig(Guid id)
-        {
             return Ok(new ResponseData<object>(System.Net.HttpStatusCode.OK, null, null, null));
         }
     }

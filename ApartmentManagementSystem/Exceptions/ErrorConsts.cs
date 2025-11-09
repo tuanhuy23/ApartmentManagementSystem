@@ -15,6 +15,7 @@
         public static string RoleIdIsRequired = "Role ID is required";
         public static string NoPermissionAccessApartmentBuilding = "You do not have permission to access this apartment building";
         public static string ApartmentNotFound = "Apartment not found";
+        public static string ApartmentBuildingNotFound = "Apartment building not found";
         public static string BillingCycleAlreadySet = "Billing cycle has already been set";
         public static string FeeTierIsRequired = "Fee tier is required";
         public static string FeeTypeNotFound = "Fee type not found";
@@ -31,6 +32,7 @@
         public static string FeeNoticeNotFound = "Fee notice not found";
         public static string FeeNoticeIdIsRequired = "Fee notice ID is required";
         public static string FeeNoticeCannotBeModified = "The fee notice cannot be modified based on its current status";
+        public static string UtilityReadingDataNotFound = "Utility reading data not found";
     }
 
     public static class ErrorCodeConsts
@@ -48,6 +50,7 @@
         public static string RoleIdIsRequired = "ROLE_ID_IS_REQUIRED";
         public static string NoPermissionAccessApartmentBuilding = "NO_PERMISSION_ACCESS_APARTMENT_BUILDING";
         public static string ApartmentNotFound = "APARTMENT_NOT_FOUND";
+        public static string ApartmentBuildingNotFound = "APARTMENT_BUILDING_NOT_FOUND";
         public static string BillingCycleAlreadySet = "BILLING_CYCLE_ALREADY_SET";
         public static string BillingCycleInvalidFormat = "BILLING_CYCLE_INVALID_FORMAT";
         public static string BillingCycleSettingIsNotFound = "BILLING_CYCLE_SETTING_NOT_FOUND"; 
@@ -63,5 +66,6 @@
         public static string FeeNoticeNotFound = "FEE_NOTICE_NOT_FOUND";
         public static string FeeNoticeIdIsRequired = "FEE_NOTICE_ID_IS_REQUIRED";
         public static string FeeNoticeCannotBeModified = "FEE_NOTICE_CANNOT_BE_MODIFIED";
+        public static string UtilityReadingDataNotFound = "UTILITY_READING_DATA_NOT_FOUND";
     }
 }

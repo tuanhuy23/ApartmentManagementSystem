@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace ApartmentManagementSystem.Controllers
 {
     [Produces("application/json")]
-    [Route("{appartmentBuildingId}/[controller]")]
+    [Route("{appartmentBuildingId}/file")]
     [ApiController]
     [Authorize]
     [ApiExceptionFilter]

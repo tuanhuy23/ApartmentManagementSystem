@@ -8,5 +8,7 @@ namespace ApartmentManagementSystem.EF.Context
         public Apartment Apartment { get; set; }
         public Guid ApartmentBuildingId { get; set; }
         public string VehicleType { get; set; }
+        public string? VehicleNumber { get; set; }
+        public string VehicleDescription{ get; set; }
     }
 }
