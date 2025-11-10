@@ -115,6 +115,7 @@ namespace ApartmentManagementSystem.Services.Impls
                     feeRateConfigDto.VATRate = feeRateConfig.VATRate;
                     feeRateConfigDto.Name = feeRateConfig.Name;
                     feeRateConfigDto.UnitName = feeRateConfig.UnitName;
+                    feeRateConfigDto.IsActive = feeRateConfig.IsActive;
                     feeRateConfigDtos.Add(feeRateConfigDto);
                 }
                 feeTypeDto.FeeRateConfigs = feeRateConfigDtos;

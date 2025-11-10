@@ -267,8 +267,8 @@ namespace ApartmentManagementSystem.Services.Impls
             {
                 if (remainCons <= 0) break;
                 double adjustedTierLimit = (feeTier.ConsumptionEnd - feeTier.ConsumptionStart) * ratioChange;
-                remainCons = remainCons - adjustedTierLimit;
-                if (remainCons < 0)
+                var consumptionTier = remainCons - adjustedTierLimit;
+                if (consumptionTier < 0)
                 {
                     cost = cost + ((decimal)remainCons * feeTier.UnitRate);
                 }
@@ -276,6 +276,7 @@ namespace ApartmentManagementSystem.Services.Impls
                 {
                     cost = cost + ((decimal)adjustedTierLimit * feeTier.UnitRate);
                 }
+                remainCons = consumptionTier;
                 feeDetailTiers.Add(new FeeDetailTier()
                 {
                     TierOrder = feeTier.TierOrder,
@@ -289,9 +290,12 @@ namespace ApartmentManagementSystem.Services.Impls
                 });
             }
             decimal subTotal = cost;
+            decimal netCost = cost;
+            decimal vatCost = 0;
             if (feeType.IsActive && feeRateConfig.VATRate != 0)
             {
-                subTotal = cost * (decimal)feeRateConfig.VATRate;
+                vatCost = cost * (decimal)feeRateConfig.VATRate;
+                subTotal = subTotal + vatCost;
             }
             if (utilityReadingDto.UtilityCurentReadingId != null)
             {
@@ -309,6 +313,7 @@ namespace ApartmentManagementSystem.Services.Impls
                 {
                     ApartmentBuildingId = feeType.ApartmentBuildingId,
                     ApartmentId = feeDetailReq.ApartmentId,
+                    FeeTypeId = feeDetailReq.FeeTypeId,
                     CurrentReading = utilityReadingDto.CurrentReading,
                     ReadingDate = utilityReadingDto.ReadingDate
                 });
@@ -324,6 +329,8 @@ namespace ApartmentManagementSystem.Services.Impls
                 CurrentReadingDate = utilityReadingDto.ReadingDate,
                 Proration = ratioChange,
                 FeeDetailTiers = feeDetailTiers,
+                GrossCost = netCost,
+                VATCost = vatCost
             };
         }
         private FeeDetail CreateFeeDetailByFeeTypeQuantity(FeeType feeType, CreateOrUpdateFeeDetailDto feeDetailReq, IEnumerable<ParkingRegistration> parkings)
