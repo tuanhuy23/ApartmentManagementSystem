@@ -42,23 +42,8 @@ namespace ApartmentManagementSystem.Services.Impls
         }
         public async Task CreateApartmentBuilding(CreateApartmentBuildingDto request)
         {
-            var apartmentBuildingId = Guid.NewGuid();
-            var roleManagementId = await _roleService.GetRoleIdByRoleName(RoleDefaulConsts.Management);
-
-            var ownerUser = await _userService.CreateOrUpdateUser(new CreateOrUpdateUserRequestDto()
+            var apartmentBuildingRequest = new ApartmentBuilding()
             {
-                AppartmentBuildingId = apartmentBuildingId.ToString(),
-                DisplayName = request.ManagementDisplayName,
-                Email = request.ManagementEmail,
-                Password = request.ManagementPassword,
-                PhoneNumber = request.ManagementPhoneNumber,
-                UserName = request.ManagementUserName,
-                RoleId = roleManagementId,
-            });
-
-            var apartmentBuilding = new ApartmentBuilding()
-            {
-                Id = apartmentBuildingId,
                 Address = request.Address,
                 Code = request.Code,
                 ContactEmail = request.ContactEmail,
@@ -68,13 +53,25 @@ namespace ApartmentManagementSystem.Services.Impls
                 Description = request.Description,
                 Name = request.Name,
                 Status = StatusConsts.Active,
-                OwnerUserId = ownerUser.UserId,
+                OwnerUserName = request.ManagementUserName,
             };
             if (request.Images != null)
             {
-                apartmentBuilding.Images = MapAppartmentBuildingImageEntity(request.Images).ToList();
+                apartmentBuildingRequest.Images = MapAppartmentBuildingImageEntity(request.Images).ToList();
             }
-            await _apartmentBuildingRepository.Add(apartmentBuilding);
+            var apartmentBuilding = await _apartmentBuildingRepository.Add(apartmentBuildingRequest);
+            var roleManagementId = await _roleService.GetRoleIdByRoleName(RoleDefaulConsts.Management);
+
+            await _userService.CreateOrUpdateUser(new CreateOrUpdateUserRequestDto()
+            {
+                AppartmentBuildingId = apartmentBuilding.Id.ToString(),
+                DisplayName = request.ManagementDisplayName,
+                Email = request.ManagementEmail,
+                Password = request.ManagementPassword,
+                PhoneNumber = request.ManagementPhoneNumber,
+                UserName = request.ManagementUserName,
+                RoleId = roleManagementId,
+            });
             await _unitOfWork.CommitAsync();
 
         }

@@ -10,7 +10,7 @@ namespace ApartmentManagementSystem.EF.Context
         public Guid FeeTypeId { get; set; }
         public double? Consumption { get; set; }
         public decimal SubTotal { get; set; }
-        public decimal GrossCost { get; set; }
+        public decimal NetCost { get; set; }
         public float VATRate { get; set; }
         public decimal VATCost { get; set; }
         public DateTime? PreviousReadingDate{ get; set; }

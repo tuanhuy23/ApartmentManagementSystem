@@ -11,5 +11,6 @@ namespace ApartmentManagementSystem.EF.Context
         public DateTime? BrithDay { get; set; }
         public string? IdentityNumber { get; set; }
         public string? UserId { get; set; }
+        public ICollection<ApartmentMember> ApartmentMembers { get; set; }
     }
 }

@@ -17,6 +17,7 @@ namespace ApartmentManagementSystem.EF.Context
         public ICollection<FeeType>? FeeTypes { get; set; }
         public ICollection<Apartment>? Apartments { get; set; }
         public BillingCycleSetting BillingCycleSetting { get; set; }
-        public string OwnerUserId { get; set; }
+        public string? OwnerUserName { get; set; }
+        public IEnumerable<string> Buildings { get; set; }
     }
 }
