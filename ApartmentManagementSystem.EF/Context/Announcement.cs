@@ -1,7 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Collections;
 using ApartmentManagementSystem.EF.Context.Base;
 
 namespace ApartmentManagementSystem.EF.Context
@@ -13,7 +10,10 @@ namespace ApartmentManagementSystem.EF.Context
         public string Title { get; set; }
         public string Body { get; set; }
         public string Status { get; set; }
+        public bool IsAll { get; set; }
+        public IEnumerable<string>? UserIds { get; set; }
         public DateTime PublishDate { get; set; }
-        
+        public ICollection<FileAttachment> Files { get; set; }
+        public ICollection<UserReadStatus> UserReadStatuses { get; set; }
     }
 }

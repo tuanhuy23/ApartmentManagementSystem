@@ -3,7 +3,7 @@
 
 namespace ApartmentManagementSystem.EF.Context
 {
-    public class ApartmentMember : AuditEntity<Guid>
+    public class ApartmentMember : EntityBase<Guid>
     {
         public Guid ApartmentId { get; set; }
         public Apartment Apartment { get; set; }

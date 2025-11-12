@@ -17,12 +17,16 @@ namespace ApartmentManagementSystem.EF.Context
         public DbSet<ParkingRegistration> ParkingRegistrations { get; set; }
         public DbSet<FeeNotice> FeeNotices { get; set; }
         public DbSet<FeeDetail> FeeDetails { get; set; }
-        public DbSet<UtilityReading> UtilityReadings{ get; set; }
+        public DbSet<UtilityReading> UtilityReadings { get; set; }
+        public DbSet<Resident> Residents { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
+        public DbSet<Announcement> Announcements { get; set; }
+        public DbSet<Request> Requests { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
     {
             #region ApartmentBuilding
-            builder.Entity<ApartmentBuilding>().HasMany(c => c.Images)
+            builder.Entity<ApartmentBuilding>().HasMany(c => c.Files)
               .WithOne(ci => ci.ApartmentBuilding)
               .HasPrincipalKey(ci => ci.Id)
               .HasForeignKey(c => c.ApartmentBuildingId)
@@ -43,7 +47,33 @@ namespace ApartmentManagementSystem.EF.Context
             .WithOne(ci => ci.ApartmentBuilding)
             .HasPrincipalKey(ci => ci.Id)
             .HasForeignKey(c => c.ApartmentBuildingId)
+            .OnDelete(DeleteBehavior.Cascade);  
+            
+            builder.Entity<ApartmentBuilding>().HasMany(c => c.Residents)
+            .WithOne(ci => ci.ApartmentBuilding)
+            .HasPrincipalKey(ci => ci.Id)
+            .HasForeignKey(c => c.ApartmentBuildingId)
             .OnDelete(DeleteBehavior.Cascade);   
+            
+            builder.Entity<ApartmentBuilding>().HasMany(c => c.Announcements)
+            .WithOne(ci => ci.ApartmentBuilding)
+            .HasPrincipalKey(ci => ci.Id)
+            .HasForeignKey(c => c.ApartmentBuildingId)
+            .OnDelete(DeleteBehavior.Cascade);  
+            
+            builder.Entity<ApartmentBuilding>().HasMany(c => c.Requests)
+            .WithOne(ci => ci.ApartmentBuilding)
+            .HasPrincipalKey(ci => ci.Id)
+            .HasForeignKey(c => c.ApartmentBuildingId)
+            .OnDelete(DeleteBehavior.Cascade);   
+            
+            builder.Entity<ApartmentBuilding>(e =>
+            {
+                e.Property(e => e.Buildings)
+                .HasConversion(
+                    v => string.Join(',', v),
+                    v => v.Split(',', StringSplitOptions.RemoveEmptyEntries));
+            });  
             #endregion
 
             #region  FeeType
@@ -98,6 +128,13 @@ namespace ApartmentManagementSystem.EF.Context
               .HasPrincipalKey(ci => ci.Id)
               .HasForeignKey(c => c.ApartmentId)
               .OnDelete(DeleteBehavior.Cascade);
+              
+              builder.Entity<Apartment>().HasMany(c => c.ApartmentMembers)
+              .WithOne(ci => ci.Apartment)
+              .HasPrincipalKey(ci => ci.Id)
+              .HasForeignKey(c => c.ApartmentId)
+              .OnDelete(DeleteBehavior.Cascade);
+              
             #endregion
             
             #region FeeNotice
@@ -113,6 +150,69 @@ namespace ApartmentManagementSystem.EF.Context
              .HasForeignKey(c => c.FeeDetailId)
              .OnDelete(DeleteBehavior.Cascade);
 
+            #endregion
+            
+            #region Resident 
+            
+            builder.Entity<Resident>().HasMany(c => c.ApartmentMembers)
+              .WithOne(ci => ci.Resident)
+              .HasPrincipalKey(ci => ci.Id)
+              .HasForeignKey(c => c.ResidentId)
+              .OnDelete(DeleteBehavior.Cascade);
+             
+            #endregion
+            
+            #region Notification 
+            
+            builder.Entity<Notification>().HasIndex(u => u.UserId);
+             
+            #endregion
+            
+            #region Announcement 
+            
+            builder.Entity<Announcement>().HasMany(c => c.Files)
+              .WithOne(ci => ci.Announcement)
+              .HasPrincipalKey(ci => ci.Id)
+              .HasForeignKey(c => c.AnnouncementId)
+              .OnDelete(DeleteBehavior.Cascade);
+              
+            builder.Entity<Announcement>().HasMany(c => c.UserReadStatuses)
+              .WithOne(ci => ci.Announcement)
+              .HasPrincipalKey(ci => ci.Id)
+              .HasForeignKey(c => c.AnnouncementId)
+              .OnDelete(DeleteBehavior.Cascade);
+              
+            builder.Entity<Announcement>(e =>
+            {
+                e.Property(e => e.UserIds)
+                .HasConversion(
+                    v => string.Join(',', v),
+                    v => v.Split(',', StringSplitOptions.RemoveEmptyEntries));
+            });
+            
+            builder.Entity<UserReadStatus>().HasIndex(u => new { u.UserId, u.AnnouncementId});
+            #endregion
+            
+            #region Request 
+            
+            builder.Entity<Request>().HasMany(c => c.Files)
+              .WithOne(ci => ci.Request)
+              .HasPrincipalKey(ci => ci.Id)
+              .HasForeignKey(c => c.RequestId)
+              .OnDelete(DeleteBehavior.Cascade);
+            
+            builder.Entity<Request>().HasMany(c => c.Feedbacks)
+              .WithOne(ci => ci.Request)
+              .HasPrincipalKey(ci => ci.Id)
+              .HasForeignKey(c => c.RequestId)
+              .OnDelete(DeleteBehavior.Cascade);
+              
+            builder.Entity<Feedback>().HasMany(c => c.Files)
+              .WithOne(ci => ci.Feedback)
+              .HasPrincipalKey(ci => ci.Id)
+              .HasForeignKey(c => c.FeedbackId)
+              .OnDelete(DeleteBehavior.Cascade);
+             
             #endregion
         }
     }

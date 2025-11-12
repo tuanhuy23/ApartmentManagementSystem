@@ -13,9 +13,12 @@ namespace ApartmentManagementSystem.EF.Context
         public string Status { get; set; }
         public string CurrencyUnit { get; set; }
         public string ApartmentBuildingImgUrl { get; set; }
-        public ICollection<ApartmentBuildingImage> Images { get; set; }
+        public ICollection<FileAttachment> Files { get; set; }
         public ICollection<FeeType>? FeeTypes { get; set; }
         public ICollection<Apartment>? Apartments { get; set; }
+        public ICollection<Resident>? Residents { get; set; }
+        public ICollection<Announcement>? Announcements { get; set; }
+        public ICollection<Request>? Requests { get; set; }
         public BillingCycleSetting BillingCycleSetting { get; set; }
         public string? OwnerUserName { get; set; }
         public IEnumerable<string> Buildings { get; set; }
