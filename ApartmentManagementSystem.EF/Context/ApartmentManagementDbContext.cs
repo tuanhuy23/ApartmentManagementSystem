@@ -19,18 +19,19 @@ namespace ApartmentManagementSystem.EF.Context
         public DbSet<FeeDetail> FeeDetails { get; set; }
         public DbSet<UtilityReading> UtilityReadings { get; set; }
         public DbSet<Resident> Residents { get; set; }
+        public DbSet<ApartmentResident> ApartmentResidents { get; set; }
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<Announcement> Announcements { get; set; }
         public DbSet<Request> Requests { get; set; }
+        public DbSet<FileAttachment> FileAttachments { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
     {
             #region ApartmentBuilding
             builder.Entity<ApartmentBuilding>().HasMany(c => c.Files)
               .WithOne(ci => ci.ApartmentBuilding)
-              .HasPrincipalKey(ci => ci.Id)
               .HasForeignKey(c => c.ApartmentBuildingId)
-              .OnDelete(DeleteBehavior.Cascade);
+              .OnDelete(DeleteBehavior.NoAction);
 
             builder.Entity<ApartmentBuilding>().HasMany(c => c.FeeTypes)
              .WithOne(ci => ci.ApartmentBuilding)
@@ -129,12 +130,6 @@ namespace ApartmentManagementSystem.EF.Context
               .HasForeignKey(c => c.ApartmentId)
               .OnDelete(DeleteBehavior.Cascade);
               
-              builder.Entity<Apartment>().HasMany(c => c.ApartmentMembers)
-              .WithOne(ci => ci.Apartment)
-              .HasPrincipalKey(ci => ci.Id)
-              .HasForeignKey(c => c.ApartmentId)
-              .OnDelete(DeleteBehavior.Cascade);
-              
             #endregion
             
             #region FeeNotice
@@ -154,11 +149,15 @@ namespace ApartmentManagementSystem.EF.Context
             
             #region Resident 
             
-            builder.Entity<Resident>().HasMany(c => c.ApartmentMembers)
-              .WithOne(ci => ci.Resident)
-              .HasPrincipalKey(ci => ci.Id)
-              .HasForeignKey(c => c.ResidentId)
-              .OnDelete(DeleteBehavior.Cascade);
+            builder.Entity<ApartmentResident>().HasOne(c => c.Apartment)
+             .WithMany(ci => ci.ApartmentResidents)
+             .HasForeignKey(c => c.ApartmentId)
+             .OnDelete(DeleteBehavior.NoAction);
+            
+            builder.Entity<ApartmentResident>().HasOne(c => c.Resident)
+             .WithMany(ci => ci.ApartmentResidents)
+             .HasForeignKey(c => c.ResidentId)
+             .OnDelete(DeleteBehavior.NoAction);
              
             #endregion
             
@@ -172,9 +171,8 @@ namespace ApartmentManagementSystem.EF.Context
             
             builder.Entity<Announcement>().HasMany(c => c.Files)
               .WithOne(ci => ci.Announcement)
-              .HasPrincipalKey(ci => ci.Id)
               .HasForeignKey(c => c.AnnouncementId)
-              .OnDelete(DeleteBehavior.Cascade);
+              .OnDelete(DeleteBehavior.NoAction);
               
             builder.Entity<Announcement>().HasMany(c => c.UserReadStatuses)
               .WithOne(ci => ci.Announcement)
@@ -197,21 +195,19 @@ namespace ApartmentManagementSystem.EF.Context
             
             builder.Entity<Request>().HasMany(c => c.Files)
               .WithOne(ci => ci.Request)
-              .HasPrincipalKey(ci => ci.Id)
               .HasForeignKey(c => c.RequestId)
-              .OnDelete(DeleteBehavior.Cascade);
+              .OnDelete(DeleteBehavior.NoAction);
             
             builder.Entity<Request>().HasMany(c => c.Feedbacks)
               .WithOne(ci => ci.Request)
               .HasPrincipalKey(ci => ci.Id)
               .HasForeignKey(c => c.RequestId)
-              .OnDelete(DeleteBehavior.Cascade);
+              .OnDelete(DeleteBehavior.NoAction);
               
             builder.Entity<Feedback>().HasMany(c => c.Files)
               .WithOne(ci => ci.Feedback)
-              .HasPrincipalKey(ci => ci.Id)
               .HasForeignKey(c => c.FeedbackId)
-              .OnDelete(DeleteBehavior.Cascade);
+              .OnDelete(DeleteBehavior.NoAction);
              
             #endregion
         }

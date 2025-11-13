@@ -57,7 +57,7 @@ namespace ApartmentManagementSystem.Services.Impls
             };
             if (request.Images != null)
             {
-                apartmentBuildingRequest.Images = MapAppartmentBuildingImageEntity(request.Images).ToList();
+                apartmentBuildingRequest.Files = MapAppartmentBuildingImageEntity(request.Images).ToList();
             }
             var apartmentBuilding = await _apartmentBuildingRepository.Add(apartmentBuildingRequest);
             var roleManagementId = await _roleService.GetRoleIdByRoleName(RoleDefaulConsts.Management);
@@ -75,7 +75,7 @@ namespace ApartmentManagementSystem.Services.Impls
             await _unitOfWork.CommitAsync();
 
         }
-        private IEnumerable<AppartmentBuildingImageDto> MapAppartmentBuildingImageDto(IEnumerable<ApartmentBuildingImage> imgs)
+        private IEnumerable<AppartmentBuildingImageDto> MapAppartmentBuildingImageDto(IEnumerable<FileAttachment> imgs)
         {
             var dtos = new List<AppartmentBuildingImageDto>();
             foreach (var imgsItem in imgs)
@@ -90,16 +90,17 @@ namespace ApartmentManagementSystem.Services.Impls
             }
             return dtos;
         }
-        private IEnumerable<ApartmentBuildingImage> MapAppartmentBuildingImageEntity(IEnumerable<UploadAppartmentBuildingImageDto> imgs)
+        private IEnumerable<FileAttachment> MapAppartmentBuildingImageEntity(IEnumerable<UploadAppartmentBuildingImageDto> imgs)
         {
-            var entities = new List<ApartmentBuildingImage>();
+            var entities = new List<FileAttachment>();
             foreach (var imgsItem in imgs)
             {
-                entities.Add(new ApartmentBuildingImage()
+                entities.Add(new FileAttachment()
                 {
                     Description = imgsItem.Description,
                     Name = imgsItem.Name,
                     Src = imgsItem.Src,
+                    FileType = FileType.Media
                 });
             }
             return entities;

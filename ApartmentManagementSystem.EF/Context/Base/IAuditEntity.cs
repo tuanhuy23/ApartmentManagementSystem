@@ -9,7 +9,7 @@
         string? UpdatedBy { get; set; }
         string? UpdatedByUserName { get; set; }
     }
-    public interface IAuditEntity<TKey> : IAuditEntity, IEntityBase<TKey>
+    public interface  IAuditEntity<TKey> : IAuditEntity, IEntityBase<TKey>
     {
 
     }

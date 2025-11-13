@@ -20,6 +20,12 @@ namespace ApartmentManagementSystem.EF
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>)).AddScoped<IParkingRegistrationRepository, ParkingRegistrationRepository>();
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>)).AddScoped<IUtilityReadingRepository, UtilityReadingRepository>();
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>)).AddScoped<IFeeNoticeRepository, FeeNoticeRepository>();
+            services.AddScoped(typeof(IRepository<>), typeof(Repository<>)).AddScoped<IResidentRepository, ResidentRepository>();
+            services.AddScoped(typeof(IRepository<>), typeof(Repository<>)).AddScoped<IApartmentResidentsRepository, ApartmentResidentsRepository>();
+            services.AddScoped(typeof(IRepository<>), typeof(Repository<>)).AddScoped<IAnnouncementRepository, AnnouncementRepository>();
+            services.AddScoped(typeof(IRepository<>), typeof(Repository<>)).AddScoped<IFeedbackRepository, FeedbackRepository>();
+            services.AddScoped(typeof(IRepository<>), typeof(Repository<>)).AddScoped<INotificationRepository, NotificationRepository>();
+            services.AddScoped(typeof(IRepository<>), typeof(Repository<>)).AddScoped<IRequestRepository, RequestRepository>();
                  
             services.AddScoped<IUnitOfWork, UnitOfWork>();
         }

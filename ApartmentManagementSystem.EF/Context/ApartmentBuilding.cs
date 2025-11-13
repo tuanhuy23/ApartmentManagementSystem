@@ -2,7 +2,7 @@
 
 namespace ApartmentManagementSystem.EF.Context
 {
-    public class ApartmentBuilding : AuditEntity<Guid>
+    public class ApartmentBuilding : AuditEntity<Guid>, ISoftDelete
     {
         public string Name { get; set; }
         public string Code {  get; set; }
@@ -22,5 +22,6 @@ namespace ApartmentManagementSystem.EF.Context
         public BillingCycleSetting BillingCycleSetting { get; set; }
         public string? OwnerUserName { get; set; }
         public IEnumerable<string> Buildings { get; set; }
+        public bool IsDeleted { get ; set ; }
     }
 }

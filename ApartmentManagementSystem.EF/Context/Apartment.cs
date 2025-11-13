@@ -13,6 +13,6 @@ namespace ApartmentManagementSystem.EF.Context
         public ICollection<ParkingRegistration> ParkingRegistrations { get; set; }
         public ICollection<UtilityReading> UtilityReadings { get; set; }
         public ICollection<FeeNotice> FeeNotices { get; set; }
-        public ICollection<ApartmentMember> ApartmentMembers { get; set; }
+        public ICollection<ApartmentResident> ApartmentResidents { get; set; }
     }
 }

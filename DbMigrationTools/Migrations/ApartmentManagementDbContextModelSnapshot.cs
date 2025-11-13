@@ -22,6 +22,61 @@ namespace DbMigrationTools.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("ApartmentManagementSystem.EF.Context.Announcement", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ApartmentBuildingId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CreatedByUserName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsAll")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("PublishDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UpdatedByUserName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserIds")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApartmentBuildingId");
+
+                    b.ToTable("Announcements");
+                });
+
             modelBuilder.Entity("ApartmentManagementSystem.EF.Context.Apartment", b =>
                 {
                     b.Property<Guid>("Id")
@@ -33,6 +88,10 @@ namespace DbMigrationTools.Migrations
 
                     b.Property<double>("Area")
                         .HasColumnType("float");
+
+                    b.Property<string>("Building")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
@@ -80,6 +139,10 @@ namespace DbMigrationTools.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Buildings")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Code")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -109,12 +172,14 @@ namespace DbMigrationTools.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("OwnerUserId")
-                        .IsRequired()
+                    b.Property<string>("OwnerUserName")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Status")
@@ -135,32 +200,29 @@ namespace DbMigrationTools.Migrations
                     b.ToTable("ApartmentBuildings");
                 });
 
-            modelBuilder.Entity("ApartmentManagementSystem.EF.Context.ApartmentBuildingImage", b =>
+            modelBuilder.Entity("ApartmentManagementSystem.EF.Context.ApartmentResident", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("ApartmentBuildingId")
+                    b.Property<Guid>("ApartmentId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("Description")
+                    b.Property<string>("MemberType")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Src")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<Guid>("ResidentId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ApartmentBuildingId");
+                    b.HasIndex("ApartmentId");
 
-                    b.ToTable("ApartmentBuildingImage");
+                    b.HasIndex("ResidentId");
+
+                    b.ToTable("ApartmentResidents");
                 });
 
             modelBuilder.Entity("ApartmentManagementSystem.EF.Context.BillingCycleSetting", b =>
@@ -234,7 +296,7 @@ namespace DbMigrationTools.Migrations
                     b.Property<Guid>("FeeTypeId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<decimal>("GrossCost")
+                    b.Property<decimal>("NetCost")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<double?>("PreviousReading")
@@ -545,6 +607,149 @@ namespace DbMigrationTools.Migrations
                     b.ToTable("FeeTypes");
                 });
 
+            modelBuilder.Entity("ApartmentManagementSystem.EF.Context.Feedback", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ApartmentBuildingId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CreatedByUserName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Rate")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("RequestId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UpdatedByUserName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RequestId");
+
+                    b.ToTable("Feedback");
+                });
+
+            modelBuilder.Entity("ApartmentManagementSystem.EF.Context.FileAttachment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("AnnouncementId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("ApartmentBuildingId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("FeedbackId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("FileType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("RequestId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Src")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AnnouncementId");
+
+                    b.HasIndex("ApartmentBuildingId");
+
+                    b.HasIndex("FeedbackId");
+
+                    b.HasIndex("RequestId");
+
+                    b.ToTable("FileAttachments");
+                });
+
+            modelBuilder.Entity("ApartmentManagementSystem.EF.Context.Notification", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ApartmentBuildingId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CreatedByUserName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("RelatedEntityID")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("RelatedEntityType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UpdatedByUserName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Notifications");
+                });
+
             modelBuilder.Entity("ApartmentManagementSystem.EF.Context.ParkingRegistration", b =>
                 {
                     b.Property<Guid>("Id")
@@ -640,6 +845,130 @@ namespace DbMigrationTools.Migrations
                     b.ToTable("QuantityRateConfig");
                 });
 
+            modelBuilder.Entity("ApartmentManagementSystem.EF.Context.Request", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ApartmentBuildingId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CreatedByUserName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UpdatedByUserName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApartmentBuildingId");
+
+                    b.ToTable("Requests");
+                });
+
+            modelBuilder.Entity("ApartmentManagementSystem.EF.Context.Resident", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ApartmentBuildingId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("BrithDay")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CreatedByUserName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("IdentityNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UpdatedByUserName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApartmentBuildingId");
+
+                    b.ToTable("Residents");
+                });
+
+            modelBuilder.Entity("ApartmentManagementSystem.EF.Context.UserReadStatus", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AnnouncementId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ApartmentBuildingId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("ReadAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AnnouncementId");
+
+                    b.HasIndex("UserId", "AnnouncementId");
+
+                    b.ToTable("UserReadStatus");
+                });
+
             modelBuilder.Entity("ApartmentManagementSystem.EF.Context.UtilityReading", b =>
                 {
                     b.Property<Guid>("Id")
@@ -688,6 +1017,17 @@ namespace DbMigrationTools.Migrations
                     b.ToTable("UtilityReadings");
                 });
 
+            modelBuilder.Entity("ApartmentManagementSystem.EF.Context.Announcement", b =>
+                {
+                    b.HasOne("ApartmentManagementSystem.EF.Context.ApartmentBuilding", "ApartmentBuilding")
+                        .WithMany("Announcements")
+                        .HasForeignKey("ApartmentBuildingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ApartmentBuilding");
+                });
+
             modelBuilder.Entity("ApartmentManagementSystem.EF.Context.Apartment", b =>
                 {
                     b.HasOne("ApartmentManagementSystem.EF.Context.ApartmentBuilding", "ApartmentBuilding")
@@ -699,15 +1039,23 @@ namespace DbMigrationTools.Migrations
                     b.Navigation("ApartmentBuilding");
                 });
 
-            modelBuilder.Entity("ApartmentManagementSystem.EF.Context.ApartmentBuildingImage", b =>
+            modelBuilder.Entity("ApartmentManagementSystem.EF.Context.ApartmentResident", b =>
                 {
-                    b.HasOne("ApartmentManagementSystem.EF.Context.ApartmentBuilding", "ApartmentBuilding")
-                        .WithMany("Images")
-                        .HasForeignKey("ApartmentBuildingId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                    b.HasOne("ApartmentManagementSystem.EF.Context.Apartment", "Apartment")
+                        .WithMany("ApartmentResidents")
+                        .HasForeignKey("ApartmentId")
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.Navigation("ApartmentBuilding");
+                    b.HasOne("ApartmentManagementSystem.EF.Context.Resident", "Resident")
+                        .WithMany("ApartmentResidents")
+                        .HasForeignKey("ResidentId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Apartment");
+
+                    b.Navigation("Resident");
                 });
 
             modelBuilder.Entity("ApartmentManagementSystem.EF.Context.BillingCycleSetting", b =>
@@ -795,6 +1143,48 @@ namespace DbMigrationTools.Migrations
                     b.Navigation("ApartmentBuilding");
                 });
 
+            modelBuilder.Entity("ApartmentManagementSystem.EF.Context.Feedback", b =>
+                {
+                    b.HasOne("ApartmentManagementSystem.EF.Context.Request", "Request")
+                        .WithMany("Feedbacks")
+                        .HasForeignKey("RequestId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Request");
+                });
+
+            modelBuilder.Entity("ApartmentManagementSystem.EF.Context.FileAttachment", b =>
+                {
+                    b.HasOne("ApartmentManagementSystem.EF.Context.Announcement", "Announcement")
+                        .WithMany("Files")
+                        .HasForeignKey("AnnouncementId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("ApartmentManagementSystem.EF.Context.ApartmentBuilding", "ApartmentBuilding")
+                        .WithMany("Files")
+                        .HasForeignKey("ApartmentBuildingId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("ApartmentManagementSystem.EF.Context.Feedback", "Feedback")
+                        .WithMany("Files")
+                        .HasForeignKey("FeedbackId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("ApartmentManagementSystem.EF.Context.Request", "Request")
+                        .WithMany("Files")
+                        .HasForeignKey("RequestId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("Announcement");
+
+                    b.Navigation("ApartmentBuilding");
+
+                    b.Navigation("Feedback");
+
+                    b.Navigation("Request");
+                });
+
             modelBuilder.Entity("ApartmentManagementSystem.EF.Context.ParkingRegistration", b =>
                 {
                     b.HasOne("ApartmentManagementSystem.EF.Context.Apartment", "Apartment")
@@ -817,6 +1207,39 @@ namespace DbMigrationTools.Migrations
                     b.Navigation("FeeType");
                 });
 
+            modelBuilder.Entity("ApartmentManagementSystem.EF.Context.Request", b =>
+                {
+                    b.HasOne("ApartmentManagementSystem.EF.Context.ApartmentBuilding", "ApartmentBuilding")
+                        .WithMany("Requests")
+                        .HasForeignKey("ApartmentBuildingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ApartmentBuilding");
+                });
+
+            modelBuilder.Entity("ApartmentManagementSystem.EF.Context.Resident", b =>
+                {
+                    b.HasOne("ApartmentManagementSystem.EF.Context.ApartmentBuilding", "ApartmentBuilding")
+                        .WithMany("Residents")
+                        .HasForeignKey("ApartmentBuildingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ApartmentBuilding");
+                });
+
+            modelBuilder.Entity("ApartmentManagementSystem.EF.Context.UserReadStatus", b =>
+                {
+                    b.HasOne("ApartmentManagementSystem.EF.Context.Announcement", "Announcement")
+                        .WithMany("UserReadStatuses")
+                        .HasForeignKey("AnnouncementId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Announcement");
+                });
+
             modelBuilder.Entity("ApartmentManagementSystem.EF.Context.UtilityReading", b =>
                 {
                     b.HasOne("ApartmentManagementSystem.EF.Context.Apartment", "Apartment")
@@ -836,8 +1259,17 @@ namespace DbMigrationTools.Migrations
                     b.Navigation("FeeType");
                 });
 
+            modelBuilder.Entity("ApartmentManagementSystem.EF.Context.Announcement", b =>
+                {
+                    b.Navigation("Files");
+
+                    b.Navigation("UserReadStatuses");
+                });
+
             modelBuilder.Entity("ApartmentManagementSystem.EF.Context.Apartment", b =>
                 {
+                    b.Navigation("ApartmentResidents");
+
                     b.Navigation("FeeNotices");
 
                     b.Navigation("ParkingRegistrations");
@@ -847,6 +1279,8 @@ namespace DbMigrationTools.Migrations
 
             modelBuilder.Entity("ApartmentManagementSystem.EF.Context.ApartmentBuilding", b =>
                 {
+                    b.Navigation("Announcements");
+
                     b.Navigation("Apartments");
 
                     b.Navigation("BillingCycleSetting")
@@ -854,7 +1288,11 @@ namespace DbMigrationTools.Migrations
 
                     b.Navigation("FeeTypes");
 
-                    b.Navigation("Images");
+                    b.Navigation("Files");
+
+                    b.Navigation("Requests");
+
+                    b.Navigation("Residents");
                 });
 
             modelBuilder.Entity("ApartmentManagementSystem.EF.Context.FeeDetail", b =>
@@ -881,6 +1319,23 @@ namespace DbMigrationTools.Migrations
                     b.Navigation("QuantityRateConfigs");
 
                     b.Navigation("UtilityReadings");
+                });
+
+            modelBuilder.Entity("ApartmentManagementSystem.EF.Context.Feedback", b =>
+                {
+                    b.Navigation("Files");
+                });
+
+            modelBuilder.Entity("ApartmentManagementSystem.EF.Context.Request", b =>
+                {
+                    b.Navigation("Feedbacks");
+
+                    b.Navigation("Files");
+                });
+
+            modelBuilder.Entity("ApartmentManagementSystem.EF.Context.Resident", b =>
+                {
+                    b.Navigation("ApartmentResidents");
                 });
 #pragma warning restore 612, 618
         }
