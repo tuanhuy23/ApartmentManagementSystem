@@ -1,4 +1,5 @@
 ﻿using ApartmentManagementSystem.Dtos;
+using ApartmentManagementSystem.EF.Context;
 using ApartmentManagementSystem.EF.Repositories.Interfaces;
 using ApartmentManagementSystem.EF.Repositories.Interfaces.Base;
 using ApartmentManagementSystem.Exceptions;
@@ -14,18 +15,28 @@ namespace ApartmentManagementSystem.Services.Impls
         private readonly IResidentRepository _residentRepository;
         private readonly IUserService _userService;
         private readonly IUnitOfWork _unitOfWork;
-        public ResidentService (IApartmentRepository apartmentRepository, IApartmentResidentsRepository apartmentResidentsRepository, IResidentRepository residentRepository, IUserService userService)
+        public ResidentService (IApartmentRepository apartmentRepository, IApartmentResidentsRepository apartmentResidentsRepository, IResidentRepository residentRepository, IUserService userService, IUnitOfWork unitOfWork)
         {
             _apartmentRepository = apartmentRepository;
             _residentRepository = residentRepository;
             _userService = userService;
             _apartmentResidentsRepository = apartmentResidentsRepository;
+            _unitOfWork = unitOfWork;
         }
         public async Task CreateOrUpdateResident(ResidentDto request)
         {
-            var apartmentId = _apartmentRepository.List().Include(a => a.ApartmentResidents).FirstOrDefault(a => a.Id.Equals(request.ApartmentId));
-            if (apartmentId == null) throw new DomainException(ErrorCodeConsts.ApartmentNotFound, ErrorMessageConsts.ApartmentNotFound, System.Net.HttpStatusCode.NotFound);
+            var apartment = _apartmentRepository.List().Include(a => a.ApartmentResidents).FirstOrDefault(a => a.Id.Equals(request.ApartmentId));
+            if (apartment == null) throw new DomainException(ErrorCodeConsts.ApartmentNotFound, ErrorMessageConsts.ApartmentNotFound, System.Net.HttpStatusCode.NotFound);
 
+            if (request.Id == null)
+            {
+                await CreateResident(apartment, request);
+            }
+            else
+            {
+                UpdateResident(apartment, request);
+            }
+            await _unitOfWork.CommitAsync();
         }
 
         public Task DeleteResident(Guid residentId)
@@ -33,14 +44,114 @@ namespace ApartmentManagementSystem.Services.Impls
             throw new NotImplementedException();
         }
 
-        public ResidentDto GetResident(Guid residentId)
+        public async Task<ResidentDto> GetResident(Guid residentId, Guid apartmentId)
         {
-            throw new NotImplementedException();
+            var resident = _residentRepository.List().Include(a => a.ApartmentResidents).FirstOrDefault(a => a.Id.Equals(residentId));
+            if (resident == null) throw new DomainException(ErrorCodeConsts.ResidentNotFound, ErrorMessageConsts.ResidentNotFound, System.Net.HttpStatusCode.NotFound);
+            var residentDto = new ResidentDto()
+            {
+                Id = resident.Id,
+                ApartmentBuildingId = resident.ApartmentBuildingId,
+                BrithDay = resident.BrithDay,
+                Name = resident.Name,
+                PhoneNumber = resident.PhoneNumber,
+                IdentityNumber = resident.IdentityNumber
+            };
+            if (resident.ApartmentResidents == null) return residentDto;
+            var  apartmentCurent = resident.ApartmentResidents.FirstOrDefault(a => a.ApartmentId.Equals(apartmentId));
+            if (apartmentCurent == null) throw new DomainException(ErrorCodeConsts.ResidentNotExistInApartment, ErrorMessageConsts.ResidentNotExistInApartment, System.Net.HttpStatusCode.NotFound);
+            residentDto.ApartmentId = apartmentCurent.ApartmentId;
+            residentDto.MemberType = apartmentCurent.MemberType;
+            residentDto.IsOwner = apartmentCurent.MemberType.Equals(MemberType.Owner) ? true : false;
+            if (string.IsNullOrEmpty(resident.UserId))
+            {
+                return residentDto;
+            }
+            var userRes =  await _userService.GetUser(resident.UserId);
+            if (userRes == null)
+                 throw new DomainException(ErrorCodeConsts.UserNotFound, ErrorMessageConsts.UserNotFound, System.Net.HttpStatusCode.NotFound);
+            residentDto.UserName = userRes.UserName;
+            residentDto.Email = userRes.Email;
+            residentDto.UserId = userRes.UserId;
+            return residentDto;
         }
 
         public IEnumerable<ResidentDto> GetResidents(Guid apartmentId)
         {
-            throw new NotImplementedException();
+            var apartment = _apartmentRepository.List().Include(a => a.ApartmentResidents).ThenInclude(a => a.Resident).FirstOrDefault(a => a.Id.Equals(apartmentId));
+            if (apartment == null) throw new DomainException(ErrorCodeConsts.ApartmentNotFound, ErrorMessageConsts.ApartmentNotFound, System.Net.HttpStatusCode.NotFound);
+            var residentDtos = new List<ResidentDto>();
+            if (apartment.ApartmentResidents == null) return residentDtos;
+            foreach(var resident in apartment.ApartmentResidents)
+            {
+                residentDtos.Add(new ResidentDto()
+                {
+                    ApartmentBuildingId = apartment.ApartmentBuildingId,
+                    ApartmentId = resident.ApartmentId,
+                    Name = resident.Resident.Name,
+                    Id = resident.ResidentId,
+                    MemberType = resident.MemberType,
+                    PhoneNumber = resident.Resident.PhoneNumber 
+                });
+            }
+            return residentDtos;
+        }
+        private async Task CreateResident(Apartment apartment, ResidentDto request)
+        {
+            var residentNew = new Resident()
+            {
+                ApartmentBuildingId = apartment.ApartmentBuildingId,
+                BrithDay = request.BrithDay,
+                IdentityNumber = request.IdentityNumber,
+                Name = request.Name,
+                PhoneNumber = request.PhoneNumber
+            }; 
+            var aparmentResidentNew = new ApartmentResident()
+            {
+                ApartmentId = apartment.Id,
+                MemberType = MemberType.Member
+            };
+            var aparmentResident = apartment.ApartmentResidents;
+            bool isExistOwner = false;
+            if (aparmentResident != null)
+            {
+                if (aparmentResident.Any(a => a.MemberType.Equals(MemberType.Owner)))
+                {
+                    isExistOwner = true;
+                }
+            }
+            if (request.IsOwner)
+            {
+                if (isExistOwner)
+                    throw new DomainException(ErrorCodeConsts.ResidentOwnerAlreadyExist, ErrorMessageConsts.ResidentOwnerAlreadyExist, System.Net.HttpStatusCode.BadRequest);
+                aparmentResidentNew.MemberType = MemberType.Owner;
+                var userRes = await _userService.CreateOrUpdateUser(new CreateOrUpdateUserRequestDto()
+                {
+                    AppartmentBuildingId  = apartment.ApartmentBuildingId.ToString(),
+                    DisplayName = request.Name,
+                    Email = request.Email,
+                    Password = request.Password,
+                    PhoneNumber = request.PhoneNumber,
+                    UserName = request.UserName
+                });
+                if (userRes == null) 
+                    throw new DomainException(ErrorCodeConsts.ErrorCreatingUser, ErrorMessageConsts.ErrorCreatingUser, System.Net.HttpStatusCode.BadRequest);
+                residentNew.UserId = userRes.UserId;
+            }   
+            var resident = await _residentRepository.Add(residentNew);
+            aparmentResidentNew.ResidentId = resident.Id;
+            await _apartmentResidentsRepository.Add(aparmentResidentNew);        
+        }
+        private void UpdateResident(Apartment apartment, ResidentDto request)
+        {
+            var resident = _residentRepository.List().FirstOrDefault(r => r.Id.Equals(request.Id.Value));
+            if (resident == null)
+                throw new DomainException(ErrorCodeConsts.ResidentNotFound, ErrorMessageConsts.ResidentNotFound, System.Net.HttpStatusCode.NotFound);
+            resident.BrithDay = request.BrithDay;
+            resident.Name = request.Name;
+            resident.IdentityNumber = request.IdentityNumber;
+            resident.PhoneNumber = request.PhoneNumber;
+            _residentRepository.Update(resident);
         }
     }
 }

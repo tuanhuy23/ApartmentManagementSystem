@@ -33,6 +33,9 @@
         public static string FeeNoticeIdIsRequired = "Fee notice ID is required";
         public static string FeeNoticeCannotBeModified = "The fee notice cannot be modified based on its current status";
         public static string UtilityReadingDataNotFound = "Utility reading data not found";
+        public static string ResidentOwnerAlreadyExist = "Resident owner already exists";
+        public static string ResidentNotFound = "Resident not found";
+        public static string ResidentNotExistInApartment = "Resident does not exist in apartment";
     }
 
     public static class ErrorCodeConsts
@@ -67,5 +70,8 @@
         public static string FeeNoticeIdIsRequired = "FEE_NOTICE_ID_IS_REQUIRED";
         public static string FeeNoticeCannotBeModified = "FEE_NOTICE_CANNOT_BE_MODIFIED";
         public static string UtilityReadingDataNotFound = "UTILITY_READING_DATA_NOT_FOUND";
+        public static string ResidentOwnerAlreadyExist = "RESIDENT_OWNER_ALREADY_EXIST";
+        public static string ResidentNotFound = "RESIDENT_NOT_FOUND";
+        public static string ResidentNotExistInApartment = "RESIDENT_NOT_EXIST_IN_APARTMENT";
     }
 }
