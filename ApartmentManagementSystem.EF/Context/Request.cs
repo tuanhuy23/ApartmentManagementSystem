@@ -13,10 +13,4 @@ namespace ApartmentManagementSystem.EF.Context
         public ApartmentBuilding ApartmentBuilding { get; set; }
         public Guid ApartmentBuildingId { get; set; }
     }
-    public static class Status
-    {
-        public const string New = "NEW";
-        public const string InProgress = "INPROGRESS";
-        public const string Done = "Done";
-    }
 }

@@ -54,6 +54,7 @@ namespace ApartmentManagementSystem.Services.Impls
                 Name = request.Name,
                 Status = StatusConsts.Active,
                 OwnerUserName = request.ManagementUserName,
+                Buildings = new List<string>()
             };
             if (request.Images != null)
             {

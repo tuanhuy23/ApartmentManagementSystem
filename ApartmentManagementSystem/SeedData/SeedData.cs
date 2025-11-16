@@ -29,7 +29,7 @@ namespace ApartmentManagementSystem.SeedData
                     DisplayName = email,
                     UserName = email,
                     IsActive = true,
-                    AppartmentBuildingId = "root"
+                    AppartmentBuildingId = "root",
                 };
                 await userManager.CreateAsync(user, testUserPw);
             }

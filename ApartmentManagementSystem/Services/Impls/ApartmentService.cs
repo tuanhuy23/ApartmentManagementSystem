@@ -24,6 +24,7 @@ namespace ApartmentManagementSystem.Services.Impls
                 Area = request.Area,
                 Floor = request.Floor,
                 Name = request.Name,
+                Building = string.Empty
             };
             await _apartmentRepository.Add(apartment);
             await _unitOfWork.CommitAsync();

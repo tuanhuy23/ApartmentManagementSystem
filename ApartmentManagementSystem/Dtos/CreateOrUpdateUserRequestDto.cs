@@ -10,5 +10,6 @@ namespace ApartmentManagementSystem.Dtos
         public string PhoneNumber { get; set; }
         public string AppartmentBuildingId { get; set; }
         public string Password { get; set; }
+        public string ApartmentId { get; set; }
     }
 }

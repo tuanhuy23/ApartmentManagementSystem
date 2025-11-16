@@ -1,5 +1,6 @@
 using ApartmentManagementSystem.Consts.Permissions;
 using ApartmentManagementSystem.Dtos;
+using ApartmentManagementSystem.EF.Context;
 using ApartmentManagementSystem.Exceptions;
 using ApartmentManagementSystem.Filters;
 using ApartmentManagementSystem.Response;
@@ -17,9 +18,11 @@ namespace ApartmentManagementSystem.Controllers
     public class ApartmentController : ControllerBase
     {
         private readonly IApartmentService _apartmentService;
-        public ApartmentController(IApartmentService apartmentService)
+        private readonly IResidentService _residentService;
+        public ApartmentController(IApartmentService apartmentService, IResidentService residentService)
         {
             _apartmentService = apartmentService;
+            _residentService = residentService;
         }
 
         [HttpGet()]
@@ -46,6 +49,32 @@ namespace ApartmentManagementSystem.Controllers
         public async Task<IActionResult> CreateApartment([FromBody] ApartmentDto request)
         {
             await _apartmentService.CreateApartment(request);
+            return Ok(new ResponseData<object>(System.Net.HttpStatusCode.OK, null, null, null));
+        }
+        [HttpGet("{apartmentId:Guid}/residents")]
+        [ProducesResponseType(typeof(ResponseData<IEnumerable<ResidentDto>>), StatusCodes.Status200OK)]
+        [Authorize(Policy = ApartmentPermissions.Read)]
+        public async Task<IActionResult> GetResidents(Guid apartmentId)
+        {
+            var response =  _residentService.GetResidents(apartmentId);
+            return Ok(new ResponseData<IEnumerable<ResidentDto>>(System.Net.HttpStatusCode.OK, response, null, null));
+        }
+
+        [HttpGet("{apartmentId:Guid}/residents/detail/{id:Guid}")]
+        [ProducesResponseType(typeof(ResponseData<ResidentDto>), StatusCodes.Status200OK)]
+        [Authorize(Policy = ApartmentPermissions.Read)]
+        public async Task<IActionResult> GetResident(Guid apartmentId, Guid id)
+        {
+            var response = await _residentService.GetResident(id, apartmentId);
+            return Ok(new ResponseData<ResidentDto>(System.Net.HttpStatusCode.OK, response, null, null));
+        }
+
+        [HttpPost("{apartmentId:Guid}/residents")]
+        [ProducesResponseType(typeof(ResponseData<>), StatusCodes.Status200OK)]
+        [Authorize(Policy = ApartmentPermissions.ReadWrite)]
+        public async Task<IActionResult> CreateResident([FromBody] ResidentDto request)
+        {
+            await _residentService.CreateOrUpdateResident(request);
             return Ok(new ResponseData<object>(System.Net.HttpStatusCode.OK, null, null, null));
         }
     }

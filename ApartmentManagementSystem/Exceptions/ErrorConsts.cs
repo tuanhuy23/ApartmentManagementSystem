@@ -36,6 +36,12 @@
         public static string ResidentOwnerAlreadyExist = "Resident owner already exists";
         public static string ResidentNotFound = "Resident not found";
         public static string ResidentNotExistInApartment = "Resident does not exist in apartment";
+        public static string RequestNotFound = "Request not found";
+        public static string RequestAlreadyDone = "The request has already been completed";
+        public static string RequestNotCompleted = "The request has not been completed";
+        public static string FeedbackNotFound = "Feedback not found";
+        public static string AnnouncementNotFound = "Announcement not found";
+        public static string AnnouncementAlreadyDone = "The announcement has already been published";
     }
 
     public static class ErrorCodeConsts
@@ -73,5 +79,11 @@
         public static string ResidentOwnerAlreadyExist = "RESIDENT_OWNER_ALREADY_EXIST";
         public static string ResidentNotFound = "RESIDENT_NOT_FOUND";
         public static string ResidentNotExistInApartment = "RESIDENT_NOT_EXIST_IN_APARTMENT";
+        public static string RequestNotFound = "REQUEST_NOT_FOUND";
+        public static string RequestAlreadyDone = "REQUEST_ALREADY_DONE";
+        public static string RequestNotCompleted = "REQUEST_NOT_COMPLETED";
+        public static string FeedbackNotFound = "FEEDBACK_NOT_FOUND";
+        public static string AnnouncementNotFound = "ANNOUNCEMENT_NOT_FOUND";
+        public static string AnnouncementAlreadyDone = "REQUEST_ALREADY_PUBLISHED";
     }
 }

@@ -30,6 +30,9 @@ namespace ApartmentManagementSystem.Register
             services.AddScoped<IBillingCycleSettingService, BillingCycleSettingService>();
             services.AddScoped<IFeeConfigurationService, FeeConfigurationService>();
             services.AddScoped<IFeeService, FeeService>();
+            services.AddScoped<IResidentService, ResidentService>();
+            services.AddScoped<IRequestService, RequestService>();
+            services.AddScoped<INotificationService, NotificationService>();
             services.AddScoped(serviceProvider =>
             {
                 var context = serviceProvider.GetService<IHttpContextAccessor>()?.HttpContext;

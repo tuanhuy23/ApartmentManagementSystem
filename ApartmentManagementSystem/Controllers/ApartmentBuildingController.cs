@@ -13,7 +13,6 @@ namespace ApartmentManagementSystem.Controllers
     [ApiController]
     [Authorize]
     [ApiExceptionFilter]
-    [ServiceFilter(typeof(ApartmentBuildingValidationFilter))]
     public class ApartmentBuildingController : ControllerBase
     {
         private readonly IApartmentBuildingService _apartmentBuildingService;

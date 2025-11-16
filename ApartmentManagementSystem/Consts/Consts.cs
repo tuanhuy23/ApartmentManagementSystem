@@ -16,5 +16,10 @@
     {
         public const string Active = "Active";
         public const string InActive = "InActive";
+        public const string New = "NEW";
+        public const string InProgress = "INPROGRESS";
+        public const string Done = "Done"; 
+        public const string UnPublish = "UNPUBLISH";
+        public const string Publish = "PUBLISH";
     }
 }

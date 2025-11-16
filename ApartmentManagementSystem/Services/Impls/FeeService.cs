@@ -115,7 +115,7 @@ namespace ApartmentManagementSystem.Services.Impls
                     PreviousReadingDate = feeDetail.PreviousReadingDate,
                     UtilityCurentReadingId = string.IsNullOrEmpty(currentUtilityReadingId) ? null : new Guid(currentUtilityReadingId),
                     Proration = feeDetail.Proration,
-                    GrossCost = feeDetail.GrossCost,
+                    GrossCost = feeDetail.NetCost,
                     VATRate = feeDetail.VATRate,
                     VATCost = feeDetail.VATCost,
                 };
@@ -329,7 +329,7 @@ namespace ApartmentManagementSystem.Services.Impls
                 CurrentReadingDate = utilityReadingDto.ReadingDate,
                 Proration = ratioChange,
                 FeeDetailTiers = feeDetailTiers,
-                GrossCost = netCost,
+                NetCost = netCost,
                 VATCost = vatCost
             };
         }

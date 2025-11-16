@@ -1,4 +1,5 @@
-﻿using ApartmentManagementSystem.Dtos;
+﻿using ApartmentManagementSystem.Consts;
+using ApartmentManagementSystem.Dtos;
 using ApartmentManagementSystem.EF.Context;
 using ApartmentManagementSystem.EF.Repositories.Interfaces;
 using ApartmentManagementSystem.EF.Repositories.Interfaces.Base;
@@ -14,13 +15,15 @@ namespace ApartmentManagementSystem.Services.Impls
         private readonly IApartmentResidentsRepository _apartmentResidentsRepository;
         private readonly IResidentRepository _residentRepository;
         private readonly IUserService _userService;
+        private readonly IRoleService _roleService;
         private readonly IUnitOfWork _unitOfWork;
-        public ResidentService (IApartmentRepository apartmentRepository, IApartmentResidentsRepository apartmentResidentsRepository, IResidentRepository residentRepository, IUserService userService, IUnitOfWork unitOfWork)
+        public ResidentService (IApartmentRepository apartmentRepository, IApartmentResidentsRepository apartmentResidentsRepository, IResidentRepository residentRepository, IUserService userService, IRoleService roleService, IUnitOfWork unitOfWork)
         {
             _apartmentRepository = apartmentRepository;
             _residentRepository = residentRepository;
             _userService = userService;
             _apartmentResidentsRepository = apartmentResidentsRepository;
+            _roleService = roleService;
             _unitOfWork = unitOfWork;
         }
         public async Task CreateOrUpdateResident(ResidentDto request)
@@ -120,19 +123,22 @@ namespace ApartmentManagementSystem.Services.Impls
                     isExistOwner = true;
                 }
             }
-            if (request.IsOwner)
+            if (request.MemberType.Equals(MemberType.Owner))
             {
                 if (isExistOwner)
                     throw new DomainException(ErrorCodeConsts.ResidentOwnerAlreadyExist, ErrorMessageConsts.ResidentOwnerAlreadyExist, System.Net.HttpStatusCode.BadRequest);
                 aparmentResidentNew.MemberType = MemberType.Owner;
+                var roleResidentId = await _roleService.GetRoleIdByRoleName(RoleDefaulConsts.Resident);
                 var userRes = await _userService.CreateOrUpdateUser(new CreateOrUpdateUserRequestDto()
                 {
                     AppartmentBuildingId  = apartment.ApartmentBuildingId.ToString(),
+                    ApartmentId = apartment.Id.ToString(),
                     DisplayName = request.Name,
                     Email = request.Email,
                     Password = request.Password,
                     PhoneNumber = request.PhoneNumber,
-                    UserName = request.UserName
+                    UserName = request.UserName,
+                    RoleId = roleResidentId
                 });
                 if (userRes == null) 
                     throw new DomainException(ErrorCodeConsts.ErrorCreatingUser, ErrorMessageConsts.ErrorCreatingUser, System.Net.HttpStatusCode.BadRequest);

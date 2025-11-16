@@ -46,6 +46,7 @@ namespace ApartmentManagementSystem.Services.Impls
                     DisplayName = request.DisplayName,
                     PhoneNumber = request.PhoneNumber,
                     AppartmentBuildingId = request.AppartmentBuildingId,
+                    ApartmentId = request.ApartmentId
                 };       
                 IdentityResult resultUser = await _userManager.CreateAsync(appUser, request.Password);
                 if (!resultUser.Succeeded)

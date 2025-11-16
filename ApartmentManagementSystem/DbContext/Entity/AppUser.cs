@@ -7,5 +7,6 @@ namespace ApartmentManagementSystem.DbContext.Entity
         public string DisplayName { get; set; }
         public bool IsActive { get; set; }
         public string? AppartmentBuildingId { get; set; }
+        public string? ApartmentId { get; set; }
     }
 }
