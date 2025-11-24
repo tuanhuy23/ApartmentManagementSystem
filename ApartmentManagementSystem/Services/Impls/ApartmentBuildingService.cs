@@ -1,6 +1,8 @@
-﻿using ApartmentManagementSystem.Consts;
+﻿using ApartmentManagementSystem.Common;
+using ApartmentManagementSystem.Consts;
 using ApartmentManagementSystem.Consts.Permissions;
 using ApartmentManagementSystem.Dtos;
+using ApartmentManagementSystem.Dtos.Base;
 using ApartmentManagementSystem.EF.Context;
 using ApartmentManagementSystem.EF.Repositories.Interfaces;
 using ApartmentManagementSystem.EF.Repositories.Interfaces.Base;
@@ -23,7 +25,7 @@ namespace ApartmentManagementSystem.Services.Impls
             _roleService = roleService;
         }
 
-        public IEnumerable<ApartmentBuildingDto> GetApartmentBuildings()
+        public Pagination<ApartmentBuildingDto> GetApartmentBuildings(RequestQueryBaseDto<object> request)
         {
             var response = _apartmentBuildingRepository.List().Select(x => new ApartmentBuildingDto()
             {
@@ -37,8 +39,20 @@ namespace ApartmentManagementSystem.Services.Impls
                 Id = x.Id.ToString(),
                 Name = x.Name,
                 Status = x.Status
-            }).ToList();
-            return response;
+            });
+            if (request.Filters!= null && request.Filters.Any())
+            {
+                response = FilterHelper.ApplyFilters(response, request.Filters);
+            }
+            if (request.Sorts!= null && request.Sorts.Any())
+            {
+                response = SortHelper.ApplySort(response, request.Sorts);
+            }
+            return new Pagination<ApartmentBuildingDto>()
+            {
+                Items = response.Skip((request.Page - 1) * request.PageSize).Take(request.PageSize).ToList(),
+                Totals = response.Count()
+            };
         }
         public async Task CreateApartmentBuilding(CreateApartmentBuildingDto request)
         {

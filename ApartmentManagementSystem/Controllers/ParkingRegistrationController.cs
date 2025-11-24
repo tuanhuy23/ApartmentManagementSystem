@@ -1,11 +1,13 @@
 using ApartmentManagementSystem.Consts.Permissions;
 using ApartmentManagementSystem.Dtos;
+using ApartmentManagementSystem.Dtos.Base;
 using ApartmentManagementSystem.Exceptions;
 using ApartmentManagementSystem.Filters;
 using ApartmentManagementSystem.Response;
 using ApartmentManagementSystem.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 
 namespace ApartmentManagementSystem.Controllers
 {
@@ -25,10 +27,34 @@ namespace ApartmentManagementSystem.Controllers
         [HttpGet("{id:Guid}")]
         [ProducesResponseType(typeof(ResponseData<IEnumerable<ParkingRegistrationDto>>), StatusCodes.Status200OK)]
         [Authorize(Policy = ApartmentPermissions.ReadWrite)]
-        public async Task<IActionResult> GetParkingRegistrations(Guid appartmentId)
+        public async Task<IActionResult> GetParkingRegistrations(Guid appartmentId, [FromQuery(Name = "filters")] string? filtersJson,
+            [FromQuery(Name = "sorts")] string? sortsJson, [FromHeader] int page = 1, [FromHeader] int limit = 20)
         {
-            var response = await _parkingRegistrationService.GetParkingRegistrations(appartmentId);
-            return Ok(new ResponseData<IEnumerable<ParkingRegistrationDto>>(System.Net.HttpStatusCode.OK, response, null, null));
+            List<FilterQuery> filters = new List<FilterQuery>();
+            if (!string.IsNullOrEmpty(filtersJson))
+            {
+                filters = JsonConvert.DeserializeObject<List<FilterQuery>>(filtersJson);
+            }
+
+            List<SortQuery> sorts = new List<SortQuery>();
+            if (!string.IsNullOrEmpty(sortsJson))
+            {
+                sorts = JsonConvert.DeserializeObject<List<SortQuery>>(sortsJson);
+            }
+            var response = _parkingRegistrationService.GetParkingRegistrations(new RequestQueryBaseDto<Guid>()
+            {
+                Filters = filters,
+                Page = page,
+                Sorts = sorts,
+                PageSize = limit,
+                Request = appartmentId
+            });
+            return Ok(new ResponseData<IEnumerable<ParkingRegistrationDto>>(System.Net.HttpStatusCode.OK, response.Items, null, new MetaData()
+            {
+                Page = page,
+                Total = response.Totals,
+                PerPage = limit
+            }));
         }
 
         [HttpPost()]

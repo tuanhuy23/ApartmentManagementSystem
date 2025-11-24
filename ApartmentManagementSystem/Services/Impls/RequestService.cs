@@ -1,5 +1,7 @@
+using ApartmentManagementSystem.Common;
 using ApartmentManagementSystem.Consts;
 using ApartmentManagementSystem.Dtos;
+using ApartmentManagementSystem.Dtos.Base;
 using ApartmentManagementSystem.EF.Context;
 using ApartmentManagementSystem.EF.Repositories.Interfaces;
 using ApartmentManagementSystem.EF.Repositories.Interfaces.Base;
@@ -130,24 +132,37 @@ namespace ApartmentManagementSystem.Services.Impls
             return requestDto;
         }
 
-        public IEnumerable<RequestDto> GetRequests(Guid apartmentBuildingId)
+        public Pagination<RequestDto> GetRequests(RequestQueryBaseDto<Guid> request)
         {
-            var requests = _requestRepository.List().Where(r => r.ApartmentBuildingId.Equals(apartmentBuildingId));
+            var requestEntitys = _requestRepository.List().Where(r => r.ApartmentBuildingId.Equals(request.Request));
             var requestDtos = new List<RequestDto>();
-            foreach(var request in requests)
+            foreach(var requestEntity in requestEntitys)
             {
                 var requestDto = new RequestDto()
                 {
-                    ApartmentBuildingId = request.ApartmentBuildingId,
-                    Description = request.Description,
-                    Id = request.Id,
-                    Status = request.Status,
-                    Title = request.Title,
-                    UserId = request.UserId
+                    ApartmentBuildingId = requestEntity.ApartmentBuildingId,
+                    Description = requestEntity.Description,
+                    Id = requestEntity.Id,
+                    Status = requestEntity.Status,
+                    Title = requestEntity.Title,
+                    UserId = requestEntity.UserId
                 };
                 requestDtos.Add(requestDto);
             }
-            return requestDtos;
+            var requestDtoQuery = requestDtos.AsQueryable();
+            if (request.Filters!= null && request.Filters.Any())
+            {
+                requestDtoQuery = FilterHelper.ApplyFilters(requestDtoQuery, request.Filters);
+            }
+            if (request.Sorts!= null && request.Sorts.Any())
+            {
+                requestDtoQuery = SortHelper.ApplySort(requestDtoQuery, request.Sorts);
+            }
+            return new Pagination<RequestDto>()
+            {
+                Items = requestDtoQuery.Skip((request.Page - 1) * request.PageSize).Take(request.PageSize).ToList(),
+                Totals = requestDtoQuery.Count()
+            };
         }
         private async Task CreateRequest(RequestDto request)
         {

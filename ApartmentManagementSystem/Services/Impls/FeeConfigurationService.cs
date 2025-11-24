@@ -1,4 +1,6 @@
+using ApartmentManagementSystem.Common;
 using ApartmentManagementSystem.Dtos;
+using ApartmentManagementSystem.Dtos.Base;
 using ApartmentManagementSystem.EF.Context;
 using ApartmentManagementSystem.EF.Repositories.Interfaces;
 using ApartmentManagementSystem.EF.Repositories.Interfaces.Base;
@@ -123,9 +125,9 @@ namespace ApartmentManagementSystem.Services.Impls
             return feeTypeDto;
         }
 
-        public async Task<IEnumerable<FeeTypeDto>> GetFeeTypes(string apartmentBuildingId)
+        public Pagination<FeeTypeDto> GetFeeTypes(RequestQueryBaseDto<string> request)
         {
-            var feeTypes = _feeTypeRepository.List().Include(f => f.FeeRateConfigs).Where(f => f.ApartmentBuildingId.Equals(new Guid(apartmentBuildingId)));
+            var feeTypes = _feeTypeRepository.List().Include(f => f.FeeRateConfigs).Where(f => f.ApartmentBuildingId.Equals(new Guid(request.Request)));
             var feeTypeDtos = new List<FeeTypeDto>();
             foreach (var feeType in feeTypes)
             {
@@ -150,7 +152,20 @@ namespace ApartmentManagementSystem.Services.Impls
                     Name = feeType.Name,
                 });
             }
-            return feeTypeDtos;
+            var response = feeTypeDtos.AsQueryable();
+            if (request.Filters!= null && request.Filters.Any())
+            {
+                response = FilterHelper.ApplyFilters(response, request.Filters);
+            }
+            if (request.Sorts!= null && request.Sorts.Any())
+            {
+                response = SortHelper.ApplySort(response, request.Sorts);
+            }
+            return new Pagination<FeeTypeDto>()
+            {
+                Items = response.Skip((request.Page - 1) * request.PageSize).Take(request.PageSize).ToList(),
+                Totals = response.Count()
+            };
         }
 
         private IEnumerable<FeeRateConfig> CreateOrUpdateFeeRateConfig(FeeType feeType, IEnumerable<CreateOrUpdateFeeRateConfigDto> request)

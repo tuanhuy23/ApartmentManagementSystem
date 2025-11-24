@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using ApartmentManagementSystem.Common;
 using ApartmentManagementSystem.Dtos;
+using ApartmentManagementSystem.Dtos.Base;
 using ApartmentManagementSystem.EF.Context;
 using ApartmentManagementSystem.EF.Repositories.Interfaces;
 using ApartmentManagementSystem.EF.Repositories.Interfaces.Base;
@@ -156,12 +158,12 @@ namespace ApartmentManagementSystem.Services.Impls
             await _unitOfWork.CommitAsync();
         }
 
-        public async Task<IEnumerable<FeeNoticeDto>> GetFeeNotices(Guid apartmentId)
+        public Pagination<FeeNoticeDto> GetFeeNotices(RequestQueryBaseDto<Guid> request)
         {
-            var feeNotice = _feeNoticeRepository.List().Where(f => f.ApartmentId.Equals(apartmentId));
+            var feeNotice = _feeNoticeRepository.List().Where(f => f.ApartmentId.Equals(request.Request));
             if (feeNotice == null)
                 throw new DomainException(ErrorCodeConsts.FeeNoticeNotFound, ErrorCodeConsts.FeeNoticeNotFound, System.Net.HttpStatusCode.BadRequest);
-            return feeNotice.Select(f => new FeeNoticeDto()
+            var feeNoticeDtos = feeNotice.Select(f => new FeeNoticeDto()
             {
                 ApartmentBuildingId = f.ApartmentBuildingId,
                 ApartmentId = f.ApartmentId,
@@ -173,21 +175,47 @@ namespace ApartmentManagementSystem.Services.Impls
                 IssueDate = f.IssueDate,
                 TotalAmount = f.TotalAmount
             });
+            if (request.Filters!= null && request.Filters.Any())
+            {
+                feeNoticeDtos = FilterHelper.ApplyFilters(feeNoticeDtos, request.Filters);
+            }
+            if (request.Sorts!= null && request.Sorts.Any())
+            {
+                feeNoticeDtos = SortHelper.ApplySort(feeNoticeDtos, request.Sorts);
+            }
+            return new Pagination<FeeNoticeDto>()
+            {
+                Items = feeNoticeDtos.Skip((request.Page - 1) * request.PageSize).Take(request.PageSize).ToList(),
+                Totals = feeNoticeDtos.Count()
+            };
         }
         
-        public async Task<IEnumerable<UtilityReadingDto>> GetUtilityReadings(Guid apartmentId)
+        public Pagination<UtilityReadingDto> GetUtilityReadings(RequestQueryBaseDto<Guid> request)
         {
-            var utilityReading = _utilityReadingRepository.List().Include(u => u.FeeType).Where(u => apartmentId.Equals(u.ApartmentId));
+            var utilityReading = _utilityReadingRepository.List().Include(u => u.FeeType).Where(u => request.Request.Equals(u.ApartmentId));
             if (utilityReading == null)
                 throw new DomainException(ErrorCodeConsts.UtilityReadingDataNotFound, ErrorCodeConsts.UtilityReadingDataNotFound, System.Net.HttpStatusCode.NotFound);
-            return utilityReading.Select(u => new UtilityReadingDto()
+            var utilityReadingDtos = utilityReading.Select(u => new UtilityReadingDto()
             {
                 ApartmentId = u.ApartmentId,
                 CurrentReading = u.CurrentReading,
                 FeeTypeId = u.FeeTypeId,
                 FeeTypeName = u.FeeType.Name,
                 Id = u.Id
-            }).ToList();
+            });
+            if (request.Filters!= null && request.Filters.Any())
+            {
+                utilityReadingDtos = FilterHelper.ApplyFilters(utilityReadingDtos, request.Filters);
+            }
+            if (request.Sorts!= null && request.Sorts.Any())
+            {
+                utilityReadingDtos = SortHelper.ApplySort(utilityReadingDtos, request.Sorts);
+            }
+            return new Pagination<UtilityReadingDto>()
+            {
+                Items = utilityReadingDtos.Skip((request.Page - 1) * request.PageSize).Take(request.PageSize).ToList(),
+                Totals = utilityReadingDtos.Count()
+            };
         }
 
         private async Task<FeeNotice> CreateOrUpdateFeeNotice(FeeNotice feeNotice, CreateOrUpdateFeeNoticeDto request)

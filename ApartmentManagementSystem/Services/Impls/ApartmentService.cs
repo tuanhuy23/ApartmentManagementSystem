@@ -1,4 +1,6 @@
+using ApartmentManagementSystem.Common;
 using ApartmentManagementSystem.Dtos;
+using ApartmentManagementSystem.Dtos.Base;
 using ApartmentManagementSystem.EF.Context;
 using ApartmentManagementSystem.EF.Repositories.Interfaces;
 using ApartmentManagementSystem.EF.Repositories.Interfaces.Base;
@@ -50,9 +52,9 @@ namespace ApartmentManagementSystem.Services.Impls
             };
         }
 
-        public async Task<IEnumerable<ApartmentDto>> GetApartments(string apartmentBuildingId)
+        public Pagination<ApartmentDto> GetApartments(RequestQueryBaseDto<string> request)
         {
-            var apartments = _apartmentRepository.List(a => a.ApartmentBuildingId.Equals(new Guid(apartmentBuildingId))).Select(a => new ApartmentDto()
+            var apartments = _apartmentRepository.List(a => a.ApartmentBuildingId.Equals(new Guid(request.Request))).Select(a => new ApartmentDto()
             {
                 Id = a.Id,
                 ApartmentBuildingId = a.ApartmentBuildingId,
@@ -60,7 +62,19 @@ namespace ApartmentManagementSystem.Services.Impls
                 Area = a.Area,
                 Floor = a.Floor
             });
-            return apartments;
+            if (request.Filters!= null && request.Filters.Any())
+            {
+                apartments = FilterHelper.ApplyFilters(apartments, request.Filters);
+            }
+            if (request.Sorts!= null && request.Sorts.Any())
+            {
+                apartments = SortHelper.ApplySort(apartments, request.Sorts);
+            }
+            return new Pagination<ApartmentDto>()
+            {
+                Items = apartments.Skip((request.Page - 1) * request.PageSize).Take(request.PageSize).ToList(),
+                Totals = apartments.Count()
+            };
         }
 
         public Task UpdateApartment(UpdateApartmentDto request, Guid id)

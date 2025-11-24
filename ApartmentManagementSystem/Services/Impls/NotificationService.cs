@@ -1,9 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using ApartmentManagementSystem.Common;
 using ApartmentManagementSystem.Consts;
 using ApartmentManagementSystem.Dtos;
+using ApartmentManagementSystem.Dtos.Base;
 using ApartmentManagementSystem.EF.Context;
 using ApartmentManagementSystem.EF.Repositories.Interfaces;
 using ApartmentManagementSystem.EF.Repositories.Interfaces.Base;
@@ -71,20 +69,32 @@ namespace ApartmentManagementSystem.Services.Impls
             throw new NotImplementedException();
         }
 
-        public IEnumerable<AnnouncementDto> GetAnnouncements(Guid apartmentBuildingId)
+        public Pagination<AnnouncementDto> GetAnnouncements(RequestQueryBaseDto<Guid> request)
         {
-             var apartmentBuilding = _apartmentBuildingRepository.List().FirstOrDefault(a => a.Id.Equals(apartmentBuildingId));
+             var apartmentBuilding = _apartmentBuildingRepository.List().FirstOrDefault(a => a.Id.Equals(request.Request));
             if (apartmentBuilding == null)
                 throw new DomainException(ErrorCodeConsts.ApartmentBuildingNotFound, ErrorMessageConsts.ApartmentBuildingNotFound, System.Net.HttpStatusCode.NotFound);
-            var announcements = _announcementRepository.List().Where(a => a.ApartmentBuildingId.Equals(apartmentBuildingId)).Select(a => new AnnouncementDto()
+            var announcements = _announcementRepository.List().Where(a => a.ApartmentBuildingId.Equals(request.Request)).Select(a => new AnnouncementDto()
             {
                 ApartmentBuildingId = a.ApartmentBuildingId,
                 Title = a.Title,
                 Status = a.Status,
                 IsAll = a.IsAll,
                 Body = a.Body
-            }).ToList();
-            return announcements;
+            });
+            if (request.Filters!= null && request.Filters.Any())
+            {
+                announcements = FilterHelper.ApplyFilters(announcements, request.Filters);
+            }
+            if (request.Sorts!= null && request.Sorts.Any())
+            {
+                announcements = SortHelper.ApplySort(announcements, request.Sorts);
+            }
+            return new Pagination<AnnouncementDto>()
+            {
+                Items = announcements.Skip((request.Page - 1) * request.PageSize).Take(request.PageSize).ToList(),
+                Totals = announcements.Count()
+            };
         }
 
         public Task<IEnumerable<NotificationDto>> GetNotifications(string userId)

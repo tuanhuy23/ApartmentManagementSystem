@@ -1,11 +1,12 @@
 ﻿namespace ApartmentManagementSystem.Dtos.Base
 {
-    public class RequestQueryBaseDto
+    public class RequestQueryBaseDto<T>
     {
-        public string FilterQueries { get; set; }
-        public string SortQueries { get; set; }
+        public List<FilterQuery> Filters { get; set; }
+        public List<SortQuery> Sorts { get; set; }
         public int Page { get; set; }
         public int PageSize { get; set; }
+        public T Request {get;set;}
     }
     public class SortQuery
     {
@@ -35,5 +36,10 @@
         Contains,
         StartsWith,
         EndsWith
+    }
+    public class Pagination<T> : List<T>
+    {
+        public int Totals { get; set; }
+        public List<T> Items { get; set; }
     }
 }

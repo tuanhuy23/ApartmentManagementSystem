@@ -1,6 +1,8 @@
-﻿using ApartmentManagementSystem.DbContext;
+﻿using ApartmentManagementSystem.Common;
+using ApartmentManagementSystem.DbContext;
 using ApartmentManagementSystem.DbContext.Entity;
 using ApartmentManagementSystem.Dtos;
+using ApartmentManagementSystem.Dtos.Base;
 using ApartmentManagementSystem.Exceptions;
 using ApartmentManagementSystem.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
@@ -136,7 +138,7 @@ namespace ApartmentManagementSystem.Services.Impls
             return userDto;
         }
 
-        public async Task<IEnumerable<UserDto>> GetUsers(string appartmentId = "")
+        public async Task<Pagination<UserDto>> GetUsers(RequestQueryBaseDto<string> request)
         {
             var users = await _userManager.Users.ToListAsync();
             List<UserDto> userDtos = new List<UserDto>();
@@ -154,7 +156,20 @@ namespace ApartmentManagementSystem.Services.Impls
                 userDto.RoleName = roles.FirstOrDefault();
                 userDtos.Add(userDto);
             }
-            return userDtos;
+            var userQuery = userDtos.AsQueryable();
+            if (request.Filters!= null && request.Filters.Any())
+            {
+                userQuery = FilterHelper.ApplyFilters(userQuery, request.Filters);
+            }
+            if (request.Sorts!= null && request.Sorts.Any())
+            {
+                userQuery = SortHelper.ApplySort(userQuery, request.Sorts);
+            }
+            return new Pagination<UserDto>()
+            {
+                Items = userQuery.Skip((request.Page - 1) * request.PageSize).Take(request.PageSize).ToList(),
+                Totals = userQuery.Count()
+            };
         }
     }
 }

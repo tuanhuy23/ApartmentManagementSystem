@@ -1,10 +1,11 @@
 ﻿using ApartmentManagementSystem.Dtos;
+using ApartmentManagementSystem.Dtos.Base;
 
 namespace ApartmentManagementSystem.Services.Interfaces
 {
     public interface IApartmentBuildingService
     {
-        public IEnumerable<ApartmentBuildingDto> GetApartmentBuildings();
+        public Pagination<ApartmentBuildingDto> GetApartmentBuildings(RequestQueryBaseDto<object> request);
         public Task CreateApartmentBuilding(CreateApartmentBuildingDto request);
     }
 }

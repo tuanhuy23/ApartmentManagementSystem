@@ -1,4 +1,6 @@
+using ApartmentManagementSystem.Common;
 using ApartmentManagementSystem.Dtos;
+using ApartmentManagementSystem.Dtos.Base;
 using ApartmentManagementSystem.EF.Context;
 using ApartmentManagementSystem.EF.Repositories.Interfaces;
 using ApartmentManagementSystem.EF.Repositories.Interfaces.Base;
@@ -27,16 +29,28 @@ namespace ApartmentManagementSystem.Services.Impls
             await _unitOfWork.CommitAsync();
         }
 
-        public async Task<IEnumerable<ParkingRegistrationDto>> GetParkingRegistrations(Guid aparmentId)
+        public Pagination<ParkingRegistrationDto> GetParkingRegistrations(RequestQueryBaseDto<Guid> request)
         {
-            var parkingRegistration = _parkingRegistrationRepository.List(p => p.Equals(aparmentId)).Select(p => new ParkingRegistrationDto()
+            var parkingRegistration = _parkingRegistrationRepository.List(p => p.Equals(request.Request)).Select(p => new ParkingRegistrationDto()
             {
                 ApartmentBuildingId = p.ApartmentBuildingId,
                 ApartmentId = p.ApartmentBuildingId,
                 Id = p.Id,
                 VehicleType = p.VehicleType
             });
-            return parkingRegistration;
+            if (request.Filters!= null && request.Filters.Any())
+            {
+                parkingRegistration = FilterHelper.ApplyFilters(parkingRegistration, request.Filters);
+            }
+            if (request.Sorts!= null && request.Sorts.Any())
+            {
+                parkingRegistration = SortHelper.ApplySort(parkingRegistration, request.Sorts);
+            }
+            return new Pagination<ParkingRegistrationDto>()
+            {
+                Items = parkingRegistration.Skip((request.Page - 1) * request.PageSize).Take(request.PageSize).ToList(),
+                Totals = parkingRegistration.Count()
+            };
         }
     }
 }

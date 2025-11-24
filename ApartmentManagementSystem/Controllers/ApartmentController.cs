@@ -1,5 +1,6 @@
 using ApartmentManagementSystem.Consts.Permissions;
 using ApartmentManagementSystem.Dtos;
+using ApartmentManagementSystem.Dtos.Base;
 using ApartmentManagementSystem.EF.Context;
 using ApartmentManagementSystem.Exceptions;
 using ApartmentManagementSystem.Filters;
@@ -7,6 +8,7 @@ using ApartmentManagementSystem.Response;
 using ApartmentManagementSystem.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 
 namespace ApartmentManagementSystem.Controllers
 {
@@ -28,10 +30,34 @@ namespace ApartmentManagementSystem.Controllers
         [HttpGet()]
         [ProducesResponseType(typeof(ResponseData<IEnumerable<ApartmentDto>>), StatusCodes.Status200OK)]
         [Authorize(Policy = ApartmentPermissions.Read)]
-        public async Task<IActionResult> GetApartments([FromRoute] string appartmentBuildingId)
+        public async Task<IActionResult> GetApartments([FromRoute] string appartmentBuildingId, [FromQuery(Name = "filters")] string? filtersJson,
+            [FromQuery(Name = "sorts")] string? sortsJson, [FromHeader] int page = 1, [FromHeader] int limit = 20)
         {
-            var response = await _apartmentService.GetApartments(appartmentBuildingId);
-            return Ok(new ResponseData<IEnumerable<ApartmentDto>>(System.Net.HttpStatusCode.OK, response, null, null));
+            List<FilterQuery> filters = new List<FilterQuery>();
+            if (!string.IsNullOrEmpty(filtersJson))
+            {
+                filters = JsonConvert.DeserializeObject<List<FilterQuery>>(filtersJson);
+            }
+
+            List<SortQuery> sorts = new List<SortQuery>();
+            if (!string.IsNullOrEmpty(sortsJson))
+            {
+                sorts = JsonConvert.DeserializeObject<List<SortQuery>>(sortsJson);
+            }
+            var response = _apartmentService.GetApartments(new RequestQueryBaseDto<string>()
+            {
+                Filters = filters,
+                Page = page,
+                Sorts = sorts,
+                PageSize = limit,
+                Request = appartmentBuildingId
+            });
+            return Ok(new ResponseData<IEnumerable<ApartmentDto>>(System.Net.HttpStatusCode.OK, response.Items, null, new MetaData()
+            {
+                Page = page,
+                Total = response.Totals,
+                PerPage = limit
+            }));
         }
 
         [HttpGet("{id:Guid}")]
@@ -54,10 +80,34 @@ namespace ApartmentManagementSystem.Controllers
         [HttpGet("{apartmentId:Guid}/residents")]
         [ProducesResponseType(typeof(ResponseData<IEnumerable<ResidentDto>>), StatusCodes.Status200OK)]
         [Authorize(Policy = ApartmentPermissions.Read)]
-        public async Task<IActionResult> GetResidents(Guid apartmentId)
+        public async Task<IActionResult> GetResidents(Guid apartmentId, [FromQuery(Name = "filters")] string? filtersJson,
+            [FromQuery(Name = "sorts")] string? sortsJson, [FromHeader] int page = 1, [FromHeader] int limit = 20)
         {
-            var response =  _residentService.GetResidents(apartmentId);
-            return Ok(new ResponseData<IEnumerable<ResidentDto>>(System.Net.HttpStatusCode.OK, response, null, null));
+            List<FilterQuery> filters = new List<FilterQuery>();
+            if (!string.IsNullOrEmpty(filtersJson))
+            {
+                filters = JsonConvert.DeserializeObject<List<FilterQuery>>(filtersJson);
+            }
+
+            List<SortQuery> sorts = new List<SortQuery>();
+            if (!string.IsNullOrEmpty(sortsJson))
+            {
+                sorts = JsonConvert.DeserializeObject<List<SortQuery>>(sortsJson);
+            }
+            var response =  _residentService.GetResidents(new RequestQueryBaseDto<Guid>()
+            {
+                Filters = filters,
+                Page = page,
+                Sorts = sorts,
+                PageSize = limit,
+                Request = apartmentId
+            });
+            return Ok(new ResponseData<IEnumerable<ResidentDto>>(System.Net.HttpStatusCode.OK, response.Items, null, new MetaData()
+            {
+                Page = page,
+                Total = response.Totals,
+                PerPage = limit
+            }));
         }
 
         [HttpGet("{apartmentId:Guid}/residents/detail/{id:Guid}")]

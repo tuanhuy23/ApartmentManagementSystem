@@ -1,11 +1,13 @@
 using ApartmentManagementSystem.Consts.Permissions;
 using ApartmentManagementSystem.Dtos;
+using ApartmentManagementSystem.Dtos.Base;
 using ApartmentManagementSystem.Exceptions;
 using ApartmentManagementSystem.Filters;
 using ApartmentManagementSystem.Response;
 using ApartmentManagementSystem.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 
 namespace ApartmentManagementSystem.Controllers
 {
@@ -25,10 +27,34 @@ namespace ApartmentManagementSystem.Controllers
         [HttpGet("{apartmentId:Guid}")]
         [ProducesResponseType(typeof(ResponseData<IEnumerable<FeeNoticeDto>>), StatusCodes.Status200OK)]
         [Authorize(Policy = FeeNoticePermissions.Read)]
-        public async Task<IActionResult> GetFeeNotices(Guid apartmentId)
+        public async Task<IActionResult> GetFeeNotices(Guid apartmentId, [FromQuery(Name = "filters")] string? filtersJson,
+            [FromQuery(Name = "sorts")] string? sortsJson, [FromHeader] int page = 1, [FromHeader] int limit = 20)
         {
-            var response = await _feeSerivce.GetFeeNotices(apartmentId);
-            return Ok(new ResponseData<IEnumerable<FeeNoticeDto>>(System.Net.HttpStatusCode.OK, response, null, null));
+            List<FilterQuery> filters = new List<FilterQuery>();
+            if (!string.IsNullOrEmpty(filtersJson))
+            {
+                filters = JsonConvert.DeserializeObject<List<FilterQuery>>(filtersJson);
+            }
+
+            List<SortQuery> sorts = new List<SortQuery>();
+            if (!string.IsNullOrEmpty(sortsJson))
+            {
+                sorts = JsonConvert.DeserializeObject<List<SortQuery>>(sortsJson);
+            }
+            var response = _feeSerivce.GetFeeNotices(new RequestQueryBaseDto<Guid>()
+            {
+                Filters = filters,
+                Page = page,
+                Sorts = sorts,
+                PageSize = limit,
+                Request = apartmentId
+            });
+            return Ok(new ResponseData<IEnumerable<FeeNoticeDto>>(System.Net.HttpStatusCode.OK, response.Items, null, new MetaData()
+            {
+                Page = page,
+                Total = response.Totals,
+                PerPage = limit
+            }));
         }
 
         [HttpGet()]
@@ -43,10 +69,34 @@ namespace ApartmentManagementSystem.Controllers
         [HttpGet("utility-reading/{apartmentId:Guid}")]
         [ProducesResponseType(typeof(ResponseData<IEnumerable<UtilityReadingDto>>), StatusCodes.Status200OK)]
         [Authorize(Policy = FeeNoticePermissions.Read)]
-        public async Task<IActionResult> GetUtilityReading(Guid apartmentId)
+        public async Task<IActionResult> GetUtilityReading(Guid apartmentId, [FromQuery(Name = "filters")] string? filtersJson,
+            [FromQuery(Name = "sorts")] string? sortsJson, [FromHeader] int page = 1, [FromHeader] int limit = 20)
         {
-            var utilityReadings = await _feeSerivce.GetUtilityReadings(apartmentId);
-            return Ok(new ResponseData<IEnumerable<UtilityReadingDto>>(System.Net.HttpStatusCode.OK, utilityReadings, null, null));
+            List<FilterQuery> filters = new List<FilterQuery>();
+            if (!string.IsNullOrEmpty(filtersJson))
+            {
+                filters = JsonConvert.DeserializeObject<List<FilterQuery>>(filtersJson);
+            }
+
+            List<SortQuery> sorts = new List<SortQuery>();
+            if (!string.IsNullOrEmpty(sortsJson))
+            {
+                sorts = JsonConvert.DeserializeObject<List<SortQuery>>(sortsJson);
+            }
+            var utilityReadings = _feeSerivce.GetUtilityReadings(new RequestQueryBaseDto<Guid>()
+            {
+                Filters = filters,
+                Page = page,
+                Sorts = sorts,
+                PageSize = limit,
+                Request = apartmentId
+            });
+            return Ok(new ResponseData<IEnumerable<UtilityReadingDto>>(System.Net.HttpStatusCode.OK, utilityReadings.Items, null, new MetaData()
+            {
+                Page = page,
+                Total = utilityReadings.Totals,
+                PerPage = limit
+            }));
         }
         
         [HttpPost()]

@@ -1,4 +1,5 @@
 using ApartmentManagementSystem.Dtos;
+using ApartmentManagementSystem.Dtos.Base;
 
 namespace ApartmentManagementSystem.Services.Interfaces
 {
@@ -6,6 +7,6 @@ namespace ApartmentManagementSystem.Services.Interfaces
     {
         Task CreateOrUpdateFeeType(CreateOrUpdateFeeTypeDto request);
         Task<FeeTypeDto> GetFeeType(Guid id);
-        Task<IEnumerable<FeeTypeDto>> GetFeeTypes(string appartmentBuildingId);
+        Pagination<FeeTypeDto> GetFeeTypes(RequestQueryBaseDto<string> request);
     }
 }

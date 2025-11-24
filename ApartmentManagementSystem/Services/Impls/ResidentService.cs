@@ -1,5 +1,7 @@
-﻿using ApartmentManagementSystem.Consts;
+﻿using ApartmentManagementSystem.Common;
+using ApartmentManagementSystem.Consts;
 using ApartmentManagementSystem.Dtos;
+using ApartmentManagementSystem.Dtos.Base;
 using ApartmentManagementSystem.EF.Context;
 using ApartmentManagementSystem.EF.Repositories.Interfaces;
 using ApartmentManagementSystem.EF.Repositories.Interfaces.Base;
@@ -79,12 +81,12 @@ namespace ApartmentManagementSystem.Services.Impls
             return residentDto;
         }
 
-        public IEnumerable<ResidentDto> GetResidents(Guid apartmentId)
+        public Pagination<ResidentDto> GetResidents(RequestQueryBaseDto<Guid> request)
         {
-            var apartment = _apartmentRepository.List().Include(a => a.ApartmentResidents).ThenInclude(a => a.Resident).FirstOrDefault(a => a.Id.Equals(apartmentId));
+            var apartment = _apartmentRepository.List().Include(a => a.ApartmentResidents).ThenInclude(a => a.Resident).FirstOrDefault(a => a.Id.Equals(request.Request));
             if (apartment == null) throw new DomainException(ErrorCodeConsts.ApartmentNotFound, ErrorMessageConsts.ApartmentNotFound, System.Net.HttpStatusCode.NotFound);
             var residentDtos = new List<ResidentDto>();
-            if (apartment.ApartmentResidents == null) return residentDtos;
+            if (apartment.ApartmentResidents == null) return new Pagination<ResidentDto>(){Items = residentDtos};
             foreach(var resident in apartment.ApartmentResidents)
             {
                 residentDtos.Add(new ResidentDto()
@@ -97,7 +99,20 @@ namespace ApartmentManagementSystem.Services.Impls
                     PhoneNumber = resident.Resident.PhoneNumber 
                 });
             }
-            return residentDtos;
+            var residents = residentDtos.AsQueryable();
+            if (request.Filters!= null && request.Filters.Any())
+            {
+                residents = FilterHelper.ApplyFilters(residents, request.Filters);
+            }
+            if (request.Sorts!= null && request.Sorts.Any())
+            {
+                residents = SortHelper.ApplySort(residents, request.Sorts);
+            }
+            return new Pagination<ResidentDto>()
+            {
+                Items = residents.Skip((request.Page - 1) * request.PageSize).Take(request.PageSize).ToList(),
+                Totals = residents.Count()
+            };
         }
         private async Task CreateResident(Apartment apartment, ResidentDto request)
         {

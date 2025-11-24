@@ -1,4 +1,5 @@
 using ApartmentManagementSystem.Dtos;
+using ApartmentManagementSystem.Dtos.Base;
 
 namespace ApartmentManagementSystem.Services.Interfaces
 {
@@ -6,8 +7,8 @@ namespace ApartmentManagementSystem.Services.Interfaces
     {
         Task CreateFeeNotice(CreateOrUpdateFeeNoticeDto request);
         Task<FeeNoticeDto> GetFeeDetail(Guid id);
-        Task<IEnumerable<FeeNoticeDto>> GetFeeNotices(Guid apartmentId);
+        Pagination<FeeNoticeDto> GetFeeNotices(RequestQueryBaseDto<Guid> request);
         Task UpdateFeeNotice(CreateOrUpdateFeeNoticeDto request);
-        Task<IEnumerable<UtilityReadingDto>> GetUtilityReadings(Guid apartmentId);
+        Pagination<UtilityReadingDto> GetUtilityReadings(RequestQueryBaseDto<Guid> request);
     }
 }
