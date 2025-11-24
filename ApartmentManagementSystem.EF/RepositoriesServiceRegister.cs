@@ -33,7 +33,7 @@ namespace ApartmentManagementSystem.EF
         {
             services.AddDbContext<ApartmentManagementDbContext>((optionBuilder) =>
             {
-                optionBuilder.UseSqlServer(connectionString);
+                optionBuilder.UseNpgsql(connectionString);
             });
             services.AddScoped<Func<ApartmentManagementDbContext>>((provider) => () => provider.GetService<ApartmentManagementDbContext>());
             services.AddScoped<DbFactory>();

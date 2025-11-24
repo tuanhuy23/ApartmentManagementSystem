@@ -9,7 +9,7 @@ namespace DbMigrationTools.ContextFactory
         public ApartmentManagementDbContext CreateDbContext(string[] args)
         {
             var optionsBuilder = new DbContextOptionsBuilder<ApartmentManagementDbContext>();
-            optionsBuilder.UseSqlServer("Server=.;Database=ApartmentManagement;User Id=sa;Password=aod@1234;TrustServerCertificate=True;", b => b.MigrationsAssembly("DbMigrationTools"));
+            optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=ApartmentManagement;Username=postgres;Password=aod@1234;Trust Server Certificate=true", b => b.MigrationsAssembly("DbMigrationTools"));
             return new ApartmentManagementDbContext(optionsBuilder.Options);
         }
     }

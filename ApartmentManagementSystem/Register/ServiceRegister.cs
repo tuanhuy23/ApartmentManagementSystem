@@ -79,7 +79,7 @@ namespace ApartmentManagementSystem.Register
 
             //Add Authentication
             services.AddDbContext<AuthenticationDbContext>(options =>
-               options.UseSqlServer(AppSettings.ConnectionStrings.Identity));
+               options.UseNpgsql(AppSettings.ConnectionStrings.Identity));
 
             services.AddIdentity<AppUser, IdentityRole>()
                 .AddEntityFrameworkStores<AuthenticationDbContext>()
