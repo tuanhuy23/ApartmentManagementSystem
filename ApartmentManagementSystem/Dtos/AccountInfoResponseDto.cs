@@ -9,6 +9,8 @@ namespace ApartmentManagementSystem.Dtos
         public string Role { get; set; }
         public string RoleName { get; set; }
         public string ApartmentBuildingId{ get; set; }
+        public string ApartmentId {get; set;}
+        public string IsActive { get; set; }
         public IEnumerable<string> Permissions { get; set; }
     }
 }

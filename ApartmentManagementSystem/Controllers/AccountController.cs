@@ -65,7 +65,6 @@ namespace ApartmentManagementSystem.Controllers
         }
 
         [HttpPost("change-password")]
-        [AllowAnonymous]
         [ProducesResponseType(typeof(ResponseData<ChangePasswordResponseDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequestDto request)
         {

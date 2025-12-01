@@ -11,6 +11,14 @@ namespace ApartmentManagementSystem.Identity
             {
                 return;
             }
+            var activeUser = context.User.Claims.Where(x => x.Type == "IsActive" &&
+                                                                x.Value == "True" &&
+                                                                x.Issuer == "ApartmentManagementSystem");
+            if (!activeUser.Any())
+            {
+                context.Fail();
+                return;
+            }
             var permissionss = context.User.Claims.Where(x => x.Type == "Permission" &&
                                                                 requirement.Permission == x.Value &&
                                                                 x.Issuer == "ApartmentManagementSystem");

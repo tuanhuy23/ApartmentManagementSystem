@@ -119,7 +119,7 @@ namespace ApartmentManagementSystem.Services.Impls
             var residentNew = new Resident()
             {
                 ApartmentBuildingId = apartment.ApartmentBuildingId,
-                BrithDay = request.BrithDay,
+                BrithDay = DateTime.SpecifyKind(request.BrithDay.Value, DateTimeKind.Utc),
                 IdentityNumber = request.IdentityNumber,
                 Name = request.Name,
                 PhoneNumber = request.PhoneNumber
@@ -168,7 +168,7 @@ namespace ApartmentManagementSystem.Services.Impls
             var resident = _residentRepository.List().FirstOrDefault(r => r.Id.Equals(request.Id.Value));
             if (resident == null)
                 throw new DomainException(ErrorCodeConsts.ResidentNotFound, ErrorMessageConsts.ResidentNotFound, System.Net.HttpStatusCode.NotFound);
-            resident.BrithDay = request.BrithDay;
+            resident.BrithDay = DateTime.SpecifyKind(request.BrithDay.Value, DateTimeKind.Utc);
             resident.Name = request.Name;
             resident.IdentityNumber = request.IdentityNumber;
             resident.PhoneNumber = request.PhoneNumber;

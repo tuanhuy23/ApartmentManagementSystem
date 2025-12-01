@@ -49,7 +49,7 @@ namespace ApartmentManagementSystem.Controllers
                 PageSize = limit,
                 Request = appartmentBuildingId
             });
-            return Ok(new ResponseData<IEnumerable<FeeTypeDto>>(System.Net.HttpStatusCode.OK, response, null, new MetaData()
+            return Ok(new ResponseData<IEnumerable<FeeTypeDto>>(System.Net.HttpStatusCode.OK, response.Items, null, new MetaData()
             {
                 Page = page,
                 Total = response.Totals,

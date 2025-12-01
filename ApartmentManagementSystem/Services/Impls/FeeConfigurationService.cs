@@ -194,7 +194,8 @@ namespace ApartmentManagementSystem.Services.Impls
                         FeeTypeId = feeType.Id,
                         IsActive = isActive,
                         Name = feeRateConfigDto.Name,
-                        VATRate = feeRateConfigDto.VATRate
+                        VATRate = feeRateConfigDto.VATRate,
+                        UnitName = "M3" //TODO
                     };
                     inCommingFeeRateConfig.FeeTiers = CreateOrUpdateFeeRateConfig(inCommingFeeRateConfig, feeRateConfigDto.FeeTiers).ToList();
                     feeRateConfigs.Add(inCommingFeeRateConfig);

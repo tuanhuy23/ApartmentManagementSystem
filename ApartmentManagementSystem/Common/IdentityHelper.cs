@@ -45,6 +45,11 @@ namespace ApartmentManagementSystem.Common
             {
                 accountInfo.Role = claimRole.Value;
             }
+             var claimIsActive = identity.FindFirst("IsActive");
+            if (claimIsActive != null)
+            {
+                accountInfo.IsActive = claimIsActive.Value;
+            }
             var claimPermission = identity.Claims.Where(c => c.Type == "Permission").Select(c => c.Value);
             if (claimPermission != null) 
             {

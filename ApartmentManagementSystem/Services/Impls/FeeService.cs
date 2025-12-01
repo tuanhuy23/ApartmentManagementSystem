@@ -331,7 +331,7 @@ namespace ApartmentManagementSystem.Services.Impls
                 if (currentUtilityReading != null)
                 {
                     currentUtilityReading.CurrentReading = utilityReadingDto.CurrentReading;
-                    currentUtilityReading.ReadingDate = utilityReadingDto.ReadingDate;
+                    currentUtilityReading.ReadingDate = DateTime.SpecifyKind(utilityReadingDto.ReadingDate, DateTimeKind.Utc);
                     _utilityReadingRepository.Update(currentUtilityReading);
                 }
             }
@@ -343,7 +343,7 @@ namespace ApartmentManagementSystem.Services.Impls
                     ApartmentId = feeDetailReq.ApartmentId,
                     FeeTypeId = feeDetailReq.FeeTypeId,
                     CurrentReading = utilityReadingDto.CurrentReading,
-                    ReadingDate = utilityReadingDto.ReadingDate
+                    ReadingDate = DateTime.SpecifyKind(utilityReadingDto.ReadingDate, DateTimeKind.Utc)
                 });
             }
             return new FeeDetail()
@@ -351,10 +351,10 @@ namespace ApartmentManagementSystem.Services.Impls
                 Consumption = consumption,
                 FeeTypeId = feeType.Id,
                 PreviousReading = previousUtilityReading != null ? previousUtilityReading.CurrentReading : 0,
-                PreviousReadingDate = previousUtilityReading != null ? previousUtilityReading.ReadingDate : null,
+                PreviousReadingDate = previousUtilityReading != null ? DateTime.SpecifyKind(previousUtilityReading.ReadingDate, DateTimeKind.Utc) : null,
                 SubTotal = subTotal,
                 CurrentReading = utilityReadingDto.CurrentReading,
-                CurrentReadingDate = utilityReadingDto.ReadingDate,
+                CurrentReadingDate = DateTime.SpecifyKind(utilityReadingDto.ReadingDate, DateTimeKind.Utc),
                 Proration = ratioChange,
                 FeeDetailTiers = feeDetailTiers,
                 NetCost = netCost,

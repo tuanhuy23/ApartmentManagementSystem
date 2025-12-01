@@ -28,7 +28,7 @@ namespace ApartmentManagementSystem.EF.Repositories.Impls.Base
                     ((IEntityBase<Guid>)entity).Id = Guid.NewGuid();
                     
                 }
-                ((IAuditEntity)entity).CreatedDate = DateTime.Now;
+                ((IAuditEntity)entity).CreatedDate = DateTime.UtcNow;
                 ((IAuditEntity)entity).CreatedBy = _userAudit.UserId;
                 ((IAuditEntity)entity).CreatedByUserName = _userAudit.UserName;
             }
@@ -46,7 +46,7 @@ namespace ApartmentManagementSystem.EF.Repositories.Impls.Base
                     {
                         ((IEntityBase<Guid>)entity).Id = Guid.NewGuid();
                     }
-                    ((IAuditEntity)entity).CreatedDate = DateTime.Now;
+                    ((IAuditEntity)entity).CreatedDate = DateTime.UtcNow;
                     ((IAuditEntity)entity).CreatedBy = _userAudit.UserId;
                     ((IAuditEntity)entity).CreatedByUserName = _userAudit.UserName;
                 }
@@ -73,7 +73,7 @@ namespace ApartmentManagementSystem.EF.Repositories.Impls.Base
         {
             if (typeof(IAuditEntity).IsAssignableFrom(typeof(T)))
             {
-                ((IAuditEntity)entity).UpdatedDate = DateTime.Now;
+                ((IAuditEntity)entity).UpdatedDate = DateTime.UtcNow;
                 ((IAuditEntity)entity).UpdatedBy = _userAudit.UserId;
                 ((IAuditEntity)entity).UpdatedByUserName = _userAudit.UserName;
             }
@@ -86,7 +86,7 @@ namespace ApartmentManagementSystem.EF.Repositories.Impls.Base
             {
                 foreach (var entity in entities)
                 {
-                    ((IAuditEntity)entity).UpdatedDate = DateTime.Now;
+                    ((IAuditEntity)entity).UpdatedDate = DateTime.UtcNow;
                     ((IAuditEntity)entity).UpdatedBy = _userAudit.UserId;
                     ((IAuditEntity)entity).UpdatedByUserName = _userAudit.UserName;
                 }
