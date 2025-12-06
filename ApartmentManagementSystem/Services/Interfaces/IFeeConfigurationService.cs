@@ -8,5 +8,6 @@ namespace ApartmentManagementSystem.Services.Interfaces
         Task CreateOrUpdateFeeType(CreateOrUpdateFeeTypeDto request);
         Task<FeeTypeDto> GetFeeType(Guid id);
         Pagination<FeeTypeDto> GetFeeTypes(RequestQueryBaseDto<string> request);
+        Task DeleteFeeType(IEnumerable<string> ids);
     }
 }

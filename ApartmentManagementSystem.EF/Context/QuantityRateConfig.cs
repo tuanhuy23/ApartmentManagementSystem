@@ -10,5 +10,6 @@ namespace ApartmentManagementSystem.EF.Context
         public string ItemType { get; set; }
         public decimal UnitRate {  get; set; }
         public bool IsActive { get; set; }
+         public DateTime ApplyDate{ get; set; }
     }
 }

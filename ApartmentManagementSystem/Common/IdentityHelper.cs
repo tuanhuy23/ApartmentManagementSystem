@@ -43,7 +43,12 @@ namespace ApartmentManagementSystem.Common
             var claimRole = identity.FindFirst(ClaimTypes.Role);
             if (claimRole != null)
             {
-                accountInfo.Role = claimRole.Value;
+                accountInfo.RoleId = claimRole.Value;
+            }
+            var claimRoleName = identity.FindFirst("RoleName");
+            if (claimRoleName != null)
+            {
+                accountInfo.RoleName = claimRoleName.Value;
             }
              var claimIsActive = identity.FindFirst("IsActive");
             if (claimIsActive != null)

@@ -108,12 +108,29 @@ namespace ApartmentManagementSystem.Controllers
             return Ok(new ResponseData<object>(System.Net.HttpStatusCode.OK, null, null, null));
         }
 
-        [HttpPut()]
+        [HttpPut("{id:Guid}/cancel-fee")]
         [ProducesResponseType(typeof(ResponseData<>), StatusCodes.Status200OK)]
         [Authorize(Policy = FeeNoticePermissions.Read)]
-        public async Task<IActionResult> UpdateFeeNotice(CreateOrUpdateFeeNoticeDto request)
+        public async Task<IActionResult> CancelFeeNotice(Guid id)
         {
             await _feeSerivce.CreateFeeNotice(request);
+            return Ok(new ResponseData<object>(System.Net.HttpStatusCode.OK, null, null, null));
+        }
+
+        [HttpPut("{id:Guid}/update-payment-status-fee")]
+        [ProducesResponseType(typeof(ResponseData<>), StatusCodes.Status200OK)]
+        [Authorize(Policy = FeeNoticePermissions.Read)]
+        public async Task<IActionResult> UpdatePaymentStatusFeeNotice(Guid id)
+        {
+            await _feeSerivce.CreateFeeNotice(request);
+            return Ok(new ResponseData<object>(System.Net.HttpStatusCode.OK, null, null, null));
+        }
+
+        [HttpDelete()]
+        [ProducesResponseType(typeof(ResponseData<>), StatusCodes.Status200OK)]
+        [Authorize(Policy = FeeNoticePermissions.Read)]
+        public async Task<IActionResult> DeleteFeeNotice([FromBody] List<string> request)
+        {
             return Ok(new ResponseData<object>(System.Net.HttpStatusCode.OK, null, null, null));
         }
     }

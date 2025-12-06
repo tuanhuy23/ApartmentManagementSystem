@@ -4,6 +4,7 @@ using ApartmentManagementSystem.DbContext.Entity;
 using ApartmentManagementSystem.EF;
 using ApartmentManagementSystem.Filters;
 using ApartmentManagementSystem.Identity;
+using ApartmentManagementSystem.Services;
 using ApartmentManagementSystem.Services.Impls;
 using ApartmentManagementSystem.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -65,6 +66,7 @@ namespace ApartmentManagementSystem.Register
                 return new CloudinaryService(AppSettings.Cloudinary);
             });
             services.AddScoped<ApartmentBuildingValidationFilter>();
+            services.AddSingleton(new ApartmentBuildingData());
         }
         public static void RegisterAuthenticationService(this IServiceCollection services)
         {
@@ -81,7 +83,7 @@ namespace ApartmentManagementSystem.Register
             services.AddDbContext<AuthenticationDbContext>(options =>
                options.UseNpgsql(AppSettings.ConnectionStrings.Identity));
 
-            services.AddIdentity<AppUser, IdentityRole>()
+            services.AddIdentity<AppUser, AppRole>()
                 .AddEntityFrameworkStores<AuthenticationDbContext>()
                 .AddDefaultTokenProviders();
 

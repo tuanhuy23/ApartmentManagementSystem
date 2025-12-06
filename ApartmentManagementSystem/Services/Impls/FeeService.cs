@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using ApartmentManagementSystem.Common;
+using ApartmentManagementSystem.Consts;
 using ApartmentManagementSystem.Dtos;
 using ApartmentManagementSystem.Dtos.Base;
 using ApartmentManagementSystem.EF.Context;
@@ -65,8 +66,8 @@ namespace ApartmentManagementSystem.Services.Impls
                 ApartmentBuildingId = request.ApartmentBuildingId,
                 ApartmentId = request.ApartmentId,
                 BillingCycle = request.BillingCycle,
-                Status = FeeNoticeStatus.Draft,
-                PaymentStatus = FeeNoticeStatus.NA
+                Status = FeeNoticeStatus.Issued,
+                PaymentStatus = FeeNoticeStatus.UnPaid
             };
             feeNotice = await CreateOrUpdateFeeNotice(feeNotice, request);          
             feeNotice.DueDate = DateTime.UtcNow.AddDays(billingSetting.PaymentDueDate);
@@ -141,23 +142,6 @@ namespace ApartmentManagementSystem.Services.Impls
             return response;
         }
 
-        public async Task UpdateFeeNotice(CreateOrUpdateFeeNoticeDto request)
-        {
-            if (request.Id == null)
-                throw new DomainException(ErrorCodeConsts.FeeNoticeIdIsRequired, ErrorCodeConsts.FeeNoticeIdIsRequired, System.Net.HttpStatusCode.BadRequest);
-
-            var feeNotice = _feeNoticeRepository.List().FirstOrDefault(f => f.Id.Equals(request.Id));
-
-            if (feeNotice == null)
-                throw new DomainException(ErrorCodeConsts.FeeNoticeNotFound, ErrorCodeConsts.FeeNoticeNotFound, System.Net.HttpStatusCode.BadRequest);
-
-            if (!feeNotice.Status.Equals(FeeNoticeStatus.Draft) || !feeNotice.Status.Equals(FeeNoticeStatus.Canceled))
-                throw new DomainException(ErrorCodeConsts.FeeNoticeCannotBeModified, ErrorCodeConsts.FeeNoticeCannotBeModified, System.Net.HttpStatusCode.BadRequest);
-            feeNotice = await CreateOrUpdateFeeNotice(feeNotice, request);
-            _feeNoticeRepository.Update(feeNotice);
-            await _unitOfWork.CommitAsync();
-        }
-
         public Pagination<FeeNoticeDto> GetFeeNotices(RequestQueryBaseDto<Guid> request)
         {
             var feeNotice = _feeNoticeRepository.List().Where(f => f.ApartmentId.Equals(request.Request));
@@ -188,6 +172,52 @@ namespace ApartmentManagementSystem.Services.Impls
                 Items = feeNoticeDtos.Skip((request.Page - 1) * request.PageSize).Take(request.PageSize).ToList(),
                 Totals = feeNoticeDtos.Count()
             };
+        }
+
+        public async Task CancelFeeNotice(Guid id)
+        {
+            var feeNotice = _feeNoticeRepository.List().Include(f => f.FeeDetails).ThenInclude(fd => fd.FeeDetailTiers).FirstOrDefault(f => f.Id.Equals(id));
+            if (feeNotice == null)
+                throw new DomainException(ErrorCodeConsts.FeeNoticeNotFound, ErrorMessageConsts.FeeNoticeNotFound, System.Net.HttpStatusCode.BadRequest);
+            if (feeNotice.PaymentStatus.Equals(Consts.FeeNoticeStatus.Paid))
+                throw new DomainException(ErrorCodeConsts.FeeNoticeCannotBeModified, ErrorMessageConsts.FeeNoticeCannotBeModified, System.Net.HttpStatusCode.BadRequest);
+            foreach (var feeDetail in feeNotice.FeeDetails)
+            {
+                if (feeDetail.FeeType == null) continue;
+                if (feeDetail.CurrentReadingDate != null)
+                {
+                    var currentUtilityReading = _utilityReadingRepository.List().FirstOrDefault(u => u.ReadingDate.Equals(feeDetail.CurrentReadingDate));
+                    if (currentUtilityReading == null) continue;
+                    _utilityReadingRepository.Delete(currentUtilityReading);
+                } 
+            }
+            feeNotice.Status = Consts.FeeNoticeStatus.Canceled;
+            _feeNoticeRepository.Update(feeNotice);
+            await _unitOfWork.CommitAsync();
+        }
+
+        public async Task UpdatePaymentStatusFeeNotice(Guid id)
+        {
+            var feeNotice = _feeNoticeRepository.List().Include(f => f.FeeDetails).ThenInclude(fd => fd.FeeDetailTiers).FirstOrDefault(f => f.Id.Equals(id));
+            if (feeNotice == null)
+                throw new DomainException(ErrorCodeConsts.FeeNoticeNotFound, ErrorMessageConsts.FeeNoticeNotFound, System.Net.HttpStatusCode.BadRequest);
+            if (feeNotice.PaymentStatus.Equals(Consts.FeeNoticeStatus.Canceled))
+                throw new DomainException(ErrorCodeConsts.FeeNoticeCannotBeModified, ErrorMessageConsts.FeeNoticeCannotBeModified, System.Net.HttpStatusCode.BadRequest);
+            feeNotice.PaymentStatus = Consts.FeeNoticeStatus.Paid;
+            await _unitOfWork.CommitAsync();
+        }
+
+        public async Task DeletFeeeNotice(List<string> ids)
+        {
+            var feeNoticeIds = ids.Select(i => new Guid(i));
+            var feeNotices = _feeNoticeRepository.List(f => feeNoticeIds.Contains(f.Id));
+            foreach(var feeNotice in feeNotices)
+            {
+                if (!feeNotice.Status.Equals(Consts.FeeNoticeStatus.Canceled))
+                    throw new DomainException(ErrorCodeConsts.FeeNoticeCannotBeModified, ErrorMessageConsts.FeeNoticeCannotBeModified, System.Net.HttpStatusCode.BadRequest);
+                _feeNoticeRepository.Delete(feeNotice);
+            }
+            await _unitOfWork.CommitAsync();
         }
         
         public Pagination<UtilityReadingDto> GetUtilityReadings(RequestQueryBaseDto<Guid> request)
@@ -272,7 +302,7 @@ namespace ApartmentManagementSystem.Services.Impls
 
             var previousUtilityReading = _utilityReadingRepository.List().OrderByDescending(u => u.ReadingDate)
                                 .FirstOrDefault(u => u.ApartmentBuildingId.Equals(feeRateConfig.ApartmentBuildingId) && u.ApartmentId.Equals(feeDetailReq.ApartmentId) && u.FeeTypeId.Equals(feeRateConfig.Id) 
-                                && (utilityReadingDto. UtilityCurentReadingId == null ? true : !u.Id.Equals(utilityReadingDto. UtilityCurentReadingId.Value)));
+                                && (utilityReadingDto.UtilityCurentReadingId == null ? true : !u.Id.Equals(utilityReadingDto. UtilityCurentReadingId.Value)));
             double previousReading = 0;
             double actualUserTotalDays = 30;
             if (previousUtilityReading != null)
@@ -398,6 +428,8 @@ namespace ApartmentManagementSystem.Services.Impls
             }
             return null;
         }
+
+       
     }
     internal class BillingCycleExtract
     {

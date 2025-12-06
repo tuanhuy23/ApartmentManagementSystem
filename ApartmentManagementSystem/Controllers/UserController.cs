@@ -26,7 +26,7 @@ namespace ApartmentManagementSystem.Controllers
         [HttpGet()]
         [ProducesResponseType(typeof(ResponseData<IEnumerable<UserDto>>), StatusCodes.Status200OK)]
         [Authorize(Policy = UserPermissions.Read)]
-        public async Task<IActionResult> Get([FromQuery(Name = "filters")] string? filtersJson,
+        public async Task<IActionResult> Get([FromRoute] string appartmentBuildingId, [FromQuery(Name = "filters")] string? filtersJson,
             [FromQuery(Name = "sorts")] string? sortsJson, [FromHeader] int page = 1, [FromHeader] int limit = 20)
         {
             List<FilterQuery> filters = new List<FilterQuery>();
@@ -46,6 +46,7 @@ namespace ApartmentManagementSystem.Controllers
                 Page = page,
                 Sorts = sorts,
                 PageSize = limit,
+                Request = appartmentBuildingId
             });
             return Ok(new ResponseData<IEnumerable<UserDto>>(System.Net.HttpStatusCode.OK, response.Items, null, new MetaData()
             {

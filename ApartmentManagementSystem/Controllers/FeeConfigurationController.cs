@@ -83,5 +83,13 @@ namespace ApartmentManagementSystem.Controllers
             await _feeConfigurationService.CreateOrUpdateFeeType(request);
             return Ok(new ResponseData<object>(System.Net.HttpStatusCode.OK, null, null, null));
         }
+
+        [HttpDelete()]
+        [ProducesResponseType(typeof(ResponseData<>), StatusCodes.Status200OK)]
+        [Authorize(Policy = FeeConfigurationPermissions.Read)]
+        public async Task<IActionResult> DeleteFeeType([FromBody] List<string> request)
+        {
+            return Ok(new ResponseData<object>(System.Net.HttpStatusCode.OK, null, null, null));
+        }
     }
 }

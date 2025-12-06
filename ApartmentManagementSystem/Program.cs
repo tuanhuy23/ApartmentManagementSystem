@@ -65,7 +65,7 @@ namespace ApartmentManagementSystem
             });
 
             var app = builder.Build();
-
+            
             // Seed data
             var authenticationCtx = app.Services.CreateScope().ServiceProvider.GetRequiredService<AuthenticationDbContext>();
             bool dbExist = authenticationCtx.Database.EnsureCreated();

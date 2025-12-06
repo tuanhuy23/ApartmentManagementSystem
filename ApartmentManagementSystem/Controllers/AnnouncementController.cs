@@ -18,7 +18,7 @@ namespace ApartmentManagementSystem.Controllers
     [ApiController]
     [Route("{appartmentBuildingId}/announcement")]
     [Authorize]
-    [ApiExceptionFilter]
+    [ApiExceptionFilter] 
     [ServiceFilter(typeof(ApartmentBuildingValidationFilter))]
 
     public class AnnouncementController : ControllerBase
@@ -64,9 +64,9 @@ namespace ApartmentManagementSystem.Controllers
         [HttpGet("{id:Guid}")]
         [ProducesResponseType(typeof(ResponseData<AnnouncementDto>), StatusCodes.Status200OK)]
         [Authorize(Policy = NotificationPermissions.Read)]
-        public async Task<IActionResult> GetAnnouncement(Guid requestId)
+        public async Task<IActionResult> GetAnnouncement(Guid id)
         {
-            var response = _notificationService.GetAnnouncement(requestId);
+            var response = _notificationService.GetAnnouncement(id);
             return Ok(new ResponseData<AnnouncementDto>(System.Net.HttpStatusCode.OK, response, null, null));
         }
 
@@ -88,5 +88,12 @@ namespace ApartmentManagementSystem.Controllers
             return Ok(new ResponseData<object>(System.Net.HttpStatusCode.OK, null, null, null));
         }
 
+        [HttpDelete()]
+        [ProducesResponseType(typeof(ResponseData<>), StatusCodes.Status200OK)]
+        [Authorize(Policy = NotificationPermissions.ReadWrite)]
+        public async Task<IActionResult> DeleteAnnouncement([FromBody] List<string> request)
+        {
+            return Ok(new ResponseData<object>(System.Net.HttpStatusCode.OK, null, null, null));
+        }
     }
 }

@@ -15,13 +15,4 @@ namespace ApartmentManagementSystem.EF.Context
         public Guid ApartmentBuildingId { get; set; }
         public ICollection<FeeDetail> FeeDetails { get; set; }
     }
-    public static class FeeNoticeStatus
-    {
-        public const string Draft = "DRAFT";
-        public const string Issued = "ISSUED";
-        public const string Paid = "PAID";
-        public const string Canceled = "CANCELED";
-        public const string UnPaid = "UNPAID";
-        public const string NA = "N/A";
-    }
 }

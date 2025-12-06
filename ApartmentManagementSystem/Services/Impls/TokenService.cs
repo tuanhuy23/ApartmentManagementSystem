@@ -17,9 +17,9 @@ namespace ApartmentManagementSystem.Services.Impls
     {
         private readonly UserManager<AppUser> _userManager;
         private readonly AuthenticationDbContext _authenticationDbContext;
-        private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly RoleManager<AppRole> _roleManager;
         private readonly HttpContext _httpContext = null;
-        public TokenService(UserManager<AppUser> userManager, AuthenticationDbContext authenticationDbContext, RoleManager<IdentityRole> roleManager, IHttpContextAccessor httpContextAccessor)
+        public TokenService(UserManager<AppUser> userManager, AuthenticationDbContext authenticationDbContext, RoleManager<AppRole> roleManager, IHttpContextAccessor httpContextAccessor)
         {
             _userManager = userManager;
             _authenticationDbContext = authenticationDbContext;
@@ -181,10 +181,10 @@ namespace ApartmentManagementSystem.Services.Impls
 
             if (string.IsNullOrEmpty(roleName)) return claims;
 
-            claims.AddRange(roleNames.Select(role => new Claim(ClaimTypes.Role, role)));
             var role = await _roleManager.FindByNameAsync(roleName);
-
             if (role == null) return claims;
+            claims.Add(new Claim(ClaimTypes.Role, role.Id));
+            claims.AddRange(roleNames.Select(role => new Claim("RoleName", role)));
             var allClaims = await _roleManager.GetClaimsAsync(role);
 
             if (allClaims == null) return claims;

@@ -4,5 +4,6 @@
     {
         public const string Read = $"Permissions.RequestPermissions.{Consts.ReadPermissionName}";
         public const string ReadWrite = $"Permissions.RequestPermissions.{Consts.ReadWritePermissionName}";
+        public const string ReadWriteAll = $"Permissions.RequestPermissions.{Consts.ReadWriteAllPermissionName}";
     }
 }

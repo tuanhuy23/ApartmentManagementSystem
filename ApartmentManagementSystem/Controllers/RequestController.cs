@@ -88,6 +88,14 @@ namespace ApartmentManagementSystem.Controllers
             return Ok(new ResponseData<object>(System.Net.HttpStatusCode.OK, null, null, null));
         }
 
+        [HttpDelete]
+        [ProducesResponseType(typeof(ResponseData<>), StatusCodes.Status200OK)]
+        [Authorize(Policy = RequestPermissions.ReadWriteAll)]
+        public async Task<IActionResult> DeleteRequest([FromBody] List<string> request)
+        {
+            return Ok(new ResponseData<object>(System.Net.HttpStatusCode.OK, null, null, null));
+        }
+
         [HttpPost("feedback")]
         [ProducesResponseType(typeof(ResponseData<>), StatusCodes.Status200OK)]
         [Authorize(Policy = RequestPermissions.ReadWrite)]
@@ -105,5 +113,14 @@ namespace ApartmentManagementSystem.Controllers
             await _requestService.CreateOrUpdateFeedback(request);
             return Ok(new ResponseData<object>(System.Net.HttpStatusCode.OK, null, null, null));
         }
+
+        [HttpDelete("feedback")]
+        [ProducesResponseType(typeof(ResponseData<>), StatusCodes.Status200OK)]
+        [Authorize(Policy = RequestPermissions.ReadWriteAll)]
+        public async Task<IActionResult> DeleteFeedBack([FromBody] List<string> request)
+        {
+            return Ok(new ResponseData<object>(System.Net.HttpStatusCode.OK, null, null, null));
+        }
+
     }
 }

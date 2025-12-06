@@ -11,7 +11,7 @@ namespace ApartmentManagementSystem.EF.Context
         public string Body { get; set; }
         public string Status { get; set; }
         public bool IsAll { get; set; }
-        public IEnumerable<string>? UserIds { get; set; }
+        public IEnumerable<string>? ApartmentIds { get; set; }
         public DateTime PublishDate { get; set; }
         public ICollection<FileAttachment> Files { get; set; }
         public ICollection<UserReadStatus> UserReadStatuses { get; set; }

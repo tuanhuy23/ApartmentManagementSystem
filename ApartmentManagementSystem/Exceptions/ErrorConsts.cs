@@ -15,7 +15,10 @@
         public static string RoleIdIsRequired = "Role ID is required";
         public static string NoPermissionAccessApartmentBuilding = "You do not have permission to access this apartment building";
         public static string ApartmentNotFound = "Apartment not found";
+         public static string ApartmentNameIsDuplicate = "Apartment name is duplicate";
         public static string ApartmentBuildingNotFound = "Apartment building not found";
+        public static string ApartmentBuildingStatusInvalidFormat = "Apartment building status invalid format";
+        public static string FeeTypeIsApply = "This Fee Type is currently applied to an apartment and cannot be modified.";
         public static string BillingCycleAlreadySet = "Billing cycle has already been set";
         public static string FeeTierIsRequired = "Fee tier is required";
         public static string FeeTypeNotFound = "Fee type not found";
@@ -42,6 +45,7 @@
         public static string FeedbackNotFound = "Feedback not found";
         public static string AnnouncementNotFound = "Announcement not found";
         public static string AnnouncementAlreadyDone = "The announcement has already been published";
+        public static string ParkingRegistrationNotFound = "Parking registration not found.";
     }
 
     public static class ErrorCodeConsts
@@ -59,11 +63,14 @@
         public static string RoleIdIsRequired = "ROLE_ID_IS_REQUIRED";
         public static string NoPermissionAccessApartmentBuilding = "NO_PERMISSION_ACCESS_APARTMENT_BUILDING";
         public static string ApartmentNotFound = "APARTMENT_NOT_FOUND";
+        public static string ApartmentNameIsDuplicate = "APARTMENT_NAME_IS_DUPLICATE";
         public static string ApartmentBuildingNotFound = "APARTMENT_BUILDING_NOT_FOUND";
+        public static string ApartmentBuildingStatusInvalidFormat = "APARTMENT_BUILDING_STATUS_INVALID_FORMAT";
         public static string BillingCycleAlreadySet = "BILLING_CYCLE_ALREADY_SET";
         public static string BillingCycleInvalidFormat = "BILLING_CYCLE_INVALID_FORMAT";
         public static string BillingCycleSettingIsNotFound = "BILLING_CYCLE_SETTING_NOT_FOUND"; 
         public static string FeeTypeNotFound = "FEE_TYPE_NOT_FOUND";
+        public static string FeeTypeIsApply = "FEE_TYPE_ALREADY_APPLIED";
         public static string FeeTypeNotConfigured = "FEE_TYPE_NOT_CONFIGURED";
         public static string FeeTierIsRequired = "FEE_TIER_IS_REQUIRED";
         public static string FeeRateConfigNotFound = "FEE_RATE_CONFIG_NOT_FOUND";
@@ -85,5 +92,6 @@
         public static string FeedbackNotFound = "FEEDBACK_NOT_FOUND";
         public static string AnnouncementNotFound = "ANNOUNCEMENT_NOT_FOUND";
         public static string AnnouncementAlreadyDone = "REQUEST_ALREADY_PUBLISHED";
+        public static string ParkingRegistrationNotFound = "PARKING_REGISTRATION_NOT_FOUND";
     }
 }

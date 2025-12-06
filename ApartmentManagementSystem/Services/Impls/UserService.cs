@@ -1,4 +1,5 @@
 ﻿using ApartmentManagementSystem.Common;
+using ApartmentManagementSystem.Consts;
 using ApartmentManagementSystem.DbContext;
 using ApartmentManagementSystem.DbContext.Entity;
 using ApartmentManagementSystem.Dtos;
@@ -13,11 +14,16 @@ namespace ApartmentManagementSystem.Services.Impls
     class UserService : IUserService
     {
         private readonly UserManager<AppUser> _userManager;
-        private readonly RoleManager<IdentityRole> _roleManager;
-        public UserService(UserManager<AppUser> userManager, RoleManager<IdentityRole> roleManager)
+        private readonly RoleManager<AppRole> _roleManager;
+        private readonly HttpContext _httpContext = null;
+        public UserService(UserManager<AppUser> userManager, RoleManager<AppRole> roleManager, IHttpContextAccessor httpContextAccessor)
         {
             _userManager = userManager;
             _roleManager = roleManager;
+            if (httpContextAccessor.HttpContext != null)
+            {
+                _httpContext = httpContextAccessor.HttpContext;
+            }
         }
         public async Task<UserDto> CreateOrUpdateUser(CreateOrUpdateUserRequestDto request)
         {
@@ -36,7 +42,7 @@ namespace ApartmentManagementSystem.Services.Impls
                 role = await _roleManager.FindByIdAsync(request.RoleId);
 
                 if (role == null)
-                    throw new DomainException(ErrorCodeConsts.RoleNotFound, ErrorCodeConsts.RoleNotFound, System.Net.HttpStatusCode.NotFound);
+                    throw new DomainException(ErrorCodeConsts.RoleNotFound, ErrorMessageConsts.RoleNotFound, System.Net.HttpStatusCode.NotFound);
             }
 
             if (string.IsNullOrEmpty(request.UserId))
@@ -52,7 +58,7 @@ namespace ApartmentManagementSystem.Services.Impls
                 };       
                 IdentityResult resultUser = await _userManager.CreateAsync(appUser, request.Password);
                 if (!resultUser.Succeeded)
-                    throw new DomainException(ErrorCodeConsts.ErrorCreatingUser, ErrorCodeConsts.ErrorCreatingUser, System.Net.HttpStatusCode.NotFound);
+                    throw new DomainException(ErrorCodeConsts.ErrorCreatingUser, ErrorMessageConsts.ErrorCreatingUser, System.Net.HttpStatusCode.NotFound);
 
                 var userNew = await _userManager.FindByEmailAsync(request.Email);
                 await _userManager.AddToRoleAsync(userNew, role.Name);
@@ -62,7 +68,7 @@ namespace ApartmentManagementSystem.Services.Impls
             }
             var user = await _userManager.FindByIdAsync(request.UserId);
             if (user == null)
-                throw new DomainException(ErrorCodeConsts.UserNotFound, ErrorCodeConsts.UserNotFound, System.Net.HttpStatusCode.NotFound);
+                throw new DomainException(ErrorCodeConsts.UserNotFound, ErrorMessageConsts.UserNotFound, System.Net.HttpStatusCode.NotFound);
             user.DisplayName = request.DisplayName;
             user.PhoneNumber = request.PhoneNumber;
             user.Email = request.Email;
@@ -115,7 +121,7 @@ namespace ApartmentManagementSystem.Services.Impls
         {
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
-                throw new DomainException(ErrorCodeConsts.UserNotFound, ErrorCodeConsts.UserNotFound, System.Net.HttpStatusCode.NotFound);
+                throw new DomainException(ErrorCodeConsts.UserNotFound, ErrorMessageConsts.UserNotFound, System.Net.HttpStatusCode.NotFound);
             
             var roleNames = await _userManager.GetRolesAsync(user);
             var roleName = roleNames.FirstOrDefault();
@@ -140,11 +146,25 @@ namespace ApartmentManagementSystem.Services.Impls
 
         public async Task<Pagination<UserDto>> GetUsers(RequestQueryBaseDto<string> request)
         {
-            var users = await _userManager.Users.ToListAsync();
+            var accountInfo = IdentityHelper.GetIdentity(_httpContext);
+            if (accountInfo == null) throw new DomainException(ErrorCodeConsts.UserNotFound, ErrorMessageConsts.UserNotFound, System.Net.HttpStatusCode.NotFound);
+            IQueryable<AppUser> users  = null;
+            if (accountInfo.RoleName.Equals(RoleDefaulConsts.SupperAdmin))
+            {
+                users = (await _userManager.GetUsersInRoleAsync(RoleDefaulConsts.Management)).AsQueryable();
+            }
+            else
+            {
+                users = _userManager.Users.Where(u => request.Request.Equals(u.AppartmentBuildingId));
+            }
             List<UserDto> userDtos = new List<UserDto>();
             foreach (var user in users)
             {
                 if (user.UserName.Equals("superadmin@gmail.com")) continue;
+                var roles = await _userManager.GetRolesAsync(user);
+                var roleName = roles.FirstOrDefault();
+                if (roleName == null) continue;
+                if (roleName.Equals(RoleDefaulConsts.Management) || roleName.Equals(RoleDefaulConsts.Resident)) continue;
                 var userDto = new UserDto()
                 {
                     Email = user.Email,
@@ -152,8 +172,7 @@ namespace ApartmentManagementSystem.Services.Impls
                     DisplayName = user.DisplayName,
                     UserName = user.UserName
                 };
-                var roles = await _userManager.GetRolesAsync(user);
-                userDto.RoleName = roles.FirstOrDefault();
+                userDto.RoleName = roleName;
                 userDtos.Add(userDto);
             }
             var userQuery = userDtos.AsQueryable();

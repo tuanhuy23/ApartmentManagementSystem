@@ -62,7 +62,20 @@ namespace ApartmentManagementSystem.Services.Impls
             }
             await _unitOfWork.CommitAsync();
         }
-        
+
+        public async Task DeleteFeeType(IEnumerable<string> ids)
+        {
+            var feeConfigIds = ids.Select(i => new Guid(i));
+            var feeConfigs = _feeTypeRepository.List(f => feeConfigIds.Contains(f.Id)).Include(f => f.FeeDetails).ToList();
+            foreach(var feeConfig in feeConfigs)
+            {
+                if (feeConfig.FeeDetails.Any())
+                    throw new DomainException(ErrorCodeConsts.FeeTypeIsApply, ErrorCodeConsts.FeeTypeIsApply, System.Net.HttpStatusCode.BadRequest);
+                _feeTypeRepository.Delete(feeConfig);
+            }
+            await _unitOfWork.CommitAsync();
+        }
+
         public async Task<FeeTypeDto> GetFeeType(Guid id)
         {
             var feeType = _feeTypeRepository.List().Include(f => f.QuantityRateConfigs).Include(f => f.FeeRateConfigs).ThenInclude(f =>f.FeeTiers).FirstOrDefault(f => f.Id.Equals(id));

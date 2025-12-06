@@ -4,8 +4,8 @@ namespace ApartmentManagementSystem.EF.Context
 {
     public class FileAttachment : EntityBase<Guid>
     {
-        public string Name { get; set; }
-        public string Description { get; set; }
+        public string? Name { get; set; }
+        public string? Description { get; set; }
         public string Src { get; set; }
         public string FileType { get; set; }
         public Guid? ApartmentBuildingId { get; set; }
@@ -17,9 +17,5 @@ namespace ApartmentManagementSystem.EF.Context
         public Feedback? Feedback { get; set; }
         public Guid? FeedbackId { get; set; }
     }
-    public static class FileType
-    {
-        public const string Doc = "Doc";
-        public const string Media = "MEDIA";
-    }
+    
 }

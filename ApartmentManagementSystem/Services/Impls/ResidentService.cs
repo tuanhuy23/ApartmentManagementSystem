@@ -19,7 +19,7 @@ namespace ApartmentManagementSystem.Services.Impls
         private readonly IUserService _userService;
         private readonly IRoleService _roleService;
         private readonly IUnitOfWork _unitOfWork;
-        public ResidentService (IApartmentRepository apartmentRepository, IApartmentResidentsRepository apartmentResidentsRepository, IResidentRepository residentRepository, IUserService userService, IRoleService roleService, IUnitOfWork unitOfWork)
+        public ResidentService(IApartmentRepository apartmentRepository, IApartmentResidentsRepository apartmentResidentsRepository, IResidentRepository residentRepository, IUserService userService, IRoleService roleService, IUnitOfWork unitOfWork)
         {
             _apartmentRepository = apartmentRepository;
             _residentRepository = residentRepository;
@@ -44,9 +44,14 @@ namespace ApartmentManagementSystem.Services.Impls
             await _unitOfWork.CommitAsync();
         }
 
-        public Task DeleteResident(Guid residentId)
+        public async Task DeleteResident(List<string> ids)
         {
-            throw new NotImplementedException();
+            var residentIds = ids.Select(i => new Guid(i));
+            var residents = _residentRepository.List(r => residentIds.Contains(r.Id)).ToList();
+            var userIds = residents.Select(r => r.UserId);
+            await _userService.DeleteUsers(userIds);
+            _residentRepository.Delete(residents);
+            await _unitOfWork.CommitAsync();
         }
 
         public async Task<ResidentDto> GetResident(Guid residentId, Guid apartmentId)
@@ -63,7 +68,7 @@ namespace ApartmentManagementSystem.Services.Impls
                 IdentityNumber = resident.IdentityNumber
             };
             if (resident.ApartmentResidents == null) return residentDto;
-            var  apartmentCurent = resident.ApartmentResidents.FirstOrDefault(a => a.ApartmentId.Equals(apartmentId));
+            var apartmentCurent = resident.ApartmentResidents.FirstOrDefault(a => a.ApartmentId.Equals(apartmentId));
             if (apartmentCurent == null) throw new DomainException(ErrorCodeConsts.ResidentNotExistInApartment, ErrorMessageConsts.ResidentNotExistInApartment, System.Net.HttpStatusCode.NotFound);
             residentDto.ApartmentId = apartmentCurent.ApartmentId;
             residentDto.MemberType = apartmentCurent.MemberType;
@@ -72,9 +77,9 @@ namespace ApartmentManagementSystem.Services.Impls
             {
                 return residentDto;
             }
-            var userRes =  await _userService.GetUser(resident.UserId);
+            var userRes = await _userService.GetUser(resident.UserId);
             if (userRes == null)
-                 throw new DomainException(ErrorCodeConsts.UserNotFound, ErrorMessageConsts.UserNotFound, System.Net.HttpStatusCode.NotFound);
+                throw new DomainException(ErrorCodeConsts.UserNotFound, ErrorMessageConsts.UserNotFound, System.Net.HttpStatusCode.NotFound);
             residentDto.UserName = userRes.UserName;
             residentDto.Email = userRes.Email;
             residentDto.UserId = userRes.UserId;
@@ -86,8 +91,8 @@ namespace ApartmentManagementSystem.Services.Impls
             var apartment = _apartmentRepository.List().Include(a => a.ApartmentResidents).ThenInclude(a => a.Resident).FirstOrDefault(a => a.Id.Equals(request.Request));
             if (apartment == null) throw new DomainException(ErrorCodeConsts.ApartmentNotFound, ErrorMessageConsts.ApartmentNotFound, System.Net.HttpStatusCode.NotFound);
             var residentDtos = new List<ResidentDto>();
-            if (apartment.ApartmentResidents == null) return new Pagination<ResidentDto>(){Items = residentDtos};
-            foreach(var resident in apartment.ApartmentResidents)
+            if (apartment.ApartmentResidents == null) return new Pagination<ResidentDto>() { Items = residentDtos };
+            foreach (var resident in apartment.ApartmentResidents)
             {
                 residentDtos.Add(new ResidentDto()
                 {
@@ -96,15 +101,15 @@ namespace ApartmentManagementSystem.Services.Impls
                     Name = resident.Resident.Name,
                     Id = resident.ResidentId,
                     MemberType = resident.MemberType,
-                    PhoneNumber = resident.Resident.PhoneNumber 
+                    PhoneNumber = resident.Resident.PhoneNumber
                 });
             }
             var residents = residentDtos.AsQueryable();
-            if (request.Filters!= null && request.Filters.Any())
+            if (request.Filters != null && request.Filters.Any())
             {
                 residents = FilterHelper.ApplyFilters(residents, request.Filters);
             }
-            if (request.Sorts!= null && request.Sorts.Any())
+            if (request.Sorts != null && request.Sorts.Any())
             {
                 residents = SortHelper.ApplySort(residents, request.Sorts);
             }
@@ -123,7 +128,7 @@ namespace ApartmentManagementSystem.Services.Impls
                 IdentityNumber = request.IdentityNumber,
                 Name = request.Name,
                 PhoneNumber = request.PhoneNumber
-            }; 
+            };
             var aparmentResidentNew = new ApartmentResident()
             {
                 ApartmentId = apartment.Id,
@@ -146,7 +151,7 @@ namespace ApartmentManagementSystem.Services.Impls
                 var roleResidentId = await _roleService.GetRoleIdByRoleName(RoleDefaulConsts.Resident);
                 var userRes = await _userService.CreateOrUpdateUser(new CreateOrUpdateUserRequestDto()
                 {
-                    AppartmentBuildingId  = apartment.ApartmentBuildingId.ToString(),
+                    AppartmentBuildingId = apartment.ApartmentBuildingId.ToString(),
                     ApartmentId = apartment.Id.ToString(),
                     DisplayName = request.Name,
                     Email = request.Email,
@@ -155,13 +160,13 @@ namespace ApartmentManagementSystem.Services.Impls
                     UserName = request.UserName,
                     RoleId = roleResidentId
                 });
-                if (userRes == null) 
+                if (userRes == null)
                     throw new DomainException(ErrorCodeConsts.ErrorCreatingUser, ErrorMessageConsts.ErrorCreatingUser, System.Net.HttpStatusCode.BadRequest);
                 residentNew.UserId = userRes.UserId;
-            }   
+            }
             var resident = await _residentRepository.Add(residentNew);
             aparmentResidentNew.ResidentId = resident.Id;
-            await _apartmentResidentsRepository.Add(aparmentResidentNew);        
+            await _apartmentResidentsRepository.Add(aparmentResidentNew);
         }
         private void UpdateResident(Apartment apartment, ResidentDto request)
         {

@@ -6,6 +6,8 @@ namespace ApartmentManagementSystem.Services.Interfaces
     public interface IParkingRegistrationService
     {
         Pagination<ParkingRegistrationDto> GetParkingRegistrations(RequestQueryBaseDto<Guid> request);
-        Task CreateParkingRegistration(ParkingRegistrationDto request);
+        Task CreateOrUpdateParkingRegistration(ParkingRegistrationDto request);
+        Task<ParkingRegistrationDto> GetParkingRegistration(Guid id);
+        Task DeleteParkingRegistration(List<string> ids);
     }
 }

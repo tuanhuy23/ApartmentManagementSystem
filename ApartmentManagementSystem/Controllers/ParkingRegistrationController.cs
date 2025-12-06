@@ -24,7 +24,7 @@ namespace ApartmentManagementSystem.Controllers
             _parkingRegistrationService = parkingRegistrationService;
         }
 
-        [HttpGet("{id:Guid}")]
+        [HttpGet("{appartmentId:Guid}")]
         [ProducesResponseType(typeof(ResponseData<IEnumerable<ParkingRegistrationDto>>), StatusCodes.Status200OK)]
         [Authorize(Policy = ApartmentPermissions.ReadWrite)]
         public async Task<IActionResult> GetParkingRegistrations(Guid appartmentId, [FromQuery(Name = "filters")] string? filtersJson,
@@ -56,6 +56,14 @@ namespace ApartmentManagementSystem.Controllers
                 PerPage = limit
             }));
         }
+        
+        [HttpGet("{id:Guid}")]
+        [ProducesResponseType(typeof(ResponseData<ParkingRegistrationDto>), StatusCodes.Status200OK)]
+        [Authorize(Policy = NotificationPermissions.Read)]
+        public async Task<IActionResult> GetParkingRegistration(Guid id)
+        {
+            return Ok(new ResponseData<ParkingRegistrationDto>(System.Net.HttpStatusCode.OK, null, null, null));
+        }
 
         [HttpPost()]
         [ProducesResponseType(typeof(ResponseData<>), StatusCodes.Status200OK)]
@@ -63,6 +71,22 @@ namespace ApartmentManagementSystem.Controllers
         public async Task<IActionResult> CreateParkingRegistrations([FromBody] ParkingRegistrationDto request)
         {
             await _parkingRegistrationService.CreateParkingRegistration(request);
+            return Ok(new ResponseData<object>(System.Net.HttpStatusCode.OK, null, null, null));
+        }
+
+        [HttpPut()]
+        [ProducesResponseType(typeof(ResponseData<>), StatusCodes.Status200OK)]
+        [Authorize(Policy = ApartmentPermissions.ReadWrite)]
+        public async Task<IActionResult> UpdateParkingRegistrations([FromBody] ParkingRegistrationDto request)
+        {
+            return Ok(new ResponseData<object>(System.Net.HttpStatusCode.OK, null, null, null));
+        }
+
+        [HttpDelete()]
+        [ProducesResponseType(typeof(ResponseData<>), StatusCodes.Status200OK)]
+        [Authorize(Policy = ApartmentPermissions.ReadWrite)]
+        public async Task<IActionResult> DeleteParkingRegistrations([FromBody] List<string> request)
+        {
             return Ok(new ResponseData<object>(System.Net.HttpStatusCode.OK, null, null, null));
         }
     }

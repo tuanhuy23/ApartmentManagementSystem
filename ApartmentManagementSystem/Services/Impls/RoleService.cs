@@ -1,7 +1,9 @@
-﻿using ApartmentManagementSystem.Consts;
+﻿using ApartmentManagementSystem.Common;
+using ApartmentManagementSystem.Consts;
 using ApartmentManagementSystem.Consts.Permissions;
 using ApartmentManagementSystem.DbContext.Entity;
 using ApartmentManagementSystem.Dtos;
+using ApartmentManagementSystem.Dtos.Base;
 using ApartmentManagementSystem.Exceptions;
 using ApartmentManagementSystem.Identity;
 using ApartmentManagementSystem.Services.Interfaces;
@@ -13,9 +15,9 @@ namespace ApartmentManagementSystem.Services.Impls
 {
     class RoleService : IRoleService
     {
-        private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly RoleManager<AppRole> _roleManager;
         private readonly UserManager<AppUser> _userManager;
-        public RoleService(RoleManager<IdentityRole> roleManager, UserManager<AppUser> userManager)
+        public RoleService(RoleManager<AppRole> roleManager, UserManager<AppUser> userManager)
         {
             _roleManager = roleManager;
             _userManager = userManager;
@@ -24,7 +26,11 @@ namespace ApartmentManagementSystem.Services.Impls
         {
             if (string.IsNullOrEmpty(request.RoleId))
             {
-                await _roleManager.CreateAsync(new IdentityRole(request.RoleName));
+                await _roleManager.CreateAsync(new AppRole()
+                {
+                    AppartmentBuildingId = request.AppartmentBuildingId,
+                    Name = request.RoleName
+                });
                 var roleNew = await _roleManager.FindByNameAsync(request.RoleName);
                 var allClaims = await _roleManager.GetClaimsAsync(roleNew);
                 foreach (var permission in request.Permissions)
@@ -81,6 +87,11 @@ namespace ApartmentManagementSystem.Services.Impls
             return result;
         }
 
+        public async Task<IEnumerable<PermissionInfo>> GetPermissionInfos()
+        {
+            return PermissionsHelper.GetPermissionInfos(); 
+        }
+
         public async Task<RoleDto> GetRole(string roleId)
         {
             RoleDto roleDto = new RoleDto();
@@ -112,9 +123,9 @@ namespace ApartmentManagementSystem.Services.Impls
             return role.Id;
         }
 
-        public async Task<IEnumerable<RoleDto>> GetRoles()
+        public async Task<Pagination<RoleDto>> GetRoles(RequestQueryBaseDto<string> request)
         {
-            var roles = await _roleManager.Roles.ToListAsync();
+            var roles = _roleManager.Roles.Where(r => request.Request.Equals(r.AppartmentBuildingId));
             List<RoleDto> roleDtos = new List<RoleDto>();
             foreach (var role in roles)
             {
@@ -128,7 +139,20 @@ namespace ApartmentManagementSystem.Services.Impls
                     roleDtos.Add(roleDto);
                 }
             }
-            return roleDtos;
+             var roleQuery = roleDtos.AsQueryable();
+            if (request.Filters!= null && request.Filters.Any())
+            {
+                roleQuery = FilterHelper.ApplyFilters(roleQuery, request.Filters);
+            }
+            if (request.Sorts!= null && request.Sorts.Any())
+            {
+                roleQuery = SortHelper.ApplySort(roleQuery, request.Sorts);
+            }
+            return new Pagination<RoleDto>()
+            {
+                Items = roleQuery.Skip((request.Page - 1) * request.PageSize).Take(request.PageSize).ToList(),
+                Totals = roleQuery.Count()
+            };
         }
     }
 }

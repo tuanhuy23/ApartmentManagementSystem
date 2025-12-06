@@ -13,7 +13,29 @@ namespace ApartmentManagementSystem.Identity
                 allPermissions.Add(fi.GetValue(null).ToString(), policy.Name);
             }
         }
-
+        public static List<PermissionInfo> GetPermissionInfos()
+        {
+            var result = new List<PermissionInfo>()
+            {
+                GetPermissionInfo(UserPermissions.ReadWrite, "Permission"),
+                GetPermissionInfo(UserPermissions.Read, "Permission"),
+                GetPermissionInfo(ApartmentBuildingPermissions.ReadWrite, "Permission"),
+                GetPermissionInfo(ApartmentBuildingPermissions.Read, "Permission"),
+                GetPermissionInfo(ApartmentPermissions.ReadWrite, "Permission"),
+                GetPermissionInfo(ApartmentPermissions.Read, "Permission"),
+                GetPermissionInfo(FeeConfigurationPermissions.ReadWrite, "Permission"),
+                GetPermissionInfo(FeeConfigurationPermissions.Read, "Permission"),
+                GetPermissionInfo(FeeNoticePermissions.ReadWrite, "Permission"),
+                GetPermissionInfo(FeeNoticePermissions.Read, "Permission"),
+                GetPermissionInfo(NotificationPermissions.ReadWrite, "Permission"),
+                GetPermissionInfo(NotificationPermissions.Read, "Permission"),
+                GetPermissionInfo(RequestPermissions.ReadWrite, "Permission"),
+                GetPermissionInfo(RequestPermissions.Read, "Permission"),
+                GetPermissionInfo(RolePermissions.ReadWrite, "Permission"),
+                GetPermissionInfo(RolePermissions.Read, "Permission")
+            };
+            return result;
+        }
         private static PermissionInfo GetPermissionInfo(string permission, string type)
         {
             var perrmissionInfo = new PermissionInfo();
@@ -24,35 +46,72 @@ namespace ApartmentManagementSystem.Identity
             return perrmissionInfo;
         }
 
-        public static string MapPermissionDisplayName(string permission)
+        private static string MapPermissionDisplayName(string permission)
         {
             if (permission.Equals(UserPermissions.ReadWrite))
             {
-                return "Read and write user";
+                return "Manage Users"; 
             }
             if (permission.Equals(UserPermissions.Read))
             {
-                return "Read user";
+                return "View Users";
             }
 
             if (permission.Equals(RolePermissions.ReadWrite))
             {
-                return "Read and write role";
+                return "Manage Roles";
             }
             if (permission.Equals(RolePermissions.Read))
             {
-                return "Read role";
+                return "View Roles";
             }
 
-            if (permission.Equals(ApartmentBuildingPermissions.ReadWrite))
+            if (permission.Equals(ApartmentPermissions.ReadWrite))
             {
-                return "Read and write apartment building";
+                return "Manage Apartments";
             }
-            if (permission.Equals(ApartmentBuildingPermissions.Read))
+            if (permission.Equals(ApartmentPermissions.Read))
             {
-                return "Read apartment building";
+                return "View Apartments";
             }
-            return "";
+
+            if (permission.Equals(FeeConfigurationPermissions.ReadWrite))
+            {
+                return "Configure Fees"; 
+            }
+            if (permission.Equals(FeeConfigurationPermissions.Read))
+            {
+                return "View Fee Configuration";
+            }
+
+            if (permission.Equals(FeeNoticePermissions.ReadWrite))
+            {
+                return "Manage Fee Notices";
+            }
+            if (permission.Equals(FeeNoticePermissions.Read))
+            {
+                return "View Fee Notices";
+            }
+
+            if (permission.Equals(NotificationPermissions.ReadWrite))
+            {
+                return "Manage Notifications";
+            }
+            if (permission.Equals(NotificationPermissions.Read))
+            {
+                return "View Notifications";
+            }
+
+            if (permission.Equals(RequestPermissions.ReadWrite))
+            {
+                return "Manage Requests";
+            }
+            if (permission.Equals(RequestPermissions.Read))
+            {
+                return "View Requests";
+            }
+
+            return "Unknown Permission";
         }
     }
     public class PermissionInfo

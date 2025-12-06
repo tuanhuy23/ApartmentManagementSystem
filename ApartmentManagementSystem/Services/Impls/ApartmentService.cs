@@ -25,23 +25,26 @@ namespace ApartmentManagementSystem.Services.Impls
                 ApartmentBuildingId = request.ApartmentBuildingId,
                 Area = request.Area,
                 Floor = request.Floor,
-                Name = request.Name,
-                Building = string.Empty
+                Name = request.Name
             };
             await _apartmentRepository.Add(apartment);
             await _unitOfWork.CommitAsync();
         }
 
-        public Task DeleteApartment(Guid id)
+        public async Task DeleteApartment(Guid id)
         {
-            throw new NotImplementedException();
+            var apartments = _apartmentRepository.List(a => a.Id.Equals(id)).FirstOrDefault();
+            if (apartments == null) 
+                throw new DomainException(ErrorCodeConsts.ApartmentNotFound, ErrorMessageConsts.ApartmentNotFound, System.Net.HttpStatusCode.NotFound);
+            _apartmentRepository.Delete(apartments);
+            await _unitOfWork.CommitAsync();
         }
 
         public async Task<ApartmentDto> GetApartment(Guid id)
         {
             var apartments = _apartmentRepository.List(a => a.Id.Equals(id)).FirstOrDefault();
             if (apartments == null) 
-                throw new DomainException(ErrorCodeConsts.ApartmentNotFound, ErrorCodeConsts.ApartmentNotFound, System.Net.HttpStatusCode.NotFound);
+                throw new DomainException(ErrorCodeConsts.ApartmentNotFound, ErrorMessageConsts.ApartmentNotFound, System.Net.HttpStatusCode.NotFound);
             return new ApartmentDto()
             {
                 Id = apartments.Id,
@@ -77,9 +80,19 @@ namespace ApartmentManagementSystem.Services.Impls
             };
         }
 
-        public Task UpdateApartment(UpdateApartmentDto request, Guid id)
+        public async Task UpdateApartment(UpdateApartmentDto request, Guid id)
         {
-            throw new NotImplementedException();
+            var apartment = _apartmentRepository.List(a => a.Id.Equals(id)).FirstOrDefault();
+            if (apartment == null) 
+                throw new DomainException(ErrorCodeConsts.ApartmentNotFound, ErrorMessageConsts.ApartmentNotFound, System.Net.HttpStatusCode.NotFound);
+            apartment.Area = request.Area;
+            apartment.Floor = request.Floor;
+
+            if (_apartmentRepository.List(a => a.Name.Equals(request.Name)).Any())
+                throw new DomainException(ErrorCodeConsts.ApartmentNameIsDuplicate, ErrorMessageConsts.ApartmentNameIsDuplicate, System.Net.HttpStatusCode.BadRequest);
+            apartment.Name = request.Name;
+            _apartmentRepository.Update(apartment);
+            await _unitOfWork.CommitAsync();
         }
     }
 }

@@ -8,7 +8,9 @@ namespace ApartmentManagementSystem.Services.Interfaces
         Task CreateFeeNotice(CreateOrUpdateFeeNoticeDto request);
         Task<FeeNoticeDto> GetFeeDetail(Guid id);
         Pagination<FeeNoticeDto> GetFeeNotices(RequestQueryBaseDto<Guid> request);
-        Task UpdateFeeNotice(CreateOrUpdateFeeNoticeDto request);
+        Task CancelFeeNotice(Guid id);
+        Task UpdatePaymentStatusFeeNotice(Guid id);
+        Task DeletFeeeNotice(List<string> ids);
         Pagination<UtilityReadingDto> GetUtilityReadings(RequestQueryBaseDto<Guid> request);
     }
 }

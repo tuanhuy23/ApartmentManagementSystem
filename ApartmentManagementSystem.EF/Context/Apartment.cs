@@ -9,7 +9,6 @@ namespace ApartmentManagementSystem.EF.Context
         public string Name { get; set; }
         public int Floor { get; set; }
         public double Area { get; set; }
-        public string Building { get; set; }
         public ICollection<ParkingRegistration> ParkingRegistrations { get; set; }
         public ICollection<UtilityReading> UtilityReadings { get; set; }
         public ICollection<FeeNotice> FeeNotices { get; set; }

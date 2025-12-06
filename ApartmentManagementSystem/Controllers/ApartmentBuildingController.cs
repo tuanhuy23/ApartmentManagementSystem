@@ -58,9 +58,42 @@ namespace ApartmentManagementSystem.Controllers
         [HttpPost()]
         [ProducesResponseType(typeof(ResponseData<>), StatusCodes.Status200OK)]
         [Authorize(Policy = ApartmentBuildingPermissions.ReadWrite)]
-        public async Task<IActionResult> CreateApartmentBuilding([FromBody] CreateApartmentBuildingDto request)
+        public async Task<IActionResult> CreateApartmentBuilding([FromBody] CreateOrUpdateApartmentBuildingDto request)
         {
-            await _apartmentBuildingService.CreateApartmentBuilding(request);
+            await _apartmentBuildingService.CreateOrUpdateApartmentBuilding(request);
+            return Ok(new ResponseData<object>(System.Net.HttpStatusCode.OK, null, null, null));
+        }
+
+        [HttpGet("{id:Guid}")]
+        [ProducesResponseType(typeof(ResponseData<ApartmentBuildingDto>), StatusCodes.Status200OK)]
+        [Authorize(Policy = ApartmentBuildingPermissions.ReadWrite)]
+        public async Task<IActionResult> GetApartmentBuilding(Guid id)
+        {
+
+            return Ok(new ResponseData<ApartmentBuildingDto>(System.Net.HttpStatusCode.OK, null, null, null));
+        }
+
+        [HttpPut()]
+        [ProducesResponseType(typeof(ResponseData<>), StatusCodes.Status200OK)]
+        [Authorize(Policy = ApartmentBuildingPermissions.ReadWrite)]
+        public async Task<IActionResult> UpdateApartmentBuilding([FromBody] CreateOrUpdateApartmentBuildingDto request)
+        {
+            return Ok(new ResponseData<object>(System.Net.HttpStatusCode.OK, null, null, null));
+        }
+
+        [HttpPut("{id:Guid}/status")]
+        [ProducesResponseType(typeof(ResponseData<>), StatusCodes.Status200OK)]
+        [Authorize(Policy = ApartmentBuildingPermissions.ReadWrite)]
+        public async Task<IActionResult> UpdateApartmentBuildingStatus([FromBody] UpdateStatusApartmentBuildingDto request)
+        {
+            return Ok(new ResponseData<object>(System.Net.HttpStatusCode.OK, null, null, null));
+        }
+
+        [HttpDelete()]
+        [ProducesResponseType(typeof(ResponseData<>), StatusCodes.Status200OK)]
+        [Authorize(Policy = ApartmentBuildingPermissions.ReadWrite)]
+        public async Task<IActionResult> DeleteApartmentBuilding([FromBody] List<string> request)
+        {
             return Ok(new ResponseData<object>(System.Net.HttpStatusCode.OK, null, null, null));
         }
     }

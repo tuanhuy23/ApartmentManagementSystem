@@ -1,5 +1,8 @@
 ﻿using ApartmentManagementSystem.Consts;
 using ApartmentManagementSystem.DbContext.Entity;
+using ApartmentManagementSystem.Dtos;
+using ApartmentManagementSystem.EF.Context;
+using ApartmentManagementSystem.Services;
 using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
 
@@ -13,6 +16,8 @@ namespace ApartmentManagementSystem.SeedData
             await EnsureRole(serviceProvider, RoleDefaulConsts.SupperAdmin, adminID);
             await EnsureRole(serviceProvider, RoleDefaulConsts.Management);
             await EnsureRole(serviceProvider, RoleDefaulConsts.Resident);
+
+            AddApartmentBuildingData(serviceProvider);
         }
 
         private static async Task<string> EnsureUser(IServiceProvider serviceProvider,
@@ -45,14 +50,18 @@ namespace ApartmentManagementSystem.SeedData
                                                                       string role, string uid = "")
         {
             IdentityResult IR = null;
-            var roleManager = serviceProvider.GetService<RoleManager<IdentityRole>>();
+            var roleManager = serviceProvider.GetService<RoleManager<AppRole>>();
             if (roleManager == null)
             {
                 throw new Exception("roleManager null");
             }
             if (!await roleManager.RoleExistsAsync(role))
             {
-                IR = await roleManager.CreateAsync(new IdentityRole(role));
+                IR = await roleManager.CreateAsync(new AppRole()
+                {
+                    Name = role,
+                    AppartmentBuildingId = "root"
+                });
             }
             switch (role)
             {
@@ -84,14 +93,14 @@ namespace ApartmentManagementSystem.SeedData
             return IR;
         }
 
-        private async static Task SeedClaimsForSuperAdmin(this RoleManager<IdentityRole> roleManager)
+        private async static Task SeedClaimsForSuperAdmin(this RoleManager<AppRole> roleManager)
         {
             var adminRole = await roleManager.FindByNameAsync(RoleDefaulConsts.SupperAdmin);
             if (adminRole == null) return;
             await roleManager.AddPermissionClaim(adminRole, "ApartmentBuildingPermissions");
             await roleManager.AddPermissionClaim(adminRole, "UserPermissions");
         }
-        private async static Task SeedClaimForManagement(this RoleManager<IdentityRole> roleManager)
+        private async static Task SeedClaimForManagement(this RoleManager<AppRole> roleManager)
         {
             var managementRole = await roleManager.FindByNameAsync(RoleDefaulConsts.Management);
             if (managementRole == null) return;
@@ -103,7 +112,7 @@ namespace ApartmentManagementSystem.SeedData
             await roleManager.AddPermissionClaim(managementRole, "NotificationPermissions");
             await roleManager.AddPermissionClaim(managementRole, "RequestPermissions");
         }
-        private async static Task SeedClaimForResident(this RoleManager<IdentityRole> roleManager)
+        private async static Task SeedClaimForResident(this RoleManager<AppRole> roleManager)
         {
             var residentRole = await roleManager.FindByNameAsync(RoleDefaulConsts.Resident);
             if (residentRole == null) return;
@@ -128,7 +137,22 @@ namespace ApartmentManagementSystem.SeedData
             };
             return result;
         }
-        public static async Task AddPermissionClaim(this RoleManager<IdentityRole> roleManager, IdentityRole role, string module,  bool getAll = true)
+        private static void AddApartmentBuildingData(IServiceProvider serviceProvider)
+        {
+            var apartmentDbContext = serviceProvider.GetRequiredService<ApartmentManagementDbContext>();
+            var apartmentBuildingData = serviceProvider.GetRequiredService<ApartmentBuildingData>();
+            var apartmentBuildings = apartmentDbContext.ApartmentBuildings.Select(a => new ApartmentBuildingDto()
+            {
+                Id = a.Id.ToString(),
+                Name = a.Name,
+                Status = a. Status
+            });
+            foreach(var apartmentBuilding in apartmentBuildings)
+            {
+                apartmentBuildingData.AddApartmentBuilding(apartmentBuilding);
+            }
+        }
+        public static async Task AddPermissionClaim(this RoleManager<AppRole> roleManager, AppRole role, string module,  bool getAll = true)
         {
             var allClaims = await roleManager.GetClaimsAsync(role);
             var allPermissions = getAll ? GenerateAllPermissionsForModule(module) : GenerateReadPermissionsForModule(module);

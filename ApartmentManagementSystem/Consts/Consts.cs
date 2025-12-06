@@ -4,6 +4,7 @@
     {
         public const string ReadPermissionName = "Read";
         public const string ReadWritePermissionName = "ReadWrite";
+           public const string ReadWriteAllPermissionName = "ReadWriteAll";
         public const string PublishApprovePermissionName = "PublishApprove";
     }
     public static class RoleDefaulConsts
@@ -21,5 +22,17 @@
         public const string Done = "Done"; 
         public const string UnPublish = "UNPUBLISH";
         public const string Publish = "PUBLISH";
+    }
+    public static class FeeNoticeStatus
+    {
+        public const string Issued = "ISSUED";
+        public const string Paid = "PAID";
+        public const string Canceled = "CANCELED";
+        public const string UnPaid = "UNPAID";
+    }
+    public static class FileType
+    {
+        public const string Doc = "Doc";
+        public const string Media = "MEDIA";
     }
 }

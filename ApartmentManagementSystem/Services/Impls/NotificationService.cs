@@ -40,9 +40,6 @@ namespace ApartmentManagementSystem.Services.Impls
 
         public async Task CreateOrUpdateAnnouncements(AnnouncementDto request)
         {
-            var apartmentBuilding = _apartmentBuildingRepository.List().FirstOrDefault(a => a.Id.Equals(request.ApartmentBuildingId));
-            if (apartmentBuilding == null)
-                throw new DomainException(ErrorCodeConsts.ApartmentBuildingNotFound, ErrorMessageConsts.ApartmentBuildingNotFound, System.Net.HttpStatusCode.NotFound);
             if (request.Id == null)
             {
                 await CreateAnnouncement(request);
@@ -71,9 +68,6 @@ namespace ApartmentManagementSystem.Services.Impls
 
         public Pagination<AnnouncementDto> GetAnnouncements(RequestQueryBaseDto<Guid> request)
         {
-             var apartmentBuilding = _apartmentBuildingRepository.List().FirstOrDefault(a => a.Id.Equals(request.Request));
-            if (apartmentBuilding == null)
-                throw new DomainException(ErrorCodeConsts.ApartmentBuildingNotFound, ErrorMessageConsts.ApartmentBuildingNotFound, System.Net.HttpStatusCode.NotFound);
             var announcements = _announcementRepository.List().Where(a => a.ApartmentBuildingId.Equals(request.Request)).Select(a => new AnnouncementDto()
             {
                 ApartmentBuildingId = a.ApartmentBuildingId,

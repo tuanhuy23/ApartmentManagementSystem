@@ -18,7 +18,6 @@ namespace ApartmentManagementSystem.Identity
             _permissionMap.GetPermissions(typeof(FeeNoticePermissions));
             _permissionMap.GetPermissions(typeof(NotificationPermissions));
             _permissionMap.GetPermissions(typeof(RequestPermissions));
-            _permissionMap.GetPermissions(typeof(UtilityReadingPermission));
             FallbackPolicyProvider = new DefaultAuthorizationPolicyProvider(options);
         }
         public Task<AuthorizationPolicy> GetDefaultPolicyAsync() => FallbackPolicyProvider.GetDefaultPolicyAsync();

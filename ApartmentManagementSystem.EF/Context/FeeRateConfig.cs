@@ -8,6 +8,7 @@ namespace ApartmentManagementSystem.EF.Context
         public Guid FeeTypeId { get; set; }
         public FeeType FeeType { get; set; }
         public float VATRate {  get; set; }
+        public DateTime ApplyDate{ get; set; }
         public bool IsActive { get; set; }
         public string Name { get; set; }
         public string UnitName{ get; set; }
