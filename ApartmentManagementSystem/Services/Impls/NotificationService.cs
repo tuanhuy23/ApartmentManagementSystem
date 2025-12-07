@@ -51,12 +51,12 @@ namespace ApartmentManagementSystem.Services.Impls
             await _unitOfWork.CommitAsync();
         }
 
-        public Task DeleteAnnouncements(Guid id)
+        public Task DeleteAnnouncements(List<string> ids)
         {
             throw new NotImplementedException();
         }
 
-        public Task DeleteNotification(Guid id)
+        public Task DeleteNotification(List<string> ids)
         {
             throw new NotImplementedException();
         }
@@ -96,7 +96,7 @@ namespace ApartmentManagementSystem.Services.Impls
             throw new NotImplementedException();
         }
 
-        public Task MarkNotificationIsRead(Guid id)
+        public Task MarkNotificationIsRead(List<string> ids)
         {
             throw new NotImplementedException();
         }

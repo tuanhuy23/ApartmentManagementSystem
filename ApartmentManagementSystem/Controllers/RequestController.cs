@@ -119,6 +119,7 @@ namespace ApartmentManagementSystem.Controllers
         [Authorize(Policy = RequestPermissions.ReadWriteAll)]
         public async Task<IActionResult> DeleteFeedBack([FromBody] List<string> request)
         {
+            await _requestService.DeleteRequest(request);
             return Ok(new ResponseData<object>(System.Net.HttpStatusCode.OK, null, null, null));
         }
 

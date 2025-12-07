@@ -11,11 +11,11 @@
         public string CurrencyUnit { get; set; }
         public string ApartmentBuildingImgUrl { get; set; }
         public List<UploadAppartmentBuildingImageDto>? Images { get; set; }
-        public string ManagementDisplayName { get; set; }
-        public string ManagementEmail { get; set; }
-        public string ManagementUserName { get; set; }
-        public string ManagementPhoneNumber { get; set; }
-        public string ManagementPassword { get; set; }
+        public string? ManagementDisplayName { get; set; }
+        public string? ManagementEmail { get; set; }
+        public string? ManagementUserName { get; set; }
+        public string? ManagementPhoneNumber { get; set; }
+        public string? ManagementPassword { get; set; }
     }
     public class UploadAppartmentBuildingImageDto
     {

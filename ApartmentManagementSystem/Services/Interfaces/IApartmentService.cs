@@ -8,7 +8,7 @@ namespace ApartmentManagementSystem.Services.Interfaces
         Pagination<ApartmentDto> GetApartments(RequestQueryBaseDto<string> request);
         Task<ApartmentDto> GetApartment(Guid id);
         Task CreateApartment(ApartmentDto request);
-        Task UpdateApartment(UpdateApartmentDto request, Guid id);
+        Task UpdateApartment(UpdateApartmentDto request);
         Task DeleteApartment(Guid id);
     }
 }

@@ -65,7 +65,7 @@ namespace ApartmentManagementSystem.Services.Impls
             throw new NotImplementedException();
         }
 
-        public Task DeleteRequest(Guid requestId)
+        public Task DeleteRequest(List<string> requestId)
         {
             throw new NotImplementedException();
         }

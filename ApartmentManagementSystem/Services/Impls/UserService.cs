@@ -139,7 +139,8 @@ namespace ApartmentManagementSystem.Services.Impls
                 RoleName = roleName,
                 RoleId = roleId,
                 DisplayName = user.DisplayName,
-                UserName = user.UserName
+                UserName = user.UserName,
+                PhoneNumber = user.PhoneNumber
             };
             return userDto;
         }
@@ -148,15 +149,7 @@ namespace ApartmentManagementSystem.Services.Impls
         {
             var accountInfo = IdentityHelper.GetIdentity(_httpContext);
             if (accountInfo == null) throw new DomainException(ErrorCodeConsts.UserNotFound, ErrorMessageConsts.UserNotFound, System.Net.HttpStatusCode.NotFound);
-            IQueryable<AppUser> users  = null;
-            if (accountInfo.RoleName.Equals(RoleDefaulConsts.SupperAdmin))
-            {
-                users = (await _userManager.GetUsersInRoleAsync(RoleDefaulConsts.Management)).AsQueryable();
-            }
-            else
-            {
-                users = _userManager.Users.Where(u => request.Request.Equals(u.AppartmentBuildingId));
-            }
+            var users  = _userManager.Users.Where(u => request.Request.Equals(u.AppartmentBuildingId)).ToList();;
             List<UserDto> userDtos = new List<UserDto>();
             foreach (var user in users)
             {
@@ -170,7 +163,8 @@ namespace ApartmentManagementSystem.Services.Impls
                     Email = user.Email,
                     UserId = user.Id,
                     DisplayName = user.DisplayName,
-                    UserName = user.UserName
+                    UserName = user.UserName,
+                    PhoneNumber = user.PhoneNumber
                 };
                 userDto.RoleName = roleName;
                 userDtos.Add(userDto);

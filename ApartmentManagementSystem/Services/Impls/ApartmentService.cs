@@ -80,9 +80,9 @@ namespace ApartmentManagementSystem.Services.Impls
             };
         }
 
-        public async Task UpdateApartment(UpdateApartmentDto request, Guid id)
+        public async Task UpdateApartment(UpdateApartmentDto request)
         {
-            var apartment = _apartmentRepository.List(a => a.Id.Equals(id)).FirstOrDefault();
+            var apartment = _apartmentRepository.List(a => a.Id.Equals(request.Id)).FirstOrDefault();
             if (apartment == null) 
                 throw new DomainException(ErrorCodeConsts.ApartmentNotFound, ErrorMessageConsts.ApartmentNotFound, System.Net.HttpStatusCode.NotFound);
             apartment.Area = request.Area;

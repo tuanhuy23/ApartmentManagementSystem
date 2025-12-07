@@ -17,32 +17,31 @@ namespace ApartmentManagementSystem.Identity
         {
             var result = new List<PermissionInfo>()
             {
-                GetPermissionInfo(UserPermissions.ReadWrite, "Permission"),
-                GetPermissionInfo(UserPermissions.Read, "Permission"),
-                GetPermissionInfo(ApartmentBuildingPermissions.ReadWrite, "Permission"),
-                GetPermissionInfo(ApartmentBuildingPermissions.Read, "Permission"),
-                GetPermissionInfo(ApartmentPermissions.ReadWrite, "Permission"),
-                GetPermissionInfo(ApartmentPermissions.Read, "Permission"),
-                GetPermissionInfo(FeeConfigurationPermissions.ReadWrite, "Permission"),
-                GetPermissionInfo(FeeConfigurationPermissions.Read, "Permission"),
-                GetPermissionInfo(FeeNoticePermissions.ReadWrite, "Permission"),
-                GetPermissionInfo(FeeNoticePermissions.Read, "Permission"),
-                GetPermissionInfo(NotificationPermissions.ReadWrite, "Permission"),
-                GetPermissionInfo(NotificationPermissions.Read, "Permission"),
-                GetPermissionInfo(RequestPermissions.ReadWrite, "Permission"),
-                GetPermissionInfo(RequestPermissions.Read, "Permission"),
-                GetPermissionInfo(RolePermissions.ReadWrite, "Permission"),
-                GetPermissionInfo(RolePermissions.Read, "Permission")
+                GetPermissionInfo(UserPermissions.ReadWrite, "Permission", "User"),
+                GetPermissionInfo(UserPermissions.Read, "Permission","User"),
+                GetPermissionInfo(ApartmentPermissions.ReadWrite, "Permission","Apartment"),
+                GetPermissionInfo(ApartmentPermissions.Read, "Permission","Apartment"),
+                GetPermissionInfo(FeeConfigurationPermissions.ReadWrite, "Permission","Fee Configuration"),
+                GetPermissionInfo(FeeConfigurationPermissions.Read, "Permission","Fee Configuration"),
+                GetPermissionInfo(FeeNoticePermissions.ReadWrite, "Permission","Fee Notice"),
+                GetPermissionInfo(FeeNoticePermissions.Read, "Permission","Fee Notice"),
+                GetPermissionInfo(NotificationPermissions.ReadWrite, "Permission","Announcement"),
+                GetPermissionInfo(NotificationPermissions.Read, "Permission","Announcement"),
+                GetPermissionInfo(RequestPermissions.ReadWrite, "Permission","Request"),
+                GetPermissionInfo(RequestPermissions.Read, "Permission","Request"),
+                GetPermissionInfo(RolePermissions.ReadWrite, "Permission", "Role"),
+                GetPermissionInfo(RolePermissions.Read, "Permission","Role")
             };
             return result;
         }
-        private static PermissionInfo GetPermissionInfo(string permission, string type)
+        public static PermissionInfo GetPermissionInfo(string permission, string type, string groupName = "")
         {
             var perrmissionInfo = new PermissionInfo();
             perrmissionInfo.DisplayName = MapPermissionDisplayName(permission);
             perrmissionInfo.Type = type;
             perrmissionInfo.Selected = false;
             perrmissionInfo.Name = permission;
+            perrmissionInfo.GroupName = groupName;
             return perrmissionInfo;
         }
 
@@ -120,5 +119,6 @@ namespace ApartmentManagementSystem.Identity
         public string DisplayName { get; set; }
         public bool Selected { get; set; }
         public string Type { get; set; }
+        public string GroupName { get; set; }
     }
 }

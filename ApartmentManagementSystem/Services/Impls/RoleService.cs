@@ -125,16 +125,18 @@ namespace ApartmentManagementSystem.Services.Impls
 
         public async Task<Pagination<RoleDto>> GetRoles(RequestQueryBaseDto<string> request)
         {
-            var roles = _roleManager.Roles.Where(r => request.Request.Equals(r.AppartmentBuildingId));
+            var roles = _roleManager.Roles.Where(r => request.Request.Equals(r.AppartmentBuildingId)).ToList();
             List<RoleDto> roleDtos = new List<RoleDto>();
             foreach (var role in roles)
             {
                 if (!RoleDefaulConsts.SupperAdmin.Equals(role.Name))
                 {
+                    var claims = await _roleManager.GetClaimsAsync(role);
                     var roleDto = new RoleDto()
                     {
                         RoleName = role.Name,
-                        RoleId = role.Id
+                        RoleId = role.Id,
+                        Permissions = GetPermissions(claims)
                     };
                     roleDtos.Add(roleDto);
                 }
@@ -153,6 +155,10 @@ namespace ApartmentManagementSystem.Services.Impls
                 Items = roleQuery.Skip((request.Page - 1) * request.PageSize).Take(request.PageSize).ToList(),
                 Totals = roleQuery.Count()
             };
+        }
+        private List<PermissionInfo> GetPermissions(IList<Claim> claims)
+        {
+            return claims.Select(c => PermissionsHelper.GetPermissionInfo(c.Value, c.ValueType)).ToList();
         }
     }
 }

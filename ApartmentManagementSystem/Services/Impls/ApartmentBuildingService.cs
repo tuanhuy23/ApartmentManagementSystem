@@ -30,7 +30,7 @@ namespace ApartmentManagementSystem.Services.Impls
 
         public Pagination<ApartmentBuildingDto> GetApartmentBuildings(RequestQueryBaseDto<object> request)
         {
-            var response = _apartmentBuildingRepository.List().Select(x => new ApartmentBuildingDto()
+            var response = _apartmentBuildingRepository.List(a => !a.IsDeleted).Select(x => new ApartmentBuildingDto()
             {
                 Address = x.Address,
                 ApartmentBuildingImgUrl = x.ApartmentBuildingImgUrl,

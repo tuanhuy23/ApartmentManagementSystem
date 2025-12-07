@@ -81,16 +81,18 @@ namespace ApartmentManagementSystem.Controllers
         [HttpPut()]
         [ProducesResponseType(typeof(ResponseData<>), StatusCodes.Status200OK)]
         [Authorize(Policy = ApartmentPermissions.ReadWrite)]
-        public async Task<IActionResult> UpdateApartment([FromBody] ApartmentDto request)
+        public async Task<IActionResult> UpdateApartment([FromBody] UpdateApartmentDto request)
         {
+            await _apartmentService.UpdateApartment(request);
             return Ok(new ResponseData<object>(System.Net.HttpStatusCode.OK, null, null, null));
         }
 
-        [HttpDelete()]
+        [HttpDelete("{id:Guid}")]
         [ProducesResponseType(typeof(ResponseData<>), StatusCodes.Status200OK)]
         [Authorize(Policy = ApartmentPermissions.ReadWrite)]
-        public async Task<IActionResult> DeleteApartment([FromBody] List<string> request)
+        public async Task<IActionResult> DeleteApartment(Guid id)
         {
+            await _apartmentService.DeleteApartment(id);
             return Ok(new ResponseData<object>(System.Net.HttpStatusCode.OK, null, null, null));
         }
 
@@ -159,6 +161,7 @@ namespace ApartmentManagementSystem.Controllers
         [Authorize(Policy = ApartmentPermissions.ReadWrite)]
         public async Task<IActionResult> DeleteResident([FromBody] List<string> request)
         {
+            await _residentService.DeleteResident(request);
             return Ok(new ResponseData<object>(System.Net.HttpStatusCode.OK, null, null, null));
         }
     }

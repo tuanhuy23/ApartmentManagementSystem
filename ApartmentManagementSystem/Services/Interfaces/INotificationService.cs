@@ -9,9 +9,9 @@ namespace ApartmentManagementSystem.Services.Interfaces
         public Pagination<AnnouncementDto> GetAnnouncements(RequestQueryBaseDto<Guid> request);
         public AnnouncementDto GetAnnouncement(Guid id);
         public Task CreateOrUpdateAnnouncements(AnnouncementDto request);
-        public Task DeleteAnnouncements(Guid id);
+        public Task DeleteAnnouncements(List<string> ids);
         public Task CreateNotification(NotificationDto request);
-        public Task DeleteNotification(Guid id);
-        public Task MarkNotificationIsRead(Guid id);
+        public Task DeleteNotification(List<string> ids);
+        public Task MarkNotificationIsRead(List<string> ids);
     }
 }

@@ -113,7 +113,7 @@ namespace ApartmentManagementSystem.Controllers
         [Authorize(Policy = FeeNoticePermissions.Read)]
         public async Task<IActionResult> CancelFeeNotice(Guid id)
         {
-            await _feeSerivce.CreateFeeNotice(request);
+            await _feeSerivce.CancelFeeNotice(id);
             return Ok(new ResponseData<object>(System.Net.HttpStatusCode.OK, null, null, null));
         }
 
@@ -122,7 +122,7 @@ namespace ApartmentManagementSystem.Controllers
         [Authorize(Policy = FeeNoticePermissions.Read)]
         public async Task<IActionResult> UpdatePaymentStatusFeeNotice(Guid id)
         {
-            await _feeSerivce.CreateFeeNotice(request);
+            await _feeSerivce.UpdatePaymentStatusFeeNotice(id);
             return Ok(new ResponseData<object>(System.Net.HttpStatusCode.OK, null, null, null));
         }
 
@@ -131,6 +131,7 @@ namespace ApartmentManagementSystem.Controllers
         [Authorize(Policy = FeeNoticePermissions.Read)]
         public async Task<IActionResult> DeleteFeeNotice([FromBody] List<string> request)
         {
+            await _feeSerivce.DeletFeeeNotice(request);
             return Ok(new ResponseData<object>(System.Net.HttpStatusCode.OK, null, null, null));
         }
     }

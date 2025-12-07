@@ -93,6 +93,7 @@ namespace ApartmentManagementSystem.Controllers
         [Authorize(Policy = NotificationPermissions.ReadWrite)]
         public async Task<IActionResult> DeleteAnnouncement([FromBody] List<string> request)
         {
+            await _notificationService.DeleteAnnouncements(request);
             return Ok(new ResponseData<object>(System.Net.HttpStatusCode.OK, null, null, null));
         }
     }

@@ -69,8 +69,8 @@ namespace ApartmentManagementSystem.Controllers
         [Authorize(Policy = ApartmentBuildingPermissions.ReadWrite)]
         public async Task<IActionResult> GetApartmentBuilding(Guid id)
         {
-
-            return Ok(new ResponseData<ApartmentBuildingDto>(System.Net.HttpStatusCode.OK, null, null, null));
+            var apartmentBuilding =  await _apartmentBuildingService.GetApartmentBuilding(id);
+            return Ok(new ResponseData<ApartmentBuildingDto>(System.Net.HttpStatusCode.OK, apartmentBuilding, null, null));
         }
 
         [HttpPut()]
@@ -78,14 +78,16 @@ namespace ApartmentManagementSystem.Controllers
         [Authorize(Policy = ApartmentBuildingPermissions.ReadWrite)]
         public async Task<IActionResult> UpdateApartmentBuilding([FromBody] CreateOrUpdateApartmentBuildingDto request)
         {
+            await _apartmentBuildingService.CreateOrUpdateApartmentBuilding(request);
             return Ok(new ResponseData<object>(System.Net.HttpStatusCode.OK, null, null, null));
         }
 
         [HttpPut("{id:Guid}/status")]
         [ProducesResponseType(typeof(ResponseData<>), StatusCodes.Status200OK)]
         [Authorize(Policy = ApartmentBuildingPermissions.ReadWrite)]
-        public async Task<IActionResult> UpdateApartmentBuildingStatus([FromBody] UpdateStatusApartmentBuildingDto request)
+        public async Task<IActionResult> UpdateApartmentBuildingStatus(Guid id, [FromBody] UpdateStatusApartmentBuildingDto request)
         {
+            await _apartmentBuildingService.UpdateApartmentBuildingStatus(id, request);
             return Ok(new ResponseData<object>(System.Net.HttpStatusCode.OK, null, null, null));
         }
 
@@ -94,6 +96,7 @@ namespace ApartmentManagementSystem.Controllers
         [Authorize(Policy = ApartmentBuildingPermissions.ReadWrite)]
         public async Task<IActionResult> DeleteApartmentBuilding([FromBody] List<string> request)
         {
+            await _apartmentBuildingService.DeleteApartmentBuilding(request);
             return Ok(new ResponseData<object>(System.Net.HttpStatusCode.OK, null, null, null));
         }
     }

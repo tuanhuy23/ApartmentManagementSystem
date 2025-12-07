@@ -57,12 +57,13 @@ namespace ApartmentManagementSystem.Controllers
             }));
         }
         
-        [HttpGet("{id:Guid}")]
+        [HttpGet("detail/{id:Guid}")]
         [ProducesResponseType(typeof(ResponseData<ParkingRegistrationDto>), StatusCodes.Status200OK)]
         [Authorize(Policy = NotificationPermissions.Read)]
         public async Task<IActionResult> GetParkingRegistration(Guid id)
         {
-            return Ok(new ResponseData<ParkingRegistrationDto>(System.Net.HttpStatusCode.OK, null, null, null));
+            var parkingRegistration = await _parkingRegistrationService.GetParkingRegistration(id);
+            return Ok(new ResponseData<ParkingRegistrationDto>(System.Net.HttpStatusCode.OK, parkingRegistration, null, null));
         }
 
         [HttpPost()]
@@ -70,7 +71,7 @@ namespace ApartmentManagementSystem.Controllers
         [Authorize(Policy = ApartmentPermissions.ReadWrite)]
         public async Task<IActionResult> CreateParkingRegistrations([FromBody] ParkingRegistrationDto request)
         {
-            await _parkingRegistrationService.CreateParkingRegistration(request);
+            await _parkingRegistrationService.CreateOrUpdateParkingRegistration(request);
             return Ok(new ResponseData<object>(System.Net.HttpStatusCode.OK, null, null, null));
         }
 
@@ -79,6 +80,7 @@ namespace ApartmentManagementSystem.Controllers
         [Authorize(Policy = ApartmentPermissions.ReadWrite)]
         public async Task<IActionResult> UpdateParkingRegistrations([FromBody] ParkingRegistrationDto request)
         {
+            await _parkingRegistrationService.CreateOrUpdateParkingRegistration(request);
             return Ok(new ResponseData<object>(System.Net.HttpStatusCode.OK, null, null, null));
         }
 
@@ -87,6 +89,7 @@ namespace ApartmentManagementSystem.Controllers
         [Authorize(Policy = ApartmentPermissions.ReadWrite)]
         public async Task<IActionResult> DeleteParkingRegistrations([FromBody] List<string> request)
         {
+            await _parkingRegistrationService.DeleteParkingRegistration(request);
             return Ok(new ResponseData<object>(System.Net.HttpStatusCode.OK, null, null, null));
         }
     }

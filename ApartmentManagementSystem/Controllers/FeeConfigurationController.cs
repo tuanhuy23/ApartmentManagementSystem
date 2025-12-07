@@ -89,6 +89,7 @@ namespace ApartmentManagementSystem.Controllers
         [Authorize(Policy = FeeConfigurationPermissions.Read)]
         public async Task<IActionResult> DeleteFeeType([FromBody] List<string> request)
         {
+            await _feeConfigurationService.DeleteFeeType(request);
             return Ok(new ResponseData<object>(System.Net.HttpStatusCode.OK, null, null, null));
         }
     }
