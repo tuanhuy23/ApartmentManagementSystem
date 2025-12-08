@@ -159,9 +159,9 @@ namespace ApartmentManagementSystem.Controllers
         [HttpDelete("{apartmentId:Guid}/residents")]
         [ProducesResponseType(typeof(ResponseData<>), StatusCodes.Status200OK)]
         [Authorize(Policy = ApartmentPermissions.ReadWrite)]
-        public async Task<IActionResult> DeleteResident([FromBody] List<string> request)
+        public async Task<IActionResult> DeleteResident(Guid apartmentId, [FromBody] List<string> request)
         {
-            await _residentService.DeleteResident(request);
+            await _residentService.DeleteResident(apartmentId, request);
             return Ok(new ResponseData<object>(System.Net.HttpStatusCode.OK, null, null, null));
         }
     }

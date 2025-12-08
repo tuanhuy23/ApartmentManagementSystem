@@ -44,12 +44,21 @@ namespace ApartmentManagementSystem.Services.Impls
             await _unitOfWork.CommitAsync();
         }
 
-        public async Task DeleteResident(List<string> ids)
+        public async Task DeleteResident(Guid apartmentId, List<string> ids)
         {
             var residentIds = ids.Select(i => new Guid(i));
-            var residents = _residentRepository.List(r => residentIds.Contains(r.Id)).ToList();
+            var residents = _residentRepository.List(r => residentIds.Contains(r.Id)).Include(r => r.ApartmentResidents).ToList();
+            var apartmentResidents = new List<ApartmentResident>();
+            foreach(var resident in residents)
+            {
+                if (resident.ApartmentResidents == null) continue;
+                var apartmentResidentCurrents = resident.ApartmentResidents.Where(a => a.ApartmentId.Equals(apartmentId));
+                apartmentResidents.AddRange(apartmentResidentCurrents);
+            }
+
             var userIds = residents.Select(r => r.UserId);
             await _userService.DeleteUsers(userIds);
+            _apartmentResidentsRepository.Delete(apartmentResidents);
             _residentRepository.Delete(residents);
             await _unitOfWork.CommitAsync();
         }

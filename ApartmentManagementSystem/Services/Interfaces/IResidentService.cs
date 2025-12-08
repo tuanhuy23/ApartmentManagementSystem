@@ -8,6 +8,6 @@ namespace ApartmentManagementSystem.Services.Interfaces
         public Pagination<ResidentDto> GetResidents(RequestQueryBaseDto<Guid> request);
         public Task<ResidentDto> GetResident(Guid residentId, Guid apartmentId);
         public Task CreateOrUpdateResident(ResidentDto request);
-        public Task DeleteResident(List<string> ids);
+        public Task DeleteResident(Guid apartmentId, List<string> ids);
     }
 }

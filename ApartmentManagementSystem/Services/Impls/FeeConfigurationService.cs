@@ -46,6 +46,7 @@ namespace ApartmentManagementSystem.Services.Impls
             if (CalculationType.Area.Equals(request.CalculationType))
             {
                 feeType.DefaultRate = request.DefaultRate;
+                feeType.ApplyDate = request.ApplyDate;
             }
             feeType.DefaultRate = request.DefaultRate;
             feeType.IsVATApplicable = request.IsVATApplicable;

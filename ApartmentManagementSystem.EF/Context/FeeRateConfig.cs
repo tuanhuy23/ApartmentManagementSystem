@@ -12,6 +12,7 @@ namespace ApartmentManagementSystem.EF.Context
         public bool IsActive { get; set; }
         public string Name { get; set; }
         public string UnitName{ get; set; }
+        public float? OtherRate {  get; set; }
         public ICollection<FeeTier> FeeTiers { get; set; }
     }
 }

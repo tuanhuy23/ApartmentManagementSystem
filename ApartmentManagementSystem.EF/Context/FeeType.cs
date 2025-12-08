@@ -12,6 +12,7 @@ namespace ApartmentManagementSystem.EF.Context
         public bool IsActive { get; set; } 
         public decimal DefaultRate { get; set; }
         public float DefaultVATRate { get; set; }
+        public DateTime? ApplyDate { get; set; }
         public ICollection<FeeRateConfig> FeeRateConfigs { get; set; }
         public ICollection<QuantityRateConfig> QuantityRateConfigs { get; set; }
         public ICollection<UtilityReading> UtilityReadings { get; set; }
