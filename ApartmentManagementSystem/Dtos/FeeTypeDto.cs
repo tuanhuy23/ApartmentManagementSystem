@@ -10,6 +10,7 @@ namespace ApartmentManagementSystem.Dtos
         public bool IsActive { get; set; }
         public decimal DefaultRate { get; set; }
         public float DefaultVATRate { get; set; }
+         public DateTime? ApplyDate { get; set; }
         public IEnumerable<FeeRateConfigDto> FeeRateConfigs { get; set; }
         public IEnumerable<QuantityRateConfigDto> QuantityRateConfigs{ get; set; }
     }
@@ -20,8 +21,10 @@ namespace ApartmentManagementSystem.Dtos
         public Guid FeeTypeId { get; set; }
         public float VATRate { get; set; }
         public bool IsActive { get; set; }
+        public DateTime ApplyDate { get; set; }
         public string Name { get; set; }
         public string UnitName{ get; set; }
+        public float? OtherRate {  get; set; }
         public IEnumerable<FeeTierDto> FeeTiers { get; set; }
     }
     public class FeeTierDto

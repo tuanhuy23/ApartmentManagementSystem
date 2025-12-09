@@ -21,6 +21,8 @@ namespace ApartmentManagementSystem.Dtos
         public float VATRate { get; set; }
         public bool IsActive { get; set; }
         public DateTime ApplyDate { get; set; }
+        public string UnitName { get; set; }
+        public float? OtherRate {  get; set; }
         public List<CreateOrUpdateFeeRateTierDto> FeeTiers{ get; set; }
     }
     public class CreateOrUpdateFeeRateTierDto
@@ -30,7 +32,6 @@ namespace ApartmentManagementSystem.Dtos
         public int ConsumptionStart { get; set; }
         public int ConsumptionEnd { get; set;}
         public decimal UnitRate { get; set; }
-        public string UnitName { get; set; }
     }
     public class CreateOrUpdateQuantityRateConfigDto
     {
@@ -38,6 +39,5 @@ namespace ApartmentManagementSystem.Dtos
         public bool IsActive { get; set; }
         public string ItemType { get; set; }
         public decimal UnitRate { get; set; }
-        public DateTime ApplyDate { get; set; }
     }
 }

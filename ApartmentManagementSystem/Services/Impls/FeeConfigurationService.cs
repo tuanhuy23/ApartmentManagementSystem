@@ -42,6 +42,7 @@ namespace ApartmentManagementSystem.Services.Impls
             if (CalculationType.QUANTITY.Equals(request.CalculationType) && request.QuantityRateConfigs != null)
             {
                 feeType.QuantityRateConfigs = CreateOrUpdateQuantityRateConfig(feeType, request.QuantityRateConfigs).ToList();
+                feeType.ApplyDate = request.ApplyDate;
             }
             if (CalculationType.Area.Equals(request.CalculationType))
             {
@@ -91,7 +92,8 @@ namespace ApartmentManagementSystem.Services.Impls
                 IsActive = feeType.IsActive,
                 Name = feeType.Name,
                 IsVATApplicable = feeType.IsVATApplicable,
-                DefaultVATRate = feeType.DefaultVATRate
+                DefaultVATRate = feeType.DefaultVATRate,
+                ApplyDate = feeType.ApplyDate
             };
             if (feeType.QuantityRateConfigs != null && feeType.CalculationType.Equals(CalculationType.QUANTITY))
             {
@@ -120,7 +122,6 @@ namespace ApartmentManagementSystem.Services.Impls
                             FeeRateConfigId = f.FeeRateConfigId,
                             Id = f.Id,
                             TierOrder = f.TierOrder,
-                            UnitName = f.UnitName,
                             UnitRate = f.UnitRate
                         }).ToList();
                     }
@@ -132,6 +133,9 @@ namespace ApartmentManagementSystem.Services.Impls
                     feeRateConfigDto.Name = feeRateConfig.Name;
                     feeRateConfigDto.UnitName = feeRateConfig.UnitName;
                     feeRateConfigDto.IsActive = feeRateConfig.IsActive;
+                    feeRateConfigDto.UnitName = feeRateConfig.UnitName;
+                    feeRateConfigDto.OtherRate = feeRateConfig.OtherRate;
+                    feeRateConfigDto.ApplyDate = feeRateConfig.ApplyDate;
                     feeRateConfigDtos.Add(feeRateConfigDto);
                 }
                 feeTypeDto.FeeRateConfigs = feeRateConfigDtos;
@@ -209,7 +213,9 @@ namespace ApartmentManagementSystem.Services.Impls
                         IsActive = isActive,
                         Name = feeRateConfigDto.Name,
                         VATRate = feeRateConfigDto.VATRate,
-                        UnitName = "M3" //TODO
+                        UnitName = feeRateConfigDto.UnitName,
+                        ApplyDate = feeRateConfigDto.ApplyDate,
+                        OtherRate = feeRateConfigDto.OtherRate
                     };
                     inCommingFeeRateConfig.FeeTiers = CreateOrUpdateFeeRateConfig(inCommingFeeRateConfig, feeRateConfigDto.FeeTiers).ToList();
                     feeRateConfigs.Add(inCommingFeeRateConfig);
@@ -221,6 +227,9 @@ namespace ApartmentManagementSystem.Services.Impls
                 feeRateConfig.FeeTiers = CreateOrUpdateFeeRateConfig(feeRateConfig, feeRateConfigDto.FeeTiers).ToList();
                 feeRateConfig.Name = feeRateConfigDto.Name;
                 feeRateConfig.VATRate = feeRateConfigDto.VATRate; 
+                feeRateConfig.UnitName = feeRateConfigDto.UnitName;
+                feeRateConfig.ApplyDate = feeRateConfigDto.ApplyDate;
+                feeRateConfig.OtherRate = feeRateConfigDto.OtherRate;
             }
             return feeRateConfigs;
         }
@@ -242,7 +251,6 @@ namespace ApartmentManagementSystem.Services.Impls
                         ConsumptionStart = feeTierDto.ConsumptionStart,
                         FeeRateConfigId = feeRateConfig.Id,
                         TierOrder = feeTierDto.TierOrder,
-                        UnitName = feeTierDto.UnitName,
                         UnitRate = feeTierDto.UnitRate,
                     });
                     continue;
@@ -251,7 +259,6 @@ namespace ApartmentManagementSystem.Services.Impls
                 if (feeTier == null) continue;
                 feeTier.ConsumptionEnd = feeTierDto.ConsumptionEnd;
                 feeTier.ConsumptionStart = feeTierDto.ConsumptionStart;
-                feeTier.UnitName = feeTierDto.UnitName;
                 feeTier.UnitRate = feeTierDto.UnitRate;
                 feeTier.TierOrder = feeTierDto.TierOrder;
             }
@@ -284,7 +291,7 @@ namespace ApartmentManagementSystem.Services.Impls
                         FeeTypeId = feeType.Id,
                         IsActive = isActive,
                         ItemType = quantityRateConfigDto.ItemType,
-                        UnitRate = quantityRateConfigDto.UnitRate
+                        UnitRate = quantityRateConfigDto.UnitRate,
                     };
                     quantityRateConfigs.Add(inCommingQuantityRateConfig);
                     continue;

@@ -338,7 +338,7 @@ namespace ApartmentManagementSystem.Services.Impls
                 feeDetailTiers.Add(new FeeDetailTier()
                 {
                     TierOrder = feeTier.TierOrder,
-                    UnitName = feeTier.UnitName,
+                    UnitName = feeRateConfig.UnitName,
                     UnitRate = feeTier.UnitRate,
                     Consumption = adjustedTierLimit,
                     ConsumptionEnd = feeTier.ConsumptionEnd * ratioChange,

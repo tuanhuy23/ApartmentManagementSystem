@@ -3,6 +3,7 @@ using System;
 using ApartmentManagementSystem.EF.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DbMigrationTools.Migrations
 {
     [DbContext(typeof(ApartmentManagementDbContext))]
-    partial class ApartmentManagementDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251209165529_UpdateFeeConfig")]
+    partial class UpdateFeeConfig
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -797,6 +800,9 @@ namespace DbMigrationTools.Migrations
 
                     b.Property<Guid>("ApartmentBuildingId")
                         .HasColumnType("uuid");
+
+                    b.Property<DateTime>("ApplyDate")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("CreatedBy")
                         .HasColumnType("text");

@@ -10,6 +10,5 @@ namespace ApartmentManagementSystem.EF.Context
         public double ConsumptionStart { get; set; }
         public double ConsumptionEnd { get; set;}
         public decimal UnitRate { get; set; }
-        public string UnitName { get; set; }
     }
 }
