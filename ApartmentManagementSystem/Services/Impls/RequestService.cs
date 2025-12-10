@@ -13,27 +13,26 @@ namespace ApartmentManagementSystem.Services.Impls
 {
     internal class RequestService : IRequestService
     {
-        private readonly IRequestHistoryRepository _feedbackRepository;
+        private readonly IRequestHistoryRepository _requestHistoryRepository;
         private readonly IUserService _userService;
         private readonly IRequestRepository _requestRepository;
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IApartmentBuildingRepository _apartmentBuildingRepository;
         private readonly IAccountService _accountService;
-        public RequestService (IRequestHistoryRepository feedbackRepository, IUserService userService, IRequestRepository requestRepository, IUnitOfWork unitOfWork, IApartmentBuildingRepository apartmentBuildingRepository, IAccountService accountService)
+        private readonly IResidentRepository _residentRepository;
+        private readonly IFileAttachmentRepository _fileAttachmentRepository;
+        public RequestService (IRequestHistoryRepository requestHistoryRepository, IUserService userService, IRequestRepository requestRepository, IUnitOfWork unitOfWork, IAccountService accountService, IResidentRepository residentRepository, IFileAttachmentRepository fileAttachmentRepository)
         {
-            _feedbackRepository = feedbackRepository;
+            _requestHistoryRepository = requestHistoryRepository;
             _userService = userService;
             _requestRepository = requestRepository;
             _unitOfWork = unitOfWork;
-            _apartmentBuildingRepository = apartmentBuildingRepository;
             _accountService = accountService;
+            _residentRepository = residentRepository;
+            _fileAttachmentRepository = fileAttachmentRepository;
         }
 
         public async Task CreateOrUpdateRequest(RequestDto request)
         {
-            var apartmentBuilding = _apartmentBuildingRepository.List().FirstOrDefault(a => a.Id.Equals(request.ApartmentBuildingId));
-            if (apartmentBuilding == null)
-                throw new DomainException(ErrorCodeConsts.ApartmentBuildingNotFound, ErrorMessageConsts.ApartmentBuildingNotFound, System.Net.HttpStatusCode.NotFound);
             if (request.Id == null)
             {
                 await CreateRequest(request);
@@ -45,19 +44,69 @@ namespace ApartmentManagementSystem.Services.Impls
             await _unitOfWork.CommitAsync();
         }
 
-        public Task DeleteFeedback(Guid feedbackId)
+        public async Task DeleteRequest(List<string> requestId)
         {
-            throw new NotImplementedException();
+            var requestIds = requestId.Select(r => new Guid(r));
+            var requestEntites = _requestRepository.List(r => requestIds.Contains(r.Id)).Include(r => r.Files).ToList();
+            foreach(var requestEntity in requestEntites)
+            {
+                var requestFiles = requestEntity.Files;
+                if (requestFiles != null)
+                {
+                    _fileAttachmentRepository.Delete(requestFiles);
+                }
+            }
+            var requestHistorys = _requestHistoryRepository.List(r => requestIds.Contains(r.RequestId)).Include(r => r.Files).ToList();
+            foreach(var requestHistory in requestHistorys)
+            {
+                var requestFiles = requestHistory.Files;
+                if (requestFiles != null)
+                {
+                    _fileAttachmentRepository.Delete(requestFiles);
+                }
+            }
+            _requestRepository.Delete(requestEntites);
+            _requestHistoryRepository.Delete(requestHistorys);
+            await _unitOfWork.CommitAsync();
         }
 
-        public Task DeleteRequest(List<string> requestId)
+        public async Task UpdateStatusAndAssignRequest(UpdateStatusAndAssignRequestDto request)
         {
-            throw new NotImplementedException();
+            var currentUser = await _accountService.GetAccountInfo();
+            var requestEntity = _requestRepository.List().Include(f => f.Files).Include(r => r.RequestHistories).ThenInclude(r => r.Files).FirstOrDefault(r => r.Id.Equals(request.Id));
+            if (requestEntity == null)
+                throw new DomainException(ErrorCodeConsts.RequestNotFound, ErrorMessageConsts.RequestNotFound, System.Net.HttpStatusCode.NotFound);
+            var newRequestHistory = new List<RequestHistory>();
+
+            if (!string.IsNullOrEmpty(request.Status))
+            {
+                newRequestHistory.Add(new RequestHistory()
+                {
+                    ApartmentBuildingId = requestEntity.ApartmentBuildingId,
+                    ActionType = Consts.ActionType.StatusChange,
+                    NewStatus = request.Status,
+                    OldStatus = requestEntity.Status
+                });
+                requestEntity.Status = request.Status;
+            }
+            if (!string.IsNullOrEmpty(request.CurrentHandlerId))
+            {
+                newRequestHistory.Add(new RequestHistory()
+                {
+                    ApartmentBuildingId = requestEntity.ApartmentBuildingId,
+                    ActionType = Consts.ActionType.Assign,
+                    NewUserAssignId = request.CurrentHandlerId
+                });
+                requestEntity.CurrentHandlerId = request.CurrentHandlerId;
+            }
+            _requestRepository.Update(requestEntity);
+            await _requestHistoryRepository.Add(newRequestHistory);
+            await _unitOfWork.CommitAsync();
         }
 
         public RequestDto GetRequest(Guid requestId)
         {
-            var request = _requestRepository.List().Include(r => r.Files).Include(r => r.Feedbacks).ThenInclude(r => r.Files).FirstOrDefault(r => r.Id.Equals(requestId));
+            var request = _requestRepository.List().Include(r => r.Files).Include(r => r.RequestHistories).ThenInclude(r => r.Files).FirstOrDefault(r => r.Id.Equals(requestId));
             if (request == null) 
                 throw new DomainException(ErrorCodeConsts.RequestNotFound, ErrorMessageConsts.RequestNotFound, System.Net.HttpStatusCode.NotFound);
             var requestDto = new RequestDto()
@@ -67,7 +116,7 @@ namespace ApartmentManagementSystem.Services.Impls
                 Id = request.Id,
                 Status = request.Status,
                 Title = request.Title,
-                UserId = request.UserId
+                CurrentHandlerId = request.CurrentHandlerId
             };
             if (request.Files == null) return requestDto;
             requestDto.Files = request.Files.Select(r => new FileAttachmentDto()
@@ -78,20 +127,19 @@ namespace ApartmentManagementSystem.Services.Impls
                 Name = r.Name,
                 Src = r.Src
             });
-            if (request.Feedbacks == null) return requestDto;
-            var feedbackDtos = new List<FeedbackDto>();
-            foreach(var feedback in request.Feedbacks)
+            if (request.RequestHistories == null) return requestDto;
+            var reqHistoryDtos = new List<RequestHistoryDto>();
+            foreach(var reqHistory in request.RequestHistories)
             {
-                var feedbackDto = new FeedbackDto()
+                var reqHistoryDto = new RequestHistoryDto()
                 {
-                    Description = feedback.Description,
-                    Id = feedback.Id,
-                    Rate = feedback.Rate,
-                    RequestId = feedback.RequestId
+                    Note = reqHistory.Note,
+                    Id = reqHistory.Id,
+                    RequestId = reqHistory.RequestId
                 };
-                if (feedback.Files != null)
+                if (reqHistory.Files != null)
                 {
-                    feedbackDto.Files = feedback.Files.Select(f => new FileAttachmentDto()
+                    reqHistoryDto.Files = reqHistory.Files.Select(f => new FileAttachmentDto()
                     {
                         Description = f.Description,
                         FileType = f.FileType,
@@ -100,9 +148,9 @@ namespace ApartmentManagementSystem.Services.Impls
                         Src = f.Src
                     });
                 }
-                feedbackDtos.Add(feedbackDto);
+                reqHistoryDtos.Add(reqHistoryDto);
             }
-            requestDto.Feedbacks = feedbackDtos;
+            requestDto.Feedbacks = reqHistoryDtos;
             if (request.Files != null)
             {
                 requestDto.Files = request.Files.Select(f => new FileAttachmentDto()
@@ -130,7 +178,7 @@ namespace ApartmentManagementSystem.Services.Impls
                     Id = requestEntity.Id,
                     Status = requestEntity.Status,
                     Title = requestEntity.Title,
-                    UserId = requestEntity.UserId
+                    CurrentHandlerId = requestEntity.CurrentHandlerId
                 };
                 requestDtos.Add(requestDto);
             }
@@ -149,11 +197,26 @@ namespace ApartmentManagementSystem.Services.Impls
                 Totals = requestDtoQuery.Count()
             };
         }
+        public async Task CreateOrUpdateRequestAction(RequestHistoryDto request)
+        {
+            var requestEntity = _requestRepository.List().Include(r => r.RequestHistories).ThenInclude(r => r.Files).FirstOrDefault(r => r.Id.Equals(request.RequestId));
+            if (requestEntity == null) 
+                throw new DomainException(ErrorCodeConsts.RequestNotFound, ErrorMessageConsts.RequestNotFound, System.Net.HttpStatusCode.NotFound);
+            if (request.Id == null)
+            {
+                await CreateRequestHistory(request, requestEntity);
+            }
+            else
+            {
+                await UpdateRequestHistory(request, requestEntity);
+            }
+            await _unitOfWork.CommitAsync();
+        }
         private async Task CreateRequest(RequestDto request)
         {
             var currentUser = await _accountService.GetAccountInfo();
-            if (currentUser.RoleName.Equals())
-                throw 
+            if (!currentUser.RoleName.Equals(Consts.RoleDefaulConsts.Resident))
+                throw new DomainException(ErrorCodeConsts.UserNotAllowCreateRequest, ErrorMessageConsts.UserNotAllowCreateRequest, System.Net.HttpStatusCode.Forbidden);
 
             var requestNew = new Request()
             {
@@ -161,14 +224,12 @@ namespace ApartmentManagementSystem.Services.Impls
                 Status = StatusConsts.New,
                 Title = request.Title,
                 Description = request.Description,
-                UserId = currentUser.U
+                RequestType = request.RequestType
             };
-            if (!string.IsNullOrEmpty(request.UserId))
-            {
-                var user = _userService.GetUser(request.UserId);
-                if (user == null)
-                    throw new DomainException(ErrorCodeConsts.UserNotFound, ErrorMessageConsts.UserNotFound, System.Net.HttpStatusCode.NotFound);
-            }
+            var resident = _residentRepository.List(r => r.UserId.Equals(currentUser.Id)).FirstOrDefault();
+            if (resident == null)
+                throw new DomainException(ErrorCodeConsts.ResidentNotFound, ErrorMessageConsts.ResidentNotFound, System.Net.HttpStatusCode.NotFound);
+            requestNew.ResidentId = resident.Id;
             if (request.Files != null)
             {
                 requestNew.Files = request.Files.Select(f => new FileAttachment()
@@ -179,26 +240,32 @@ namespace ApartmentManagementSystem.Services.Impls
                     Name = f.Name
                 }).ToList();
             }
-            await _requestRepository.Add(requestNew);
+            var resultRequestNew = await _requestRepository.Add(requestNew);
+            await _requestHistoryRepository.Add(new EF.Context.RequestHistory()
+            {
+                ActionType = Consts.ActionType.Create,
+                ApartmentBuildingId = request.ApartmentBuildingId,
+                RequestId = resultRequestNew.Id
+            });
         }
 
         private async Task UpdateRequest(RequestDto request)
         {
+            var currentUser = await _accountService.GetAccountInfo();
+            if (!currentUser.RoleName.Equals(Consts.RoleDefaulConsts.Resident))
+                throw new DomainException(ErrorCodeConsts.UserNotAllowCreateRequest, ErrorMessageConsts.UserNotAllowCreateRequest, System.Net.HttpStatusCode.Forbidden);
+            
             var requestEntity = _requestRepository.List().Include(f => f.Files).FirstOrDefault(r => r.Id.Equals(request.Id));
             if (requestEntity == null)
                 throw new DomainException(ErrorCodeConsts.RequestNotFound, ErrorMessageConsts.RequestNotFound, System.Net.HttpStatusCode.NotFound);
-            if (!requestEntity.Status.Equals(StatusConsts.Done))
-                throw new DomainException(ErrorCodeConsts.RequestAlreadyDone, ErrorMessageConsts.RequestAlreadyDone, System.Net.HttpStatusCode.BadRequest);
+            
+            if (!requestEntity.Status.Equals(Consts.StatusConsts.New))
+                throw new DomainException(ErrorCodeConsts.RequestAlreadyProcess, ErrorMessageConsts.RequestAlreadyProcess, System.Net.HttpStatusCode.BadRequest);
+
             requestEntity.Title = request.Title;
             requestEntity.Description = request.Description;
+            requestEntity.RequestType = request.RequestType; 
             requestEntity.Status = request.Status;
-            if (!string.IsNullOrEmpty(request.UserId))
-            {
-                var user = _userService.GetUser(request.UserId);
-                if (user == null)
-                    throw new DomainException(ErrorCodeConsts.UserNotFound, ErrorMessageConsts.UserNotFound, System.Net.HttpStatusCode.NotFound);
-            }
-            requestEntity.UserId = request.UserId;
             var files = requestEntity.Files;
 
             if (request.Files == null)
@@ -227,19 +294,19 @@ namespace ApartmentManagementSystem.Services.Impls
             }
             _requestRepository.Update(requestEntity);
         }
-        private async Task CreateFeedback(FeedbackDto request, Request requestEntity)
+        
+        private async Task CreateRequestHistory(RequestHistoryDto request, Request requestEntity)
         {
-            if (!requestEntity.Status.Equals(StatusConsts.Done))
-                throw new DomainException(ErrorCodeConsts.RequestNotCompleted, ErrorMessageConsts.RequestNotCompleted, System.Net.HttpStatusCode.BadRequest);
-            var feedback = new RequestHistory()
+            var requestHistory = new RequestHistory()
             {
                 ApartmentBuildingId = requestEntity.ApartmentBuildingId,
-                Rate = request.Rate,
-                Description = request.Description
+                Note = request.Note,
+                RequestId = requestEntity.Id,
+                ActionType = Consts.ActionType.Comment
             };
             if (request.Files != null)
             {
-                feedback.Files = request.Files.Select(f => new FileAttachment()
+                requestHistory.Files = request.Files.Select(f => new FileAttachment()
                 {
                     Description = f.Description,
                     FileType = f.FileType,
@@ -247,20 +314,18 @@ namespace ApartmentManagementSystem.Services.Impls
                     Name = f.Name
                 }).ToList();
             }
-            await _feedbackRepository.Add(feedback);
+            await _requestHistoryRepository.Add(requestHistory);
         }
 
-        private async Task UpdateFeedback(FeedbackDto request, Request requestEntity)
+        private async Task UpdateRequestHistory(RequestHistoryDto request, Request requestEntity)
         {
-            if (!requestEntity.Status.Equals(StatusConsts.Done))
-                throw new DomainException(ErrorCodeConsts.RequestNotCompleted, ErrorMessageConsts.RequestNotCompleted, System.Net.HttpStatusCode.BadRequest);
-            var feedback = _feedbackRepository.List().Include(f => f.Files).FirstOrDefault(r => r.Id.Equals(request.Id));
-            if (feedback == null)
-                throw new DomainException(ErrorCodeConsts.FeedbackNotFound, ErrorMessageConsts.FeedbackNotFound, System.Net.HttpStatusCode.NotFound);
-            feedback.Description = request.Description;
-            feedback.Rate = request.Rate;
+            var requestHistoryEntity = _requestHistoryRepository.List().Include(f => f.Files).FirstOrDefault(r => r.Id.Equals(request.Id));
+
+            if (requestHistoryEntity == null)
+                throw new DomainException(ErrorCodeConsts.RequestHistoryNotFound, ErrorMessageConsts.RequestHistoryNotFound, System.Net.HttpStatusCode.NotFound);
+            requestHistoryEntity.Note = request.Note;
            
-            var files = feedback.Files;
+            var files = requestHistoryEntity.Files;
 
             if (request.Files == null)
             {
@@ -286,7 +351,9 @@ namespace ApartmentManagementSystem.Services.Impls
                 fileEntity.Description = file.Description;
                 fileEntity.FileType = file.FileType;
             }
-            _feedbackRepository.Update(feedback);
+            _requestHistoryRepository.Update(requestHistoryEntity);
         }
+
+        
     }
 }

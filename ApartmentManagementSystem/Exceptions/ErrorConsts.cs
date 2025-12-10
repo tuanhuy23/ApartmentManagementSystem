@@ -40,12 +40,13 @@
         public static string ResidentNotFound = "Resident not found";
         public static string ResidentNotExistInApartment = "Resident does not exist in apartment";
         public static string RequestNotFound = "Request not found";
-        public static string RequestAlreadyDone = "The request has already been completed";
-        public static string RequestNotCompleted = "The request has not been completed";
-        public static string FeedbackNotFound = "Feedback not found";
+        public static string RequestAlreadyProcess = "The request has already been processed";
+        public static string RequestAlreadyCancel = "The request has already been cancel";
+        public static string RequestHistoryNotFound = "Request history not found";
         public static string AnnouncementNotFound = "Announcement not found";
         public static string AnnouncementAlreadyDone = "The announcement has already been published";
         public static string ParkingRegistrationNotFound = "Parking registration not found.";
+        public static string UserNotAllowCreateRequest = "User not allow create request.";
     }
 
     public static class ErrorCodeConsts
@@ -87,11 +88,12 @@
         public static string ResidentNotFound = "RESIDENT_NOT_FOUND";
         public static string ResidentNotExistInApartment = "RESIDENT_NOT_EXIST_IN_APARTMENT";
         public static string RequestNotFound = "REQUEST_NOT_FOUND";
-        public static string RequestAlreadyDone = "REQUEST_ALREADY_DONE";
-        public static string RequestNotCompleted = "REQUEST_NOT_COMPLETED";
-        public static string FeedbackNotFound = "FEEDBACK_NOT_FOUND";
+        public static string RequestAlreadyProcess = "REQUEST_ALREADY_PROCESS";
+        public static string RequestAlreadyCancel = "REQUEST_ALREADY_CANCEL";
+        public static string RequestHistoryNotFound = "REQUEST_HISTORY_NOT_FOUND";
         public static string AnnouncementNotFound = "ANNOUNCEMENT_NOT_FOUND";
         public static string AnnouncementAlreadyDone = "REQUEST_ALREADY_PUBLISHED";
         public static string ParkingRegistrationNotFound = "PARKING_REGISTRATION_NOT_FOUND";
+        public static string UserNotAllowCreateRequest = "USER_NOT_ALLOW_CREATE_REQUEST";
     }
 }

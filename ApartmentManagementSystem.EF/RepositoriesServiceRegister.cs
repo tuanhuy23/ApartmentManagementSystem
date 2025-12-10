@@ -26,6 +26,7 @@ namespace ApartmentManagementSystem.EF
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>)).AddScoped<IRequestHistoryRepository, RequestHistoryRepository>();
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>)).AddScoped<INotificationRepository, NotificationRepository>();
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>)).AddScoped<IRequestRepository, RequestRepository>();
+            services.AddScoped(typeof(IRepository<>), typeof(Repository<>)).AddScoped<IFileAttachmentRepository, FileAttachmentRepository>();
                  
             services.AddScoped<IUnitOfWork, UnitOfWork>();
         }

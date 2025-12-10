@@ -9,5 +9,7 @@ namespace ApartmentManagementSystem.Services.Interfaces
         public RequestDto GetRequest(Guid requestId);
         public Task CreateOrUpdateRequest(RequestDto request);
         public Task DeleteRequest (List<string> requestId);
+        public Task UpdateStatusAndAssignRequest(UpdateStatusAndAssignRequestDto request);
+        public Task CreateOrUpdateRequestAction(RequestHistoryDto request);
     }
 }

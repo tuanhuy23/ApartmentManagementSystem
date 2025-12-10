@@ -26,6 +26,7 @@
     }
     public static class ActionType
     {
+        public const string Create = "CREATE";
         public const string StatusChange = "STATUS_CHANGE";
         public const string Comment = "COMMENT";
         public const string Assign = "ASSIGN";

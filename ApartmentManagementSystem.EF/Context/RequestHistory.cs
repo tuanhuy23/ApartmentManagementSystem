@@ -6,8 +6,9 @@ namespace ApartmentManagementSystem.EF.Context
     {
         public string? Note { get; set; }
         public string ActionType { get; set; }
-        public string OldStatus { get; set; }
-        public string NewStatus { get; set; }
+        public string? OldStatus { get; set; }
+        public string? NewStatus { get; set; }
+        public string? NewUserAssignId { get; set; }
         public Request Request { get; set; }
         public Guid RequestId { get; set; }
         public ICollection<FileAttachment> Files { get; set; }
