@@ -2,10 +2,12 @@ using ApartmentManagementSystem.EF.Context.Base;
 
 namespace ApartmentManagementSystem.EF.Context
 {
-    public class Feedback : AuditEntity<Guid>
+    public class RequestHistory : AuditEntity<Guid>
     {
-        public string Description { get; set; }
-        public int Rate { get; set; }
+        public string? Note { get; set; }
+        public string ActionType { get; set; }
+        public string OldStatus { get; set; }
+        public string NewStatus { get; set; }
         public Request Request { get; set; }
         public Guid RequestId { get; set; }
         public ICollection<FileAttachment> Files { get; set; }

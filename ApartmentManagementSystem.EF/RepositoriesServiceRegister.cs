@@ -23,7 +23,7 @@ namespace ApartmentManagementSystem.EF
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>)).AddScoped<IResidentRepository, ResidentRepository>();
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>)).AddScoped<IApartmentResidentsRepository, ApartmentResidentsRepository>();
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>)).AddScoped<IAnnouncementRepository, AnnouncementRepository>();
-            services.AddScoped(typeof(IRepository<>), typeof(Repository<>)).AddScoped<IFeedbackRepository, FeedbackRepository>();
+            services.AddScoped(typeof(IRepository<>), typeof(Repository<>)).AddScoped<IRequestHistoryRepository, RequestHistoryRepository>();
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>)).AddScoped<INotificationRepository, NotificationRepository>();
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>)).AddScoped<IRequestRepository, RequestRepository>();
                  

@@ -67,6 +67,14 @@ namespace ApartmentManagementSystem.EF.Context
             .HasPrincipalKey(ci => ci.Id)
             .HasForeignKey(c => c.ApartmentBuildingId)
             .OnDelete(DeleteBehavior.Cascade);   
+            
+            builder.Entity<ApartmentBuilding>(e =>
+            {
+                e.Property(e => e.Buildings)
+                .HasConversion(
+                    v => string.Join(',', v),
+                    v => v.Split(',', StringSplitOptions.RemoveEmptyEntries));
+            });  
             #endregion
 
             #region  FeeType
@@ -174,7 +182,7 @@ namespace ApartmentManagementSystem.EF.Context
               
             builder.Entity<Announcement>(e =>
             {
-                e.Property(e => e.ApartmentIds)
+                e.Property(e => e.UserIds)
                 .HasConversion(
                     v => string.Join(',', v),
                     v => v.Split(',', StringSplitOptions.RemoveEmptyEntries));
@@ -196,7 +204,7 @@ namespace ApartmentManagementSystem.EF.Context
               .HasForeignKey(c => c.RequestId)
               .OnDelete(DeleteBehavior.NoAction);
               
-            builder.Entity<Feedback>().HasMany(c => c.Files)
+            builder.Entity<RequestHistory>().HasMany(c => c.Files)
               .WithOne(ci => ci.Feedback)
               .HasForeignKey(c => c.FeedbackId)
               .OnDelete(DeleteBehavior.NoAction);

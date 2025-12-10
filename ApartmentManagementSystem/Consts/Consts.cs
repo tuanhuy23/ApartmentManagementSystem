@@ -16,12 +16,19 @@
     public static class StatusConsts
     {
         public const string Active = "Active";
-        public const string InActive = "InActive";
-        public const string New = "NEW";
-        public const string InProgress = "INPROGRESS";
-        public const string Done = "Done"; 
+        public const string InActive = "InActive";       
         public const string UnPublish = "UNPUBLISH";
         public const string Publish = "PUBLISH";
+        public const string New = "NEW";
+        public const string InProgress = "PROCESSING";
+        public const string Completed = "COMPLETED";
+        public const string Canceled = "CANCELED";
+    }
+    public static class ActionType
+    {
+        public const string StatusChange = "STATUS_CHANGE";
+        public const string Comment = "COMMENT";
+        public const string Assign = "ASSIGN";
     }
     public static class FeeNoticeStatus
     {

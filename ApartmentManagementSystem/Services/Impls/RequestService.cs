@@ -13,13 +13,13 @@ namespace ApartmentManagementSystem.Services.Impls
 {
     internal class RequestService : IRequestService
     {
-        private readonly IFeedbackRepository _feedbackRepository;
+        private readonly IRequestHistoryRepository _feedbackRepository;
         private readonly IUserService _userService;
         private readonly IRequestRepository _requestRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IApartmentBuildingRepository _apartmentBuildingRepository;
         private readonly IAccountService _accountService;
-        public RequestService (IFeedbackRepository feedbackRepository, IUserService userService, IRequestRepository requestRepository, IUnitOfWork unitOfWork, IApartmentBuildingRepository apartmentBuildingRepository, IAccountService accountService)
+        public RequestService (IRequestHistoryRepository feedbackRepository, IUserService userService, IRequestRepository requestRepository, IUnitOfWork unitOfWork, IApartmentBuildingRepository apartmentBuildingRepository, IAccountService accountService)
         {
             _feedbackRepository = feedbackRepository;
             _userService = userService;
@@ -27,21 +27,6 @@ namespace ApartmentManagementSystem.Services.Impls
             _unitOfWork = unitOfWork;
             _apartmentBuildingRepository = apartmentBuildingRepository;
             _accountService = accountService;
-        }
-        public async Task CreateOrUpdateFeedback(FeedbackDto request)
-        {
-            var requestEntity = _requestRepository.List().FirstOrDefault(a => a.Id.Equals(request.RequestId));
-            if (requestEntity == null)
-                throw new DomainException(ErrorCodeConsts.RequestNotFound, ErrorMessageConsts.RequestNotFound, System.Net.HttpStatusCode.NotFound); 
-            if (request.Id == null)
-            {
-                await CreateFeedback(request, requestEntity);
-            }
-            else
-            {
-                await UpdateFeedback(request, requestEntity);
-            }
-            await _unitOfWork.CommitAsync();
         }
 
         public async Task CreateOrUpdateRequest(RequestDto request)
@@ -166,13 +151,17 @@ namespace ApartmentManagementSystem.Services.Impls
         }
         private async Task CreateRequest(RequestDto request)
         {
+            var currentUser = await _accountService.GetAccountInfo();
+            if (currentUser.RoleName.Equals())
+                throw 
+
             var requestNew = new Request()
             {
                 ApartmentBuildingId = request.ApartmentBuildingId,
                 Status = StatusConsts.New,
                 Title = request.Title,
                 Description = request.Description,
-                UserId = request.UserId
+                UserId = currentUser.U
             };
             if (!string.IsNullOrEmpty(request.UserId))
             {
@@ -242,7 +231,7 @@ namespace ApartmentManagementSystem.Services.Impls
         {
             if (!requestEntity.Status.Equals(StatusConsts.Done))
                 throw new DomainException(ErrorCodeConsts.RequestNotCompleted, ErrorMessageConsts.RequestNotCompleted, System.Net.HttpStatusCode.BadRequest);
-            var feedback = new Feedback()
+            var feedback = new RequestHistory()
             {
                 ApartmentBuildingId = requestEntity.ApartmentBuildingId,
                 Rate = request.Rate,

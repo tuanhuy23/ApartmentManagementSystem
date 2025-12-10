@@ -4,9 +4,9 @@ using ApartmentManagementSystem.EF.Repositories.Interfaces;
 
 namespace ApartmentManagementSystem.EF.Repositories.Impls
 {
-    internal class FeedbackRepository: Repository<Feedback>, IFeedbackRepository
+    internal class RequestHistoryRepository: Repository<RequestHistory>, IRequestHistoryRepository
     {
-        public FeedbackRepository(DbFactory dbFactory, UserAudit userAudit) : base(dbFactory, userAudit)
+        public RequestHistoryRepository(DbFactory dbFactory, UserAudit userAudit) : base(dbFactory, userAudit)
         {
         }
     }
