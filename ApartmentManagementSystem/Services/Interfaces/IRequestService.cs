@@ -11,5 +11,6 @@ namespace ApartmentManagementSystem.Services.Interfaces
         public Task DeleteRequest (List<string> requestId);
         public Task UpdateStatusAndAssignRequest(UpdateStatusAndAssignRequestDto request);
         public Task CreateOrUpdateRequestAction(RequestHistoryDto request);
+        public Task RattingRequest(RattingRequestDto request);
     }
 }

@@ -138,7 +138,7 @@ namespace ApartmentManagementSystem.Services.Impls
                     Description = imgsItem.Description,
                     Name = imgsItem.Name,
                     Src = imgsItem.Src,
-                    FileType = FileType.Media
+                    FileType = Consts.FileType.Media
                 });
             }
             return entities;

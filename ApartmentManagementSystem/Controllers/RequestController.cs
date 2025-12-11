@@ -61,7 +61,7 @@ namespace ApartmentManagementSystem.Controllers
             }));
         }
 
-        [HttpGet("{id:Guid}")]
+        [HttpGet("{requestId:Guid}")]
         [ProducesResponseType(typeof(ResponseData<RequestDto>), StatusCodes.Status200OK)]
         [Authorize(Policy = RequestPermissions.Read)]
         public async Task<IActionResult> GetRequest(Guid requestId)
@@ -93,35 +93,44 @@ namespace ApartmentManagementSystem.Controllers
         [Authorize(Policy = RequestPermissions.ReadWriteAll)]
         public async Task<IActionResult> DeleteRequest([FromBody] List<string> request)
         {
-            return Ok(new ResponseData<object>(System.Net.HttpStatusCode.OK, null, null, null));
-        }
-
-        [HttpPost("feedback")]
-        [ProducesResponseType(typeof(ResponseData<>), StatusCodes.Status200OK)]
-        [Authorize(Policy = RequestPermissions.ReadWrite)]
-        public async Task<IActionResult> CreateFeedBack([FromBody] FeedbackDto request)
-        {
-            await _requestService.CreateOrUpdateFeedback(request);
-            return Ok(new ResponseData<object>(System.Net.HttpStatusCode.OK, null, null, null));
-        }
-
-        [HttpPut("feedback")]
-        [ProducesResponseType(typeof(ResponseData<>), StatusCodes.Status200OK)]
-        [Authorize(Policy = RequestPermissions.ReadWrite)]
-        public async Task<IActionResult> UpdateFeedBack([FromBody] FeedbackDto request)
-        {
-            await _requestService.CreateOrUpdateFeedback(request);
-            return Ok(new ResponseData<object>(System.Net.HttpStatusCode.OK, null, null, null));
-        }
-
-        [HttpDelete("feedback")]
-        [ProducesResponseType(typeof(ResponseData<>), StatusCodes.Status200OK)]
-        [Authorize(Policy = RequestPermissions.ReadWriteAll)]
-        public async Task<IActionResult> DeleteFeedBack([FromBody] List<string> request)
-        {
             await _requestService.DeleteRequest(request);
             return Ok(new ResponseData<object>(System.Net.HttpStatusCode.OK, null, null, null));
         }
 
+        [HttpPost("request-action")]
+        [ProducesResponseType(typeof(ResponseData<>), StatusCodes.Status200OK)]
+        [Authorize(Policy = RequestPermissions.ReadWrite)]
+        public async Task<IActionResult> CreateOrUpdateRequestAction([FromBody] RequestHistoryDto request)
+        {
+             await _requestService.CreateOrUpdateRequestAction(request);
+            return Ok(new ResponseData<object>(System.Net.HttpStatusCode.OK, null, null, null));
+        }
+
+        [HttpPut("request-action")]
+        [ProducesResponseType(typeof(ResponseData<>), StatusCodes.Status200OK)]
+        [Authorize(Policy = RequestPermissions.ReadWrite)]
+        public async Task<IActionResult> UpdateFeedBack([FromBody] RequestHistoryDto request)
+        {
+            await _requestService.CreateOrUpdateRequestAction(request);
+            return Ok(new ResponseData<object>(System.Net.HttpStatusCode.OK, null, null, null));
+        }
+
+        [HttpPut("status")]
+        [ProducesResponseType(typeof(ResponseData<>), StatusCodes.Status200OK)]
+        [Authorize(Policy = RequestPermissions.ReadWriteAll)]
+        public async Task<IActionResult> UpdateStatusAndAssignRequest([FromBody] UpdateStatusAndAssignRequestDto request)
+        {
+            await _requestService.UpdateStatusAndAssignRequest(request);
+            return Ok(new ResponseData<object>(System.Net.HttpStatusCode.OK, null, null, null));
+        }
+
+        [HttpPut("ratting")]
+        [ProducesResponseType(typeof(ResponseData<>), StatusCodes.Status200OK)]
+        [Authorize(Policy = RequestPermissions.ReadWriteAll)]
+        public async Task<IActionResult> RattingRequest([FromBody] RattingRequestDto request)
+        {
+            await _requestService.RattingRequest(request);
+            return Ok(new ResponseData<object>(System.Net.HttpStatusCode.OK, null, null, null));
+        }
     }
 }

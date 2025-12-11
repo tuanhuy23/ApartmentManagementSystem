@@ -9,7 +9,7 @@ namespace ApartmentManagementSystem.Dtos
         public string RequestType{ get; set; }
         public string? CurrentHandlerId { get; set; } 
         public IEnumerable<FileAttachmentDto> Files { get; set; }
-        public IEnumerable<RequestHistoryDto> Feedbacks { get; set; }
+        public IEnumerable<RequestHistoryDto> RequestHistories { get; set; }
         public Guid ApartmentBuildingId { get; set; }
         public int? Rate { get; set; }
     }
@@ -33,5 +33,10 @@ namespace ApartmentManagementSystem.Dtos
         public Guid Id { get; set; }
         public string? Status { get; set; }
         public string? CurrentHandlerId { get; set; }
+    }
+    public class RattingRequestDto
+    {
+        public Guid Id { get; set; }
+        public int Ratting { get; set; }
     }
 }

@@ -15,7 +15,7 @@
         public static string RoleIdIsRequired = "Role ID is required";
         public static string NoPermissionAccessApartmentBuilding = "You do not have permission to access this apartment building";
         public static string ApartmentNotFound = "Apartment not found";
-         public static string ApartmentNameIsDuplicate = "Apartment name is duplicate";
+        public static string ApartmentNameIsDuplicate = "Apartment name is duplicate";
         public static string ApartmentBuildingNotFound = "Apartment building not found";
         public static string ApartmentBuildingStatusInvalidFormat = "Apartment building status invalid format";
         public static string FeeTypeIsApply = "This Fee Type is currently applied to an apartment and cannot be modified.";
@@ -47,6 +47,7 @@
         public static string AnnouncementAlreadyDone = "The announcement has already been published";
         public static string ParkingRegistrationNotFound = "Parking registration not found.";
         public static string UserNotAllowCreateRequest = "User not allow create request.";
+        public static string RequestNotYetCompleted = "The request is currently in progress.";
     }
 
     public static class ErrorCodeConsts
@@ -69,7 +70,7 @@
         public static string ApartmentBuildingStatusInvalidFormat = "APARTMENT_BUILDING_STATUS_INVALID_FORMAT";
         public static string BillingCycleAlreadySet = "BILLING_CYCLE_ALREADY_SET";
         public static string BillingCycleInvalidFormat = "BILLING_CYCLE_INVALID_FORMAT";
-        public static string BillingCycleSettingIsNotFound = "BILLING_CYCLE_SETTING_NOT_FOUND"; 
+        public static string BillingCycleSettingIsNotFound = "BILLING_CYCLE_SETTING_NOT_FOUND";
         public static string FeeTypeNotFound = "FEE_TYPE_NOT_FOUND";
         public static string FeeTypeIsApply = "FEE_TYPE_ALREADY_APPLIED";
         public static string FeeTypeNotConfigured = "FEE_TYPE_NOT_CONFIGURED";
@@ -92,8 +93,9 @@
         public static string RequestAlreadyCancel = "REQUEST_ALREADY_CANCEL";
         public static string RequestHistoryNotFound = "REQUEST_HISTORY_NOT_FOUND";
         public static string AnnouncementNotFound = "ANNOUNCEMENT_NOT_FOUND";
-        public static string AnnouncementAlreadyDone = "REQUEST_ALREADY_PUBLISHED";
+        public static string AnnouncementAlreadyDone = "REQUEST_ALREADY_PUBLISHF";
         public static string ParkingRegistrationNotFound = "PARKING_REGISTRATION_NOT_FOUND";
         public static string UserNotAllowCreateRequest = "USER_NOT_ALLOW_CREATE_REQUEST";
+        public static string RequestNotYetCompleted = "REQUEST_NOT_YET_COMPLETED";
     }
 }

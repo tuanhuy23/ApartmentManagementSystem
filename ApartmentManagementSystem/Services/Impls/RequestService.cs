@@ -20,7 +20,7 @@ namespace ApartmentManagementSystem.Services.Impls
         private readonly IAccountService _accountService;
         private readonly IResidentRepository _residentRepository;
         private readonly IFileAttachmentRepository _fileAttachmentRepository;
-        public RequestService (IRequestHistoryRepository requestHistoryRepository, IUserService userService, IRequestRepository requestRepository, IUnitOfWork unitOfWork, IAccountService accountService, IResidentRepository residentRepository, IFileAttachmentRepository fileAttachmentRepository)
+        public RequestService(IRequestHistoryRepository requestHistoryRepository, IUserService userService, IRequestRepository requestRepository, IUnitOfWork unitOfWork, IAccountService accountService, IResidentRepository residentRepository, IFileAttachmentRepository fileAttachmentRepository)
         {
             _requestHistoryRepository = requestHistoryRepository;
             _userService = userService;
@@ -48,7 +48,7 @@ namespace ApartmentManagementSystem.Services.Impls
         {
             var requestIds = requestId.Select(r => new Guid(r));
             var requestEntites = _requestRepository.List(r => requestIds.Contains(r.Id)).Include(r => r.Files).ToList();
-            foreach(var requestEntity in requestEntites)
+            foreach (var requestEntity in requestEntites)
             {
                 var requestFiles = requestEntity.Files;
                 if (requestFiles != null)
@@ -57,7 +57,7 @@ namespace ApartmentManagementSystem.Services.Impls
                 }
             }
             var requestHistorys = _requestHistoryRepository.List(r => requestIds.Contains(r.RequestId)).Include(r => r.Files).ToList();
-            foreach(var requestHistory in requestHistorys)
+            foreach (var requestHistory in requestHistorys)
             {
                 var requestFiles = requestHistory.Files;
                 if (requestFiles != null)
@@ -107,7 +107,7 @@ namespace ApartmentManagementSystem.Services.Impls
         public RequestDto GetRequest(Guid requestId)
         {
             var request = _requestRepository.List().Include(r => r.Files).Include(r => r.RequestHistories).ThenInclude(r => r.Files).FirstOrDefault(r => r.Id.Equals(requestId));
-            if (request == null) 
+            if (request == null)
                 throw new DomainException(ErrorCodeConsts.RequestNotFound, ErrorMessageConsts.RequestNotFound, System.Net.HttpStatusCode.NotFound);
             var requestDto = new RequestDto()
             {
@@ -116,7 +116,8 @@ namespace ApartmentManagementSystem.Services.Impls
                 Id = request.Id,
                 Status = request.Status,
                 Title = request.Title,
-                CurrentHandlerId = request.CurrentHandlerId
+                CurrentHandlerId = request.CurrentHandlerId,
+                RequestType = request.RequestType
             };
             if (request.Files == null) return requestDto;
             requestDto.Files = request.Files.Select(r => new FileAttachmentDto()
@@ -129,7 +130,7 @@ namespace ApartmentManagementSystem.Services.Impls
             });
             if (request.RequestHistories == null) return requestDto;
             var reqHistoryDtos = new List<RequestHistoryDto>();
-            foreach(var reqHistory in request.RequestHistories)
+            foreach (var reqHistory in request.RequestHistories)
             {
                 var reqHistoryDto = new RequestHistoryDto()
                 {
@@ -150,7 +151,7 @@ namespace ApartmentManagementSystem.Services.Impls
                 }
                 reqHistoryDtos.Add(reqHistoryDto);
             }
-            requestDto.Feedbacks = reqHistoryDtos;
+            requestDto.RequestHistories = reqHistoryDtos;
             if (request.Files != null)
             {
                 requestDto.Files = request.Files.Select(f => new FileAttachmentDto()
@@ -169,7 +170,7 @@ namespace ApartmentManagementSystem.Services.Impls
         {
             var requestEntitys = _requestRepository.List().Where(r => r.ApartmentBuildingId.Equals(request.Request));
             var requestDtos = new List<RequestDto>();
-            foreach(var requestEntity in requestEntitys)
+            foreach (var requestEntity in requestEntitys)
             {
                 var requestDto = new RequestDto()
                 {
@@ -183,11 +184,11 @@ namespace ApartmentManagementSystem.Services.Impls
                 requestDtos.Add(requestDto);
             }
             var requestDtoQuery = requestDtos.AsQueryable();
-            if (request.Filters!= null && request.Filters.Any())
+            if (request.Filters != null && request.Filters.Any())
             {
                 requestDtoQuery = FilterHelper.ApplyFilters(requestDtoQuery, request.Filters);
             }
-            if (request.Sorts!= null && request.Sorts.Any())
+            if (request.Sorts != null && request.Sorts.Any())
             {
                 requestDtoQuery = SortHelper.ApplySort(requestDtoQuery, request.Sorts);
             }
@@ -197,10 +198,11 @@ namespace ApartmentManagementSystem.Services.Impls
                 Totals = requestDtoQuery.Count()
             };
         }
+
         public async Task CreateOrUpdateRequestAction(RequestHistoryDto request)
         {
             var requestEntity = _requestRepository.List().Include(r => r.RequestHistories).ThenInclude(r => r.Files).FirstOrDefault(r => r.Id.Equals(request.RequestId));
-            if (requestEntity == null) 
+            if (requestEntity == null)
                 throw new DomainException(ErrorCodeConsts.RequestNotFound, ErrorMessageConsts.RequestNotFound, System.Net.HttpStatusCode.NotFound);
             if (request.Id == null)
             {
@@ -212,6 +214,19 @@ namespace ApartmentManagementSystem.Services.Impls
             }
             await _unitOfWork.CommitAsync();
         }
+
+        public async Task RattingRequest(RattingRequestDto request)
+        {
+            var requestEntity = _requestRepository.List().FirstOrDefault(r => r.Id.Equals(request.Id));
+            if (requestEntity == null)
+                throw new DomainException(ErrorCodeConsts.RequestNotFound, ErrorMessageConsts.RequestNotFound, System.Net.HttpStatusCode.NotFound);
+            if (!requestEntity.Status.Equals(Consts.StatusConsts.Completed))
+                throw new DomainException(ErrorCodeConsts.RequestNotYetCompleted, ErrorMessageConsts.RequestNotYetCompleted, System.Net.HttpStatusCode.BadRequest);
+            requestEntity.Rate = request.Ratting;
+            _requestRepository.Update(requestEntity);
+            await _unitOfWork.CommitAsync();
+        }
+
         private async Task CreateRequest(RequestDto request)
         {
             var currentUser = await _accountService.GetAccountInfo();
@@ -254,17 +269,17 @@ namespace ApartmentManagementSystem.Services.Impls
             var currentUser = await _accountService.GetAccountInfo();
             if (!currentUser.RoleName.Equals(Consts.RoleDefaulConsts.Resident))
                 throw new DomainException(ErrorCodeConsts.UserNotAllowCreateRequest, ErrorMessageConsts.UserNotAllowCreateRequest, System.Net.HttpStatusCode.Forbidden);
-            
+
             var requestEntity = _requestRepository.List().Include(f => f.Files).FirstOrDefault(r => r.Id.Equals(request.Id));
             if (requestEntity == null)
                 throw new DomainException(ErrorCodeConsts.RequestNotFound, ErrorMessageConsts.RequestNotFound, System.Net.HttpStatusCode.NotFound);
-            
+
             if (!requestEntity.Status.Equals(Consts.StatusConsts.New))
                 throw new DomainException(ErrorCodeConsts.RequestAlreadyProcess, ErrorMessageConsts.RequestAlreadyProcess, System.Net.HttpStatusCode.BadRequest);
 
             requestEntity.Title = request.Title;
             requestEntity.Description = request.Description;
-            requestEntity.RequestType = request.RequestType; 
+            requestEntity.RequestType = request.RequestType;
             requestEntity.Status = request.Status;
             var files = requestEntity.Files;
 
@@ -272,9 +287,9 @@ namespace ApartmentManagementSystem.Services.Impls
             {
                 request.Files = new List<FileAttachmentDto>();
             }
-            foreach(var file in request.Files)
+            foreach (var file in request.Files)
             {
-                if(file.Id == null)
+                if (file.Id == null)
                 {
                     files.Add(new FileAttachment()
                     {
@@ -294,7 +309,7 @@ namespace ApartmentManagementSystem.Services.Impls
             }
             _requestRepository.Update(requestEntity);
         }
-        
+
         private async Task CreateRequestHistory(RequestHistoryDto request, Request requestEntity)
         {
             var requestHistory = new RequestHistory()
@@ -324,16 +339,16 @@ namespace ApartmentManagementSystem.Services.Impls
             if (requestHistoryEntity == null)
                 throw new DomainException(ErrorCodeConsts.RequestHistoryNotFound, ErrorMessageConsts.RequestHistoryNotFound, System.Net.HttpStatusCode.NotFound);
             requestHistoryEntity.Note = request.Note;
-           
+
             var files = requestHistoryEntity.Files;
 
             if (request.Files == null)
             {
                 request.Files = new List<FileAttachmentDto>();
             }
-            foreach(var file in request.Files)
+            foreach (var file in request.Files)
             {
-                if(file.Id == null)
+                if (file.Id == null)
                 {
                     files.Add(new FileAttachment()
                     {
@@ -353,7 +368,5 @@ namespace ApartmentManagementSystem.Services.Impls
             }
             _requestHistoryRepository.Update(requestHistoryEntity);
         }
-
-        
     }
 }
