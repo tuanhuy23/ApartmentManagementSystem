@@ -184,5 +184,33 @@ namespace ApartmentManagementSystem.Services.Impls
                 Totals = userQuery.Count()
             };
         }
+
+        public async Task<IEnumerable<UserDto>> GetAllUsers(string apartmentBuidlingId)
+        {
+            var accountInfo = IdentityHelper.GetIdentity(_httpContext);
+            if (accountInfo == null) throw new DomainException(ErrorCodeConsts.UserNotFound, ErrorMessageConsts.UserNotFound, System.Net.HttpStatusCode.NotFound);
+            var users  = _userManager.Users.Where(u => apartmentBuidlingId.Equals(u.AppartmentBuildingId)).ToList();;
+            List<UserDto> userDtos = new List<UserDto>();
+            foreach (var user in users)
+            {
+                if (user.UserName.Equals("superadmin@gmail.com")) continue;
+                var roles = await _userManager.GetRolesAsync(user);
+                var roleName = roles.FirstOrDefault();
+                if (roleName == null) continue;
+                if (roleName.Equals(RoleDefaulConsts.Management) || roleName.Equals(RoleDefaulConsts.Resident)) continue;
+                var userDto = new UserDto()
+                {
+                    Email = user.Email,
+                    UserId = user.Id,
+                    DisplayName = user.DisplayName,
+                    UserName = user.UserName,
+                    PhoneNumber = user.PhoneNumber
+                };
+                userDto.RoleName = roleName;
+                userDtos.Add(userDto);
+            }
+           return userDtos;
+        }
     }
+    
 }

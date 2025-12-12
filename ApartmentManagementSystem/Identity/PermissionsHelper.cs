@@ -27,8 +27,6 @@ namespace ApartmentManagementSystem.Identity
                 GetPermissionInfo(FeeNoticePermissions.Read, "Permission","Fee Notice"),
                 GetPermissionInfo(NotificationPermissions.ReadWrite, "Permission","Announcement"),
                 GetPermissionInfo(NotificationPermissions.Read, "Permission","Announcement"),
-                GetPermissionInfo(RequestPermissions.ReadWrite, "Permission","Request"),
-                GetPermissionInfo(RequestPermissions.Read, "Permission","Request"),
                 GetPermissionInfo(RolePermissions.ReadWrite, "Permission", "Role"),
                 GetPermissionInfo(RolePermissions.Read, "Permission","Role")
             };

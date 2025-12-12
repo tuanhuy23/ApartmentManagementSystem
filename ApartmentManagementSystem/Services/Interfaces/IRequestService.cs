@@ -12,5 +12,6 @@ namespace ApartmentManagementSystem.Services.Interfaces
         public Task UpdateStatusAndAssignRequest(UpdateStatusAndAssignRequestDto request);
         public Task CreateOrUpdateRequestAction(RequestHistoryDto request);
         public Task RattingRequest(RattingRequestDto request);
+       public Task<IEnumerable<UserDto>> GetUserHandlers(string apartmentBuidlingId);
     }
 }

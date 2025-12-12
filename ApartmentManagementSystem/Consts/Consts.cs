@@ -4,7 +4,7 @@
     {
         public const string ReadPermissionName = "Read";
         public const string ReadWritePermissionName = "ReadWrite";
-           public const string ReadWriteAllPermissionName = "ReadWriteAll";
+        public const string ReadWriteAllPermissionName = "ReadWriteAll";
         public const string PublishApprovePermissionName = "PublishApprove";
     }
     public static class RoleDefaulConsts

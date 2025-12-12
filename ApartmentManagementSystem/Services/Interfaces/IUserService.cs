@@ -9,5 +9,6 @@ namespace ApartmentManagementSystem.Services.Interfaces
         Task<UserDto> GetUser(string userId);
         Task<UserDto> CreateOrUpdateUser(CreateOrUpdateUserRequestDto request);
         Task<DeleteUserResponseDto> DeleteUsers(IEnumerable<string> userIds);
+        Task<IEnumerable<UserDto>> GetAllUsers(string apartmentBuidlingId);
     }
 }

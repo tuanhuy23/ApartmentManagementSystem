@@ -78,32 +78,39 @@ namespace ApartmentManagementSystem.Services.Impls
                 throw new DomainException(ErrorCodeConsts.RequestNotFound, ErrorMessageConsts.RequestNotFound, System.Net.HttpStatusCode.NotFound);
             var newRequestHistory = new List<RequestHistory>();
 
-            if (!string.IsNullOrEmpty(request.Status))
+            if (!string.IsNullOrEmpty(request.Status) && !requestEntity.Status.Equals(request.Status))
             {
                 newRequestHistory.Add(new RequestHistory()
                 {
                     ApartmentBuildingId = requestEntity.ApartmentBuildingId,
                     ActionType = Consts.ActionType.StatusChange,
                     NewStatus = request.Status,
-                    OldStatus = requestEntity.Status
+                    OldStatus = requestEntity.Status,
+                    RequestId = request.Id
                 });
                 requestEntity.Status = request.Status;
             }
-            if (!string.IsNullOrEmpty(request.CurrentHandlerId))
+
+            if (!string.IsNullOrEmpty(request.CurrentHandlerId) && ((requestEntity.CurrentHandlerId == null ) || (!requestEntity.CurrentHandlerId.Equals(request.CurrentHandlerId))))
             {
                 newRequestHistory.Add(new RequestHistory()
                 {
                     ApartmentBuildingId = requestEntity.ApartmentBuildingId,
                     ActionType = Consts.ActionType.Assign,
-                    NewUserAssignId = request.CurrentHandlerId
+                    NewUserAssignId = request.CurrentHandlerId,
+                    RequestId = request.Id
                 });
                 requestEntity.CurrentHandlerId = request.CurrentHandlerId;
             }
+            if (newRequestHistory.Count == 0) return;
             _requestRepository.Update(requestEntity);
             await _requestHistoryRepository.Add(newRequestHistory);
             await _unitOfWork.CommitAsync();
         }
-
+        public async Task<IEnumerable<UserDto>> GetUserHandlers(string apartmentBuidlingId)
+        {
+            return await _userService.GetAllUsers(apartmentBuidlingId);
+        }
         public RequestDto GetRequest(Guid requestId)
         {
             var request = _requestRepository.List().Include(r => r.Files).Include(r => r.RequestHistories).ThenInclude(r => r.Files).FirstOrDefault(r => r.Id.Equals(requestId));
@@ -368,5 +375,7 @@ namespace ApartmentManagementSystem.Services.Impls
             }
             _requestHistoryRepository.Update(requestHistoryEntity);
         }
+
+
     }
 }

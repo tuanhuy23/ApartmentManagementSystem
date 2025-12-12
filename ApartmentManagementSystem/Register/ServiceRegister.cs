@@ -43,7 +43,8 @@ namespace ApartmentManagementSystem.Register
                     return new UserAudit()
                     {
                         UserId = "superadmin@gmail.com",
-                        UserName = "superadmin@gmail.com"
+                        UserName = "superadmin@gmail.com",
+                        UserDisplayName = "superadmin@gmail.com",
                     };
                 }
                 var accountInfo = IdentityHelper.GetIdentity(context);
@@ -52,13 +53,15 @@ namespace ApartmentManagementSystem.Register
                     return new UserAudit()
                     {
                         UserId = accountInfo.Id,
-                        UserName = accountInfo.UserName
+                        UserName = accountInfo.UserName,
+                        UserDisplayName = accountInfo.DisplayName,
                     };
                 }
                 return new UserAudit()
                 {
                     UserId = "superadmin@gmail.com",
-                    UserName = "superadmin@gmail.com"
+                    UserName = "superadmin@gmail.com",
+                    UserDisplayName = "superadmin@gmail.com",
                 };
             });
             services.AddScoped<ICloudinaryService, CloudinaryService>(serviceProvider =>

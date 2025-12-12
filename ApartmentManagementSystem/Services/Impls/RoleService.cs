@@ -52,6 +52,8 @@ namespace ApartmentManagementSystem.Services.Impls
             {
                 await _roleManager.AddClaimAsync(roleUpdate, new Claim("Permission", permission.Name));
             }
+            await _roleManager.AddClaimAsync(roleUpdate, new Claim("Permission", RequestPermissions.Read));
+            await _roleManager.AddClaimAsync(roleUpdate, new Claim("Permission", RequestPermissions.ReadWrite));
             return request;
         }
 

@@ -117,7 +117,7 @@ namespace ApartmentManagementSystem.Controllers
 
         [HttpPut("status")]
         [ProducesResponseType(typeof(ResponseData<>), StatusCodes.Status200OK)]
-        [Authorize(Policy = RequestPermissions.ReadWriteAll)]
+        [Authorize(Policy = RequestPermissions.ReadWrite)]
         public async Task<IActionResult> UpdateStatusAndAssignRequest([FromBody] UpdateStatusAndAssignRequestDto request)
         {
             await _requestService.UpdateStatusAndAssignRequest(request);
@@ -126,11 +126,19 @@ namespace ApartmentManagementSystem.Controllers
 
         [HttpPut("ratting")]
         [ProducesResponseType(typeof(ResponseData<>), StatusCodes.Status200OK)]
-        [Authorize(Policy = RequestPermissions.ReadWriteAll)]
+        [Authorize(Policy = RequestPermissions.ReadWrite)]
         public async Task<IActionResult> RattingRequest([FromBody] RattingRequestDto request)
         {
             await _requestService.RattingRequest(request);
             return Ok(new ResponseData<object>(System.Net.HttpStatusCode.OK, null, null, null));
+        }
+        [HttpGet("user-handler")]
+        [ProducesResponseType(typeof(ResponseData<IEnumerable<UserDto>>), StatusCodes.Status200OK)]
+        [Authorize(Policy = RequestPermissions.ReadWrite)]
+        public async Task<IActionResult> GetUserHandler([FromRoute] string appartmentBuildingId)
+        {
+            var result = await _requestService.GetUserHandlers(appartmentBuildingId);
+            return Ok(new ResponseData<IEnumerable<UserDto>>(System.Net.HttpStatusCode.OK, result, null, null));
         }
     }
 }
