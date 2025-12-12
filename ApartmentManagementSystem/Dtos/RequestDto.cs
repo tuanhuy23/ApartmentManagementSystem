@@ -12,6 +12,9 @@ namespace ApartmentManagementSystem.Dtos
         public IEnumerable<RequestHistoryDto> RequestHistories { get; set; }
         public Guid ApartmentBuildingId { get; set; }
         public int? Rate { get; set; }
+        public DateTime? CreatedDate { get; set; }
+        public string? CreatedUserId { get; set; }
+        public string? CreatedDisplayUser { get; set; }
     }
     public class FileAttachmentDto
     {
@@ -27,6 +30,10 @@ namespace ApartmentManagementSystem.Dtos
         public string? Note { get; set; }
         public Guid RequestId { get;set;}
         public IEnumerable<FileAttachmentDto> Files { get; set; }
+        public DateTime? CreatedDate { get; set; }
+        public string? CreatedUserId { get; set; }
+        public string? CreatedDisplayUser { get; set; }
+        
     }
     public class UpdateStatusAndAssignRequestDto
     {

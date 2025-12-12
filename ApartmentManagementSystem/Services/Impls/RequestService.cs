@@ -91,7 +91,7 @@ namespace ApartmentManagementSystem.Services.Impls
                 requestEntity.Status = request.Status;
             }
 
-            if (!string.IsNullOrEmpty(request.CurrentHandlerId) && ((requestEntity.CurrentHandlerId == null ) || (!requestEntity.CurrentHandlerId.Equals(request.CurrentHandlerId))))
+            if (!string.IsNullOrEmpty(request.CurrentHandlerId) && ((requestEntity.CurrentHandlerId == null) || (!requestEntity.CurrentHandlerId.Equals(request.CurrentHandlerId))))
             {
                 newRequestHistory.Add(new RequestHistory()
                 {
@@ -124,7 +124,10 @@ namespace ApartmentManagementSystem.Services.Impls
                 Status = request.Status,
                 Title = request.Title,
                 CurrentHandlerId = request.CurrentHandlerId,
-                RequestType = request.RequestType
+                RequestType = request.RequestType,
+                CreatedDate = request.CreatedDate,
+                CreatedUserId = request.CreatedBy,
+                CreatedDisplayUser = request.CreatedByUserDisplayName
             };
             if (request.Files == null) return requestDto;
             requestDto.Files = request.Files.Select(r => new FileAttachmentDto()
@@ -143,7 +146,10 @@ namespace ApartmentManagementSystem.Services.Impls
                 {
                     Note = reqHistory.Note,
                     Id = reqHistory.Id,
-                    RequestId = reqHistory.RequestId
+                    RequestId = reqHistory.RequestId,
+                    CreatedDate = reqHistory.CreatedDate,
+                    CreatedUserId = reqHistory.CreatedBy,
+                    CreatedDisplayUser = reqHistory.CreatedByUserDisplayName
                 };
                 if (reqHistory.Files != null)
                 {
@@ -186,7 +192,10 @@ namespace ApartmentManagementSystem.Services.Impls
                     Id = requestEntity.Id,
                     Status = requestEntity.Status,
                     Title = requestEntity.Title,
-                    CurrentHandlerId = requestEntity.CurrentHandlerId
+                    CurrentHandlerId = requestEntity.CurrentHandlerId,
+                    CreatedDate = requestEntity.CreatedDate,
+                    CreatedUserId = requestEntity.CreatedBy,
+                    CreatedDisplayUser = requestEntity.CreatedByUserDisplayName
                 };
                 requestDtos.Add(requestDto);
             }
