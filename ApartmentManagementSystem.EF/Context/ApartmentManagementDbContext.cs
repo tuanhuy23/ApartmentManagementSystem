@@ -175,7 +175,7 @@ namespace ApartmentManagementSystem.EF.Context
               
             builder.Entity<Announcement>(e =>
             {
-                e.Property(e => e.ApartmentIds)
+                e.Property(e => e.UserIds)
                 .HasConversion(
                     v => string.Join(',', v),
                     v => v.Split(',', StringSplitOptions.RemoveEmptyEntries));

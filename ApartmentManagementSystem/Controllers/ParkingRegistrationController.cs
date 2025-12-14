@@ -12,7 +12,7 @@ using Newtonsoft.Json;
 namespace ApartmentManagementSystem.Controllers
 {
     [ApiController]
-    [Route("{appartmentBuildingId}/parking-registration")]
+    [Route("{apartmentBuildingId}/parking-registration")]
     [Authorize]
     [ApiExceptionFilter]
     [ServiceFilter(typeof(ApartmentBuildingValidationFilter))]

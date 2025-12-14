@@ -15,6 +15,7 @@ using ApartmentManagementSystem.Services.Interfaces;
 using Azure.Core;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using static ApartmentManagementSystem.Common.ExcelUtilityHelper;
 
 namespace ApartmentManagementSystem.Services.Impls
 {
@@ -47,7 +48,7 @@ namespace ApartmentManagementSystem.Services.Impls
                 throw new DomainException(ErrorCodeConsts.FeeDetailIsRequired, ErrorCodeConsts.FeeDetailIsRequired, System.Net.HttpStatusCode.BadRequest);
 
             var lastFeeNotice = _feeNoticeRepository.List().FirstOrDefault(f => f.ApartmentId.Equals(request.ApartmentId)
-                                    && f.ApartmentBuildingId.Equals(request.ApartmentBuildingId) && request.BillingCycle.Equals(f.BillingCycle) 
+                                    && f.ApartmentBuildingId.Equals(request.ApartmentBuildingId) && request.BillingCycle.Equals(f.BillingCycle)
                                     && !FeeNoticeStatus.Canceled.Equals(f.Status) && !FeeNoticeStatus.UnPaid.Equals(f.PaymentStatus));
             if (lastFeeNotice != null)
                 throw new DomainException(ErrorCodeConsts.FeeNoticeAlreadyExists, ErrorCodeConsts.FeeNoticeAlreadyExists, System.Net.HttpStatusCode.BadRequest);
@@ -57,8 +58,8 @@ namespace ApartmentManagementSystem.Services.Impls
             if (billingSetting == null)
                 throw new DomainException(ErrorCodeConsts.BillingCycleSettingIsNotFound, ErrorCodeConsts.BillingCycleSettingIsNotFound, System.Net.HttpStatusCode.BadRequest);
             var closingDate = new DateTime(billingCycleReqExtract.Year, billingCycleReqExtract.Month, billingSetting.ClosingDayOfMonth);
-            
-            if(closingDate > DateTime.UtcNow)
+
+            if (closingDate > DateTime.UtcNow)
                 throw new DomainException(ErrorCodeConsts.FeeNoticeNotDue, ErrorCodeConsts.FeeNoticeNotDue, System.Net.HttpStatusCode.BadRequest);
 
             var feeNotice = new FeeNotice()
@@ -69,7 +70,7 @@ namespace ApartmentManagementSystem.Services.Impls
                 Status = FeeNoticeStatus.Issued,
                 PaymentStatus = FeeNoticeStatus.UnPaid
             };
-            feeNotice = await CreateOrUpdateFeeNotice(feeNotice, request);          
+            feeNotice = await CreateOrUpdateFeeNotice(feeNotice, request);
             feeNotice.DueDate = DateTime.UtcNow.AddDays(billingSetting.PaymentDueDate);
             await _feeNoticeRepository.Add(feeNotice);
             await _unitOfWork.CommitAsync();
@@ -159,11 +160,11 @@ namespace ApartmentManagementSystem.Services.Impls
                 IssueDate = f.IssueDate,
                 TotalAmount = f.TotalAmount
             });
-            if (request.Filters!= null && request.Filters.Any())
+            if (request.Filters != null && request.Filters.Any())
             {
                 feeNoticeDtos = FilterHelper.ApplyFilters(feeNoticeDtos, request.Filters);
             }
-            if (request.Sorts!= null && request.Sorts.Any())
+            if (request.Sorts != null && request.Sorts.Any())
             {
                 feeNoticeDtos = SortHelper.ApplySort(feeNoticeDtos, request.Sorts);
             }
@@ -189,7 +190,7 @@ namespace ApartmentManagementSystem.Services.Impls
                     var currentUtilityReading = _utilityReadingRepository.List().FirstOrDefault(u => u.ReadingDate.Equals(feeDetail.CurrentReadingDate));
                     if (currentUtilityReading == null) continue;
                     _utilityReadingRepository.Delete(currentUtilityReading);
-                } 
+                }
             }
             feeNotice.Status = Consts.FeeNoticeStatus.Canceled;
             _feeNoticeRepository.Update(feeNotice);
@@ -211,7 +212,7 @@ namespace ApartmentManagementSystem.Services.Impls
         {
             var feeNoticeIds = ids.Select(i => new Guid(i));
             var feeNotices = _feeNoticeRepository.List(f => feeNoticeIds.Contains(f.Id));
-            foreach(var feeNotice in feeNotices)
+            foreach (var feeNotice in feeNotices)
             {
                 if (!feeNotice.Status.Equals(Consts.FeeNoticeStatus.Canceled))
                     throw new DomainException(ErrorCodeConsts.FeeNoticeCannotBeModified, ErrorMessageConsts.FeeNoticeCannotBeModified, System.Net.HttpStatusCode.BadRequest);
@@ -219,7 +220,7 @@ namespace ApartmentManagementSystem.Services.Impls
             }
             await _unitOfWork.CommitAsync();
         }
-        
+
         public Pagination<UtilityReadingDto> GetUtilityReadings(RequestQueryBaseDto<Guid> request)
         {
             var utilityReading = _utilityReadingRepository.List().Include(u => u.FeeType).Where(u => request.Request.Equals(u.ApartmentId));
@@ -233,11 +234,11 @@ namespace ApartmentManagementSystem.Services.Impls
                 FeeTypeName = u.FeeType.Name,
                 Id = u.Id
             });
-            if (request.Filters!= null && request.Filters.Any())
+            if (request.Filters != null && request.Filters.Any())
             {
                 utilityReadingDtos = FilterHelper.ApplyFilters(utilityReadingDtos, request.Filters);
             }
-            if (request.Sorts!= null && request.Sorts.Any())
+            if (request.Sorts != null && request.Sorts.Any())
             {
                 utilityReadingDtos = SortHelper.ApplySort(utilityReadingDtos, request.Sorts);
             }
@@ -248,6 +249,81 @@ namespace ApartmentManagementSystem.Services.Impls
             };
         }
 
+        public byte[] DownloadExcelTemplate(string fileName, string sheetName, string apartmentId)
+        {
+            string jsonData = @"{
+                            'header': [
+                                {'ApartmentName': 'ApartmentName'},
+                                {'BillingCycle': 'BillingCycle'},";
+            var feeTypes = _feeTypeRepository.List(f => f.ApartmentBuildingId.Equals(new Guid(apartmentId)) && f.IsActive).Include(f => f.FeeRateConfigs).Include(f => f.QuantityRateConfigs);
+            var now = DateTime.UtcNow;
+            int count = 3;
+            foreach (var feeType in feeTypes)
+            {
+                if ((feeType.CalculationType.Equals(CalculationType.Area) || feeType.CalculationType.Equals(CalculationType.QUANTITY)) && now > feeType.ApplyDate)
+                {
+                    jsonData += @"{'" + feeType.CalculationType + "': '" + feeType.Name + "'},";
+                    count++;
+                    continue;
+                }
+                if (feeType.FeeRateConfigs == null) continue;
+                var feeRateConfig = feeType.FeeRateConfigs.FirstOrDefault(f => f.IsActive && now > f.ApplyDate);
+                if (feeRateConfig == null) continue;
+                string dateReaing = "_DateReading";
+                jsonData += @"{'" + CalculationType.TIERED + "': '" + feeType.Name + "'},";
+                jsonData += @"{'" + CalculationType.TIERED + dateReaing + "':'" + feeType.Name + "'},";
+                count++;
+            }
+            jsonData += @"],
+                        'body': []
+                        }";
+            return ExcelUtilityHelper.ExportToExcel(fileName, sheetName, jsonData);
+        }
+        public async Task<IEnumerable<ImportFeeNoticeResult>> ImportFeeNoticeResult(string apartmentBuildingId, IFormFile file)
+        {
+            ExcelData jsonData = ExcelUtilityHelper.ImportFromExcel(file);
+            var result = new List<ImportFeeNoticeResult>();
+            int index = 1;
+            Dictionary<string, FeeType> dicFeeType = new Dictionary<string, FeeType>();
+            foreach (var header in jsonData.header)
+            {
+                if (header.ColumnValue.Equals("ApartmentName") || header.ColumnValue.Equals("BillingCycle")) continue;
+                var headerSplit = header.ColumnName;
+                var caculationFee = header.ColumnName;
+
+            }
+            foreach (var row in jsonData.body)
+            {
+                string apartmentName = row["ApartmentName"].ToString();
+                if (string.IsNullOrEmpty(apartmentName))
+                {
+                    result.Add(new Dtos.ImportFeeNoticeResult()
+                    {
+                        ErrorMessage = ErrorMessageConsts.ApartmentNotFound
+                    });
+                    continue;
+                }
+                var apartment = _apartmentRepository.List(a => a.Name.Equals(apartmentName) && a.ApartmentBuildingId.Equals(new Guid(apartmentBuildingId))).FirstOrDefault();
+                if (apartment == null)
+                {
+                    result.Add(new Dtos.ImportFeeNoticeResult()
+                    {
+                        ErrorMessage = ErrorMessageConsts.ApartmentNotFound
+                    });
+                    continue;
+                }
+                var creatFeeNotice = new CreateOrUpdateFeeNoticeDto()
+                {
+                    ApartmentBuildingId = apartment.ApartmentBuildingId,
+                    ApartmentId = apartment.Id,
+                    BillingCycle = row["BillingCycle"].ToString(),
+                };
+
+
+                index++;
+            }
+            return null;
+        }
         private async Task<FeeNotice> CreateOrUpdateFeeNotice(FeeNotice feeNotice, CreateOrUpdateFeeNoticeDto request)
         {
             var apartment = _apartmentRepository.List().Include(a => a.ParkingRegistrations).FirstOrDefault(a => a.ApartmentBuildingId.Equals(request.ApartmentBuildingId) && a.Id.Equals(request.ApartmentId));
@@ -301,8 +377,8 @@ namespace ApartmentManagementSystem.Services.Impls
                 throw new DomainException(ErrorCodeConsts.UtilityReadingDataIsRequired, ErrorCodeConsts.UtilityReadingDataIsRequired, System.Net.HttpStatusCode.BadRequest);
 
             var previousUtilityReading = _utilityReadingRepository.List().OrderByDescending(u => u.ReadingDate)
-                                .FirstOrDefault(u => u.ApartmentBuildingId.Equals(feeRateConfig.ApartmentBuildingId) && u.ApartmentId.Equals(feeDetailReq.ApartmentId) && u.FeeTypeId.Equals(feeRateConfig.Id) 
-                                && (utilityReadingDto.UtilityCurentReadingId == null ? true : !u.Id.Equals(utilityReadingDto. UtilityCurentReadingId.Value)));
+                                .FirstOrDefault(u => u.ApartmentBuildingId.Equals(feeRateConfig.ApartmentBuildingId) && u.ApartmentId.Equals(feeDetailReq.ApartmentId) && u.FeeTypeId.Equals(feeRateConfig.Id)
+                                && (utilityReadingDto.UtilityCurentReadingId == null ? true : !u.Id.Equals(utilityReadingDto.UtilityCurentReadingId.Value)));
             double previousReading = 0;
             double actualUserTotalDays = 30;
             if (previousUtilityReading != null)
@@ -393,7 +469,7 @@ namespace ApartmentManagementSystem.Services.Impls
         }
         private FeeDetail CreateFeeDetailByFeeTypeQuantity(FeeType feeType, CreateOrUpdateFeeDetailDto feeDetailReq, IEnumerable<ParkingRegistration> parkings)
         {
-            if(feeType.QuantityRateConfigs == null)
+            if (feeType.QuantityRateConfigs == null)
                 throw new DomainException(ErrorCodeConsts.FeeTypeNotConfigured, ErrorCodeConsts.FeeTypeNotConfigured, System.Net.HttpStatusCode.BadRequest);
             var quantityRateConfigActives = feeType.QuantityRateConfigs.Where(f => f.IsActive);
             var feeDetail = new FeeDetail()
@@ -418,7 +494,7 @@ namespace ApartmentManagementSystem.Services.Impls
         private BillingCycleExtract ExtractBillingCyle(string billingCycle)
         {
             string format = "yyyy-MM";
-            if (DateTime.TryParseExact(billingCycle, format,CultureInfo.InvariantCulture,DateTimeStyles.None, out DateTime parsedDate))
+            if (DateTime.TryParseExact(billingCycle, format, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime parsedDate))
             {
                 return new BillingCycleExtract()
                 {
@@ -429,7 +505,7 @@ namespace ApartmentManagementSystem.Services.Impls
             return null;
         }
 
-       
+
     }
     internal class BillingCycleExtract
     {

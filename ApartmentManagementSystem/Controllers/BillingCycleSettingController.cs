@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace ApartmentManagementSystem.Controllers
 {
     [ApiController]
-    [Route("{appartmentBuildingId}/billing-cycle-setting")]
+    [Route("{apartmentBuildingId}/billing-cycle-setting")]
     [Authorize]
     [ApiExceptionFilter]
     [ServiceFilter(typeof(ApartmentBuildingValidationFilter))]
@@ -25,9 +25,9 @@ namespace ApartmentManagementSystem.Controllers
         [HttpGet()]
         [ProducesResponseType(typeof(ResponseData<BillingCycleSettingDto>), StatusCodes.Status200OK)]
         [Authorize(Policy = FeeConfigurationPermissions.ReadWrite)]
-        public async Task<IActionResult> GetBillingCycleSetting([FromRoute] string appartmentBuildingId)
+        public async Task<IActionResult> GetBillingCycleSetting([FromRoute] string apartmentBuildingId)
         {
-            var response = await _billingCycleSettingService.GetBillingCycleSetting(appartmentBuildingId);
+            var response = await _billingCycleSettingService.GetBillingCycleSetting(apartmentBuildingId);
             return Ok(new ResponseData<BillingCycleSettingDto>(System.Net.HttpStatusCode.OK, response, null, null));
         }
 

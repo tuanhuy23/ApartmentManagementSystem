@@ -16,7 +16,8 @@ namespace ApartmentManagementSystem.Services.Impls
         private readonly UserManager<AppUser> _userManager;
         private readonly RoleManager<AppRole> _roleManager;
         private readonly HttpContext _httpContext = null;
-        public UserService(UserManager<AppUser> userManager, RoleManager<AppRole> roleManager, IHttpContextAccessor httpContextAccessor)
+        private readonly IEmailService _emailService;
+        public UserService(UserManager<AppUser> userManager, RoleManager<AppRole> roleManager, IHttpContextAccessor httpContextAccessor, IEmailService emailService)
         {
             _userManager = userManager;
             _roleManager = roleManager;
@@ -24,6 +25,7 @@ namespace ApartmentManagementSystem.Services.Impls
             {
                 _httpContext = httpContextAccessor.HttpContext;
             }
+            _emailService = emailService;
         }
         public async Task<UserDto> CreateOrUpdateUser(CreateOrUpdateUserRequestDto request)
         {
@@ -64,6 +66,7 @@ namespace ApartmentManagementSystem.Services.Impls
                 await _userManager.AddToRoleAsync(userNew, role.Name);
                 result.UserId = userNew.Id;
                 result.RoleName = role.Name;
+                await _emailService.SendEmailAsync(request.Email, "Password Active Account", $"<h5>This is my password. Please login to acction. Password : {request.Password}</h5>");
                 return result;
             }
             var user = await _userManager.FindByIdAsync(request.UserId);

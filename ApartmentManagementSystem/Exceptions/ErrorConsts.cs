@@ -43,6 +43,7 @@
         public static string RequestAlreadyProcess = "The request has already been processed";
         public static string RequestAlreadyCancel = "The request has already been cancel";
         public static string RequestHistoryNotFound = "Request history not found";
+        public static string NoPermissionUpdateStatusAndAssignRequest = "You do not have permission to update status and assign this request";
         public static string AnnouncementNotFound = "Announcement not found";
         public static string AnnouncementAlreadyDone = "The announcement has already been published";
         public static string ParkingRegistrationNotFound = "Parking registration not found.";
@@ -92,8 +93,9 @@
         public static string RequestAlreadyProcess = "REQUEST_ALREADY_PROCESS";
         public static string RequestAlreadyCancel = "REQUEST_ALREADY_CANCEL";
         public static string RequestHistoryNotFound = "REQUEST_HISTORY_NOT_FOUND";
+         public static string NoPermissionUpdateStatusAndAssignRequest = "NO_PERMISSION_UPDATE_STATUS_ASSIGN_REQUEST";
         public static string AnnouncementNotFound = "ANNOUNCEMENT_NOT_FOUND";
-        public static string AnnouncementAlreadyDone = "REQUEST_ALREADY_PUBLISHF";
+        public static string AnnouncementAlreadyDone = "REQUEST_ALREADY_PUBLISH";
         public static string ParkingRegistrationNotFound = "PARKING_REGISTRATION_NOT_FOUND";
         public static string UserNotAllowCreateRequest = "USER_NOT_ALLOW_CREATE_REQUEST";
         public static string RequestNotYetCompleted = "REQUEST_NOT_YET_COMPLETED";

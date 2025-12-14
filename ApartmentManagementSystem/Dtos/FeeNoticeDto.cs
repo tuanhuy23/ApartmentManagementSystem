@@ -42,4 +42,9 @@
         public string UnitName { get; set; }
         public double Consumption { get; set; }
     }
+    public class ImportFeeNoticeResult
+    {
+        public string ApartmentName { get; set; }
+        public string ErrorMessage { get; set; }
+    }
 }

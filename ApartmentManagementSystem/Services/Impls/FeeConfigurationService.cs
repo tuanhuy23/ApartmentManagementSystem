@@ -1,4 +1,5 @@
 using ApartmentManagementSystem.Common;
+using ApartmentManagementSystem.Consts;
 using ApartmentManagementSystem.Dtos;
 using ApartmentManagementSystem.Dtos.Base;
 using ApartmentManagementSystem.EF.Context;
@@ -214,7 +215,7 @@ namespace ApartmentManagementSystem.Services.Impls
                         Name = feeRateConfigDto.Name,
                         VATRate = feeRateConfigDto.VATRate,
                         UnitName = feeRateConfigDto.UnitName,
-                        ApplyDate = feeRateConfigDto.ApplyDate,
+                        ApplyDate = DateTime.SpecifyKind(feeRateConfigDto.ApplyDate, DateTimeKind.Utc),
                         OtherRate = feeRateConfigDto.OtherRate
                     };
                     inCommingFeeRateConfig.FeeTiers = CreateOrUpdateFeeRateConfig(inCommingFeeRateConfig, feeRateConfigDto.FeeTiers).ToList();
@@ -228,7 +229,7 @@ namespace ApartmentManagementSystem.Services.Impls
                 feeRateConfig.Name = feeRateConfigDto.Name;
                 feeRateConfig.VATRate = feeRateConfigDto.VATRate; 
                 feeRateConfig.UnitName = feeRateConfigDto.UnitName;
-                feeRateConfig.ApplyDate = feeRateConfigDto.ApplyDate;
+                feeRateConfig.ApplyDate = DateTime.SpecifyKind(feeRateConfigDto.ApplyDate, DateTimeKind.Utc);
                 feeRateConfig.OtherRate = feeRateConfigDto.OtherRate;
             }
             return feeRateConfigs;

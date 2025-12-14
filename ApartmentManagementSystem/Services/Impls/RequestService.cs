@@ -76,6 +76,8 @@ namespace ApartmentManagementSystem.Services.Impls
             var requestEntity = _requestRepository.List().Include(f => f.Files).Include(r => r.RequestHistories).ThenInclude(r => r.Files).FirstOrDefault(r => r.Id.Equals(request.Id));
             if (requestEntity == null)
                 throw new DomainException(ErrorCodeConsts.RequestNotFound, ErrorMessageConsts.RequestNotFound, System.Net.HttpStatusCode.NotFound);
+            if (currentUser.RoleName.Equals(Consts.RoleDefaulConsts.Resident))
+                throw new DomainException(ErrorCodeConsts.NoPermissionUpdateStatusAndAssignRequest, ErrorMessageConsts.NoPermissionUpdateStatusAndAssignRequest, System.Net.HttpStatusCode.Forbidden);
             var newRequestHistory = new List<RequestHistory>();
 
             if (!string.IsNullOrEmpty(request.Status) && !requestEntity.Status.Equals(request.Status))
@@ -179,11 +181,25 @@ namespace ApartmentManagementSystem.Services.Impls
             return requestDto;
         }
 
-        public Pagination<RequestDto> GetRequests(RequestQueryBaseDto<Guid> request)
+        public async Task<Pagination<RequestDto>> GetRequests(RequestQueryBaseDto<Guid> request)
         {
-            var requestEntitys = _requestRepository.List().Where(r => r.ApartmentBuildingId.Equals(request.Request));
+            IQueryable<Request> requestEntites = null;
+            var currentUser = await _accountService.GetAccountInfo();
+            if (currentUser.RoleName.Equals(Consts.RoleDefaulConsts.Management))
+            {
+                requestEntites =  _requestRepository.List().Where(r => r.ApartmentBuildingId.Equals(request.Request));
+            }
+            else if (currentUser.RoleName.Equals(Consts.RoleDefaulConsts.Resident))
+            {
+                requestEntites =  _requestRepository.List().Where(r => r.ApartmentBuildingId.Equals(request.Request) && r.CreatedBy.Equals(currentUser.Id));
+            }
+            else
+            {
+                requestEntites =  _requestRepository.List().Where(r => r.ApartmentBuildingId.Equals(request.Request) && r.CurrentHandlerId.Equals(currentUser.Id));
+            }
+           
             var requestDtos = new List<RequestDto>();
-            foreach (var requestEntity in requestEntitys)
+            foreach (var requestEntity in requestEntites)
             {
                 var requestDto = new RequestDto()
                 {
@@ -220,6 +236,7 @@ namespace ApartmentManagementSystem.Services.Impls
             var requestEntity = _requestRepository.List().Include(r => r.RequestHistories).ThenInclude(r => r.Files).FirstOrDefault(r => r.Id.Equals(request.RequestId));
             if (requestEntity == null)
                 throw new DomainException(ErrorCodeConsts.RequestNotFound, ErrorMessageConsts.RequestNotFound, System.Net.HttpStatusCode.NotFound);
+
             if (request.Id == null)
             {
                 await CreateRequestHistory(request, requestEntity);

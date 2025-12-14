@@ -16,7 +16,7 @@ namespace ApartmentManagementSystem.Filters
                 return;
             }
 
-            if (!context.RouteData.Values.TryGetValue("appartmentBuildingId", out var apartmentBuildingIdValue) || apartmentBuildingIdValue == null) {
+            if (!context.RouteData.Values.TryGetValue("apartmentBuildingId", out var apartmentBuildingIdValue) || apartmentBuildingIdValue == null) {
                 await next();
                 return;
             }

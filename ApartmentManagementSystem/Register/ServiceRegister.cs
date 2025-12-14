@@ -68,6 +68,10 @@ namespace ApartmentManagementSystem.Register
             {
                 return new CloudinaryService(AppSettings.Cloudinary);
             });
+            services.AddTransient<IEmailService, EmailService>(serviceProvider =>
+            {
+                return new EmailService(AppSettings.EmailSetting);
+            });
             services.AddScoped<ApartmentBuildingValidationFilter>();
             services.AddSingleton(new ApartmentBuildingData());
         }

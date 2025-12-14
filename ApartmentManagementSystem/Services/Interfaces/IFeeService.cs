@@ -12,5 +12,7 @@ namespace ApartmentManagementSystem.Services.Interfaces
         Task UpdatePaymentStatusFeeNotice(Guid id);
         Task DeletFeeeNotice(List<string> ids);
         Pagination<UtilityReadingDto> GetUtilityReadings(RequestQueryBaseDto<Guid> request);
+        byte[] DownloadExcelTemplate(string fileName, string sheetName, string apartmentId);
+        Task<IEnumerable<ImportFeeNoticeResult>> ImportFeeNoticeResult(string apartmentBuildingId, IFormFile file);
     }
 }

@@ -16,7 +16,7 @@
     public static class StatusConsts
     {
         public const string Active = "Active";
-        public const string InActive = "InActive";       
+        public const string InActive = "InActive";
         public const string UnPublish = "UNPUBLISH";
         public const string Publish = "PUBLISH";
         public const string New = "NEW";
@@ -42,5 +42,19 @@
     {
         public const string Doc = "Doc";
         public const string Media = "MEDIA";
+    }
+
+    public static class CalculationType
+    {
+        public const string Area = "AREA";
+        public const string QUANTITY = "QUANTITY";
+        public const string TIERED = "TIERED";
+    }
+
+    public static class QuantityType
+    {
+        public const string CAR = "Car";
+        public const string MOTOCYCLE = "Motocycle";
+        public const string BICYCLE = "Bicycle";
     }
 }

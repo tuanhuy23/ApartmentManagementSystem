@@ -12,7 +12,7 @@ using Newtonsoft.Json;
 namespace ApartmentManagementSystem.Controllers
 {
     [ApiController]
-    [Route("{appartmentBuildingId}/fee")]
+    [Route("{apartmentBuildingId}/fee")]
     [Authorize]
     [ApiExceptionFilter]
     [ServiceFilter(typeof(ApartmentBuildingValidationFilter))]
@@ -101,7 +101,7 @@ namespace ApartmentManagementSystem.Controllers
         
         [HttpPost()]
         [ProducesResponseType(typeof(ResponseData<>), StatusCodes.Status200OK)]
-        [Authorize(Policy = FeeNoticePermissions.Read)]
+        [Authorize(Policy = FeeNoticePermissions.ReadWrite)]
         public async Task<IActionResult> CreateFeeNotice(CreateOrUpdateFeeNoticeDto request)
         {
             await _feeSerivce.CreateFeeNotice(request);
@@ -110,7 +110,7 @@ namespace ApartmentManagementSystem.Controllers
 
         [HttpPut("{id:Guid}/cancel-fee")]
         [ProducesResponseType(typeof(ResponseData<>), StatusCodes.Status200OK)]
-        [Authorize(Policy = FeeNoticePermissions.Read)]
+        [Authorize(Policy = FeeNoticePermissions.ReadWrite)]
         public async Task<IActionResult> CancelFeeNotice(Guid id)
         {
             await _feeSerivce.CancelFeeNotice(id);
@@ -119,7 +119,7 @@ namespace ApartmentManagementSystem.Controllers
 
         [HttpPut("{id:Guid}/update-payment-status-fee")]
         [ProducesResponseType(typeof(ResponseData<>), StatusCodes.Status200OK)]
-        [Authorize(Policy = FeeNoticePermissions.Read)]
+        [Authorize(Policy = FeeNoticePermissions.ReadWrite)]
         public async Task<IActionResult> UpdatePaymentStatusFeeNotice(Guid id)
         {
             await _feeSerivce.UpdatePaymentStatusFeeNotice(id);
@@ -128,11 +128,32 @@ namespace ApartmentManagementSystem.Controllers
 
         [HttpDelete()]
         [ProducesResponseType(typeof(ResponseData<>), StatusCodes.Status200OK)]
-        [Authorize(Policy = FeeNoticePermissions.Read)]
+        [Authorize(Policy = FeeNoticePermissions.ReadWrite)]
         public async Task<IActionResult> DeleteFeeNotice([FromBody] List<string> request)
         {
             await _feeSerivce.DeletFeeeNotice(request);
             return Ok(new ResponseData<object>(System.Net.HttpStatusCode.OK, null, null, null));
+        }
+
+        [HttpGet("download-excel-template")]
+        [Authorize(Policy = FeeNoticePermissions.Read)]
+        public async Task<IActionResult> DownloadExcelTemplate([FromRoute] string apartmentBuildingId)
+        {
+            string fileName = "Sub-ProjectSetUpDefect/Fee-ExcelTemplate.xlsx";
+            string sheetName = "Data";
+            var excelData = _feeSerivce.DownloadExcelTemplate(fileName, sheetName, apartmentBuildingId);
+            return File(excelData, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"{fileName}.xlsx");
+        }
+
+        [HttpPost("import")]
+        [Authorize(Policy = FeeNoticePermissions.ReadWrite)]
+        [ProducesResponseType(typeof(ResponseData<IEnumerable<ImportFeeNoticeResult>>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> ImportFeeNotice([FromRoute] string apartmentBuildingId, IFormFile file)
+        {
+            string fileName = "Sub-ProjectSetUpDefect/Fee-ExcelTemplate.xlsx";
+            string sheetName = "Data";
+            var excelData = _feeSerivce.DownloadExcelTemplate(fileName, sheetName, apartmentBuildingId);
+            return File(excelData, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"{fileName}.xlsx");
         }
     }
 }

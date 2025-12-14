@@ -10,8 +10,8 @@ namespace ApartmentManagementSystem.Services.Interfaces
         public AnnouncementDto GetAnnouncement(Guid id);
         public Task CreateOrUpdateAnnouncements(AnnouncementDto request);
         public Task DeleteAnnouncements(List<string> ids);
-        public Task CreateNotification(NotificationDto request);
-        public Task DeleteNotification(List<string> ids);
+        public Task CreateNotification(CreateNotificationDto request);
+        public Task DeleteNotification(List<DeleteNotificationDto> request);
         public Task MarkNotificationIsRead(List<string> ids);
     }
-}
+} 

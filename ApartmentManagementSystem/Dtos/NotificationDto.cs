@@ -7,12 +7,28 @@ namespace ApartmentManagementSystem.Dtos
 {
     public class NotificationDto
     {
-        public Guid? Id {get;set;}
+        public Guid Id { get; set; }
         public Guid ApartmentBuildingId { get; set; }
         public string UserId { get; set; }
         public string Title { get; set; }
         public Guid RelatedEntityID { get; set; }
         public string RelatedEntityType { get; set; }
         public bool IsRead { get; set; }
+        public DateTime CreatedDate { get; set; }
+    }
+    public class CreateNotificationDto
+    {
+        public Guid ApartmentBuildingId { get; set; }
+        public string UserId { get; set; }
+        public string Title { get; set; }
+        public Guid RelatedEntityID { get; set; }
+        public string RelatedEntityType { get; set; }
+        public bool IsRead { get; set; }
+    }
+
+    public class DeleteNotificationDto
+    {
+        public Guid Id { get; set; }
+        public string? RelatedEntityType { get; set; }
     }
 }

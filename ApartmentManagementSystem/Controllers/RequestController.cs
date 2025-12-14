@@ -16,7 +16,7 @@ using Newtonsoft.Json;
 namespace ApartmentManagementSystem.Controllers
 {
     [ApiController]
-    [Route("{appartmentBuildingId}/request")]
+    [Route("{apartmentBuildingId}/request")]
     [Authorize]
     [ApiExceptionFilter]
     [ServiceFilter(typeof(ApartmentBuildingValidationFilter))]
@@ -31,7 +31,7 @@ namespace ApartmentManagementSystem.Controllers
         [HttpGet()]
         [ProducesResponseType(typeof(ResponseData<IEnumerable<RequestDto>>), StatusCodes.Status200OK)]
         [Authorize(Policy = RequestPermissions.Read)]
-        public async Task<IActionResult> GetRequests([FromRoute] string appartmentBuildingId, [FromQuery(Name = "filters")] string? filtersJson,
+        public async Task<IActionResult> GetRequests([FromRoute] string apartmentBuildingId, [FromQuery(Name = "filters")] string? filtersJson,
             [FromQuery(Name = "sorts")] string? sortsJson, [FromHeader] int page = 1, [FromHeader] int limit = 20)
         {
             List<FilterQuery> filters = new List<FilterQuery>();
@@ -45,13 +45,13 @@ namespace ApartmentManagementSystem.Controllers
             {
                 sorts = JsonConvert.DeserializeObject<List<SortQuery>>(sortsJson);
             }
-            var response = _requestService.GetRequests(new RequestQueryBaseDto<Guid>()
+            var response = await _requestService.GetRequests(new RequestQueryBaseDto<Guid>()
             {
                 Filters = filters,
                 Page = page,
                 Sorts = sorts,
                 PageSize = limit,
-                Request = new Guid(appartmentBuildingId)
+                Request = new Guid(apartmentBuildingId)
             });
             return Ok(new ResponseData<IEnumerable<RequestDto>>(System.Net.HttpStatusCode.OK, response.Items, null, new MetaData()
             {

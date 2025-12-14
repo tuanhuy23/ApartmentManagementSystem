@@ -18,17 +18,4 @@ namespace ApartmentManagementSystem.EF.Context
         public ICollection<UtilityReading> UtilityReadings { get; set; }
         public ICollection<FeeDetail> FeeDetails { get; set; }
     }
-    public static class CalculationType
-    {
-        public const string Area = "AREA";
-        public const string QUANTITY = "QUANTITY";
-        public const string TIERED = "TIERED";
-    }
-
-    public static class QuantityType
-    {
-        public const string CAR = "Car";
-        public const string MOTOCYCLE = "Motocycle";
-        public const string BICYCLE = "Bicycle";
-    }
 }

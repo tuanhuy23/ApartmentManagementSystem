@@ -3,7 +3,7 @@ namespace ApartmentManagementSystem.Dtos
     public class CreateOrUpdateFeeNoticeDto
     {
         public Guid? Id { get; set; }
-        public Guid ApartmentId { get; set; }
+        public Guid ApartmentId { get; set; }                                           
         public Guid ApartmentBuildingId { get; set; }
         public string BillingCycle { get; set; }
         public IEnumerable<Guid> FeeTypeIds{ get; set; }

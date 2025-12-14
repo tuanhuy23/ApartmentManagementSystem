@@ -24,7 +24,7 @@ namespace ApartmentManagementSystem.Services.Impls
             _unitOfWork = unitOfWork;
             _apartmentBuildingRepository = apartmentBuildingRepository;
         }
-        public async Task CreateNotification(NotificationDto request)
+        public async Task CreateNotification(CreateNotificationDto request)
         {
             var notification = new Notification()
             {
@@ -56,7 +56,7 @@ namespace ApartmentManagementSystem.Services.Impls
             throw new NotImplementedException();
         }
 
-        public Task DeleteNotification(List<string> ids)
+        public Task DeleteNotification(List<DeleteNotificationDto> request)
         {
             throw new NotImplementedException();
         }
@@ -91,9 +91,9 @@ namespace ApartmentManagementSystem.Services.Impls
             };
         }
 
-        public Task<IEnumerable<NotificationDto>> GetNotifications(string userId)
+        public async Task<IEnumerable<NotificationDto>> GetNotifications(string userId)
         {
-            throw new NotImplementedException();
+            return null; 
         }
 
         public Task MarkNotificationIsRead(List<string> ids)

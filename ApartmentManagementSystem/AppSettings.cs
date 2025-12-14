@@ -6,6 +6,7 @@
         public static CloudinarySetting Cloudinary { get; set; }
         public static string SeedPwd { get; set; }
         public static JwtSettings JwtSettings { get; set; }
+        public static EmailSetting EmailSetting { get; set; }
     }
     public class ConnectionString
     {
@@ -23,5 +24,10 @@
         public string CloudName { get; set; }
         public string ApiKey { get; set; }
         public string ApiSecret { get; set; }
+    }
+    public class EmailSetting
+    {
+        public string Email { get; set; }
+        public string Password { get; set; }
     }
 }
