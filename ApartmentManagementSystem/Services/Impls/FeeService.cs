@@ -262,7 +262,7 @@ namespace ApartmentManagementSystem.Services.Impls
             {
                 if ((feeType.CalculationType.Equals(CalculationType.Area) || feeType.CalculationType.Equals(CalculationType.QUANTITY)) && now > feeType.ApplyDate)
                 {
-                    jsonData += @"{'" + feeType.CalculationType + "': '" + feeType.Name + "'},";
+                    jsonData += @"{'" + feeType.CalculationType + "_" + feeType.Name + "': '" + feeType.CalculationType + "_" + feeType.Name + "'},";
                     count++;
                     continue;
                 }
@@ -270,8 +270,8 @@ namespace ApartmentManagementSystem.Services.Impls
                 var feeRateConfig = feeType.FeeRateConfigs.FirstOrDefault(f => f.IsActive && now > f.ApplyDate);
                 if (feeRateConfig == null) continue;
                 string dateReaing = "_DateReading";
-                jsonData += @"{'" + CalculationType.TIERED + "': '" + feeType.Name + "'},";
-                jsonData += @"{'" + CalculationType.TIERED + dateReaing + "':'" + feeType.Name + "'},";
+                jsonData += @"{'" + CalculationType.TIERED + "_" + feeType.Name + "_" + feeRateConfig.Name + "': '" + CalculationType.TIERED + "_" + feeType.Name + "_" + feeRateConfig.Name + "'},";
+                jsonData += @"{'" + CalculationType.TIERED + "_" + feeType.Name + "_" + feeRateConfig.Name + "_" + dateReaing + "':'" + CalculationType.TIERED + "_" + feeType.Name + "_" + feeRateConfig.Name + "_" + dateReaing + "'},";
                 count++;
             }
             jsonData += @"],
@@ -285,40 +285,78 @@ namespace ApartmentManagementSystem.Services.Impls
             var result = new List<ImportFeeNoticeResult>();
             int index = 1;
             Dictionary<string, FeeType> dicFeeType = new Dictionary<string, FeeType>();
-            foreach (var header in jsonData.header)
+            var now = DateTime.UtcNow;
+            var feeTypes = _feeTypeRepository.List(f => f.IsActive && f.ApartmentBuildingId.Equals(new Guid(apartmentBuildingId)));
+            foreach (var feeType in feeTypes)
             {
-                if (header.ColumnValue.Equals("ApartmentName") || header.ColumnValue.Equals("BillingCycle")) continue;
-                var headerSplit = header.ColumnName;
-                var caculationFee = header.ColumnName;
+                if (feeType.ApplyDate != null && now < feeType.ApplyDate) continue;
+                if (!feeType.CalculationType.Equals(CalculationType.TIERED))
+                {
+                    dicFeeType.Add($"{feeType.CalculationType}_{feeType.Name}", feeType);
+                    continue;
+                }
+                if (feeType.FeeRateConfigs == null) continue;
+                var feeRateConfig = feeType.FeeRateConfigs.FirstOrDefault(f => f.IsActive && now > f.ApplyDate);
+                if (feeRateConfig == null) continue;
+                dicFeeType.Add($"{feeType.CalculationType}_{feeType.Name}_{feeRateConfig.Name}", feeType);
+                dicFeeType.Add($"{feeType.CalculationType}_{feeType.Name}_{feeRateConfig.Name}_DateReading", feeType);
 
             }
             foreach (var row in jsonData.body)
             {
-                string apartmentName = row["ApartmentName"].ToString();
-                if (string.IsNullOrEmpty(apartmentName))
+                if (row == null) continue;
+                var creatFeeNotice = new CreateOrUpdateFeeNoticeDto();
+                var feeTypeIds = new List<Guid>();
+                var feeDetails = new List<CreateOrUpdateFeeDetailDto>();
+                foreach (var col in row)
                 {
-                    result.Add(new Dtos.ImportFeeNoticeResult()
+                   
+                    var colValue = col.Value;
+                    if (colValue == null) continue;
+                    string apartmentName = string.Empty;
+                    if (col.Key.Equals("ApartmentName"))
                     {
-                        ErrorMessage = ErrorMessageConsts.ApartmentNotFound
-                    });
-                    continue;
-                }
-                var apartment = _apartmentRepository.List(a => a.Name.Equals(apartmentName) && a.ApartmentBuildingId.Equals(new Guid(apartmentBuildingId))).FirstOrDefault();
-                if (apartment == null)
-                {
-                    result.Add(new Dtos.ImportFeeNoticeResult()
-                    {
-                        ErrorMessage = ErrorMessageConsts.ApartmentNotFound
-                    });
-                    continue;
-                }
-                var creatFeeNotice = new CreateOrUpdateFeeNoticeDto()
-                {
-                    ApartmentBuildingId = apartment.ApartmentBuildingId,
-                    ApartmentId = apartment.Id,
-                    BillingCycle = row["BillingCycle"].ToString(),
-                };
+                        apartmentName = col.Value.ToString();
+                        var apartment = _apartmentRepository.List(a => a.Name.Equals(apartmentName) && a.ApartmentBuildingId.Equals(new Guid(apartmentBuildingId))).FirstOrDefault();
+                        if (apartment == null)
+                        {
+                            result.Add(new Dtos.ImportFeeNoticeResult()
+                            {
+                                ErrorMessage = ErrorMessageConsts.ApartmentNotFound
+                            });
+                            break;
+                        }
+                        continue;
+                    }
 
+                    var feeType = dicFeeType[col.Key];
+                    if (feeType == null) continue;
+                    if (col.Value.ToString().Equals("x"))
+                    {
+                        feeTypeIds.Add(feeType.Id);
+                    }
+                    
+                }
+
+
+
+
+                foreach (var feeType in dicFeeType)
+                {
+                    var rowValue = row[feeType.Key];
+                    if (rowValue == null) continue;
+                    var rowValueStr = rowValue.ToString();
+                    if (string.IsNullOrEmpty(rowValueStr)) continue;
+                    if (feeType.Value == null) continue;
+                    if (rowValueStr.ToString().Equals("x"))
+                    {
+                        feeTypeIds.Add(feeType.Value.Id);
+                    }
+                    if (feeType.Value.FeeRateConfigs != null)
+                    {
+                        feeTypeIds.Add(feeType.Value.Id);
+                    }
+                }
 
                 index++;
             }
