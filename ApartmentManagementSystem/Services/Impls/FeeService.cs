@@ -257,22 +257,19 @@ namespace ApartmentManagementSystem.Services.Impls
                                 {'BillingCycle': 'BillingCycle'},";
             var feeTypes = _feeTypeRepository.List(f => f.ApartmentBuildingId.Equals(new Guid(apartmentId)) && f.IsActive).Include(f => f.FeeRateConfigs).Include(f => f.QuantityRateConfigs);
             var now = DateTime.UtcNow;
-            int count = 3;
             foreach (var feeType in feeTypes)
             {
                 if ((feeType.CalculationType.Equals(CalculationType.Area) || feeType.CalculationType.Equals(CalculationType.QUANTITY)) && now > feeType.ApplyDate)
                 {
-                    jsonData += @"{'" + feeType.CalculationType + "': '" + feeType.Name + "'},";
-                    count++;
+                    jsonData += @"{'" + feeType.CalculationType + "_" + feeType.Name + "': '" + feeType.CalculationType + "_" + feeType.Name + "'},";
                     continue;
                 }
                 if (feeType.FeeRateConfigs == null) continue;
                 var feeRateConfig = feeType.FeeRateConfigs.FirstOrDefault(f => f.IsActive && now > f.ApplyDate);
                 if (feeRateConfig == null) continue;
                 string dateReaing = "_DateReading";
-                jsonData += @"{'" + CalculationType.TIERED + "': '" + feeType.Name + "'},";
-                jsonData += @"{'" + CalculationType.TIERED + dateReaing + "':'" + feeType.Name + "'},";
-                count++;
+                jsonData += @"{'" + feeType.CalculationType + "_" + feeType.Name + "_" + feeRateConfig.Name + "': '" + feeType.CalculationType + "_" + feeType.Name + "_" + feeRateConfig.Name + "'},";
+                jsonData += @"{'" + feeType.CalculationType + "_" + feeType.Name + "_" + feeRateConfig.Name + dateReaing + "':'" + feeType.CalculationType + "_" + feeType.Name + "_" + feeRateConfig.Name + dateReaing + "'},";
             }
             jsonData += @"],
                         'body': []
@@ -284,11 +281,20 @@ namespace ApartmentManagementSystem.Services.Impls
             ExcelData jsonData = ExcelUtilityHelper.ImportFromExcel(file);
             var result = new List<ImportFeeNoticeResult>();
             int index = 1;
+            var now = DateTime.UtcNow;
             Dictionary<string, FeeType> dicFeeType = new Dictionary<string, FeeType>();
+            var feeTypes = _feeTypeRepository.List(f => f.IsActive && f.ApartmentBuildingId.Equals(new Guid(apartmentBuildingId)) && now > f.ApplyDate).Include(f => f.FeeRateConfigs);
+            foreach (var feeType in feeTypes)
+            {
+                string feeTypeName = $"{feeType.CalculationType}_{feeType.Name}";
+                if (feeType.FeeRateConfigs == null && feeType.CalculationType.Equals(CalculationType.TIERED)) continue;
+                var feeRateConfig = feeType.FeeRateConfigs.FirstOrDefault(f => f.IsActive && now > f.ApplyDate);
+                dicFeeType.Add(feeTypeName, feeType);
+            }
             foreach (var header in jsonData.header)
             {
                 if (header.ColumnValue.Equals("ApartmentName") || header.ColumnValue.Equals("BillingCycle")) continue;
-                var headerSplit = header.ColumnName;
+                var headerSplit = header.ColumnName.Split(_);
                 var caculationFee = header.ColumnName;
 
             }
