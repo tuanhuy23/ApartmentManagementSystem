@@ -49,6 +49,8 @@
         public static string ParkingRegistrationNotFound = "Parking registration not found.";
         public static string UserNotAllowCreateRequest = "User not allow create request.";
         public static string RequestNotYetCompleted = "The request is currently in progress.";
+        public static string DateTimeReadingIncorrectFormat = "DateTime reading incorrect format yyyy-MM-dd.";
+        public static string ReadingIncorrectFormat = "Utility reading incorrect format.";
     }
 
     public static class ErrorCodeConsts
@@ -93,7 +95,7 @@
         public static string RequestAlreadyProcess = "REQUEST_ALREADY_PROCESS";
         public static string RequestAlreadyCancel = "REQUEST_ALREADY_CANCEL";
         public static string RequestHistoryNotFound = "REQUEST_HISTORY_NOT_FOUND";
-         public static string NoPermissionUpdateStatusAndAssignRequest = "NO_PERMISSION_UPDATE_STATUS_ASSIGN_REQUEST";
+        public static string NoPermissionUpdateStatusAndAssignRequest = "NO_PERMISSION_UPDATE_STATUS_ASSIGN_REQUEST";
         public static string AnnouncementNotFound = "ANNOUNCEMENT_NOT_FOUND";
         public static string AnnouncementAlreadyDone = "REQUEST_ALREADY_PUBLISH";
         public static string ParkingRegistrationNotFound = "PARKING_REGISTRATION_NOT_FOUND";
