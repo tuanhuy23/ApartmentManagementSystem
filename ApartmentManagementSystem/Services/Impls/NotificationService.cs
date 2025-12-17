@@ -13,31 +13,16 @@ namespace ApartmentManagementSystem.Services.Impls
 {
     internal class NotificationService : INotificationService
     {
-        private readonly INotificationRepository _notificationRepository;
         private readonly IAnnouncementRepository _announcementRepository;
         private readonly IApartmentBuildingRepository _apartmentBuildingRepository;
         private readonly IUnitOfWork _unitOfWork;
-        public NotificationService(INotificationRepository notificationRepository, IAnnouncementRepository announcementRepository, IUnitOfWork unitOfWork, IApartmentBuildingRepository apartmentBuildingRepository)
+        public NotificationService(IAnnouncementRepository announcementRepository, IUnitOfWork unitOfWork, IApartmentBuildingRepository apartmentBuildingRepository)
         {
-            _notificationRepository = notificationRepository;
             _announcementRepository = announcementRepository;
             _unitOfWork = unitOfWork;
             _apartmentBuildingRepository = apartmentBuildingRepository;
         }
-        public async Task CreateNotification(CreateNotificationDto request)
-        {
-            var notification = new Notification()
-            {
-                ApartmentBuildingId = request.ApartmentBuildingId,
-                IsRead = false,
-                RelatedEntityID = request.RelatedEntityID,
-                Title = request.Title,
-                UserId = request.UserId
-            };
-            await _notificationRepository.Add(notification);
-            await _unitOfWork.CommitAsync();
-        }
-
+        
         public async Task CreateOrUpdateAnnouncements(AnnouncementDto request)
         {
             if (request.Id == null)
@@ -52,11 +37,6 @@ namespace ApartmentManagementSystem.Services.Impls
         }
 
         public Task DeleteAnnouncements(List<string> ids)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task DeleteNotification(List<DeleteNotificationDto> request)
         {
             throw new NotImplementedException();
         }
@@ -89,16 +69,6 @@ namespace ApartmentManagementSystem.Services.Impls
                 Items = announcements.Skip((request.Page - 1) * request.PageSize).Take(request.PageSize).ToList(),
                 Totals = announcements.Count()
             };
-        }
-
-        public async Task<IEnumerable<NotificationDto>> GetNotifications(string userId)
-        {
-            return null; 
-        }
-
-        public Task MarkNotificationIsRead(List<string> ids)
-        {
-            throw new NotImplementedException();
         }
 
         private async Task CreateAnnouncement(AnnouncementDto request)

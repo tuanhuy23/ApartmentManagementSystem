@@ -104,7 +104,7 @@ namespace ApartmentManagementSystem.Controllers
         [Authorize(Policy = FeeNoticePermissions.ReadWrite)]
         public async Task<IActionResult> CreateFeeNotice(CreateOrUpdateFeeNoticeDto request)
         {
-            await _feeSerivce.CreateFeeNotice(request);
+            await _feeSerivce.CreateFeeNotice(new List<CreateOrUpdateFeeNoticeDto>(){request});
             return Ok(new ResponseData<object>(System.Net.HttpStatusCode.OK, null, null, null));
         }
 

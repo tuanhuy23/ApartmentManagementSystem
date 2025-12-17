@@ -53,12 +53,13 @@ namespace ApartmentManagementSystem.Services.Impls
                     PaymentStatus = FeeNoticeStatus.UnPaid,
 
                 };
-                feeNotice = await CreateOrUpdateFeeNotice(feeNotice, request);
+                await CreateOrUpdateFeeNotice(feeNotice, request);
+                feeNotices.Add(feeNotice);
             }
             await _feeNoticeRepository.Add(feeNotices);
             await _unitOfWork.CommitAsync();
         }
-        
+
         public async Task<FeeNoticeDto> GetFeeDetail(Guid id)
         {
             var feeNotice = _feeNoticeRepository.List().Include(f => f.FeeDetails).ThenInclude(fd => fd.FeeDetailTiers)
@@ -167,7 +168,7 @@ namespace ApartmentManagementSystem.Services.Impls
                 throw new DomainException(ErrorCodeConsts.FeeNoticeCannotBeModified, ErrorMessageConsts.FeeNoticeCannotBeModified, System.Net.HttpStatusCode.BadRequest);
             foreach (var feeDetail in feeNotice.FeeDetails)
             {
-                if (feeDetail.FeeType == null) continue;
+                if (feeDetail.FeeDetailTiers == null) continue;
                 if (feeDetail.CurrentReadingDate != null)
                 {
                     var currentUtilityReading = _utilityReadingRepository.List().FirstOrDefault(u => u.ReadingDate.Equals(feeDetail.CurrentReadingDate));
@@ -215,6 +216,7 @@ namespace ApartmentManagementSystem.Services.Impls
                 CurrentReading = u.CurrentReading,
                 FeeTypeId = u.FeeTypeId,
                 FeeTypeName = u.FeeType.Name,
+                ReadingDate = u.ReadingDate,
                 Id = u.Id
             });
             if (request.Filters != null && request.Filters.Any())
@@ -254,7 +256,7 @@ namespace ApartmentManagementSystem.Services.Impls
                 string utilityReading = "_UtilityReading";
                 jsonData += @"{'" + CalculationType.TIERED + "_" + feeType.Name + "': '" + CalculationType.TIERED + "_" + feeType.Name + "'},";
                 jsonData += @"{'" + CalculationType.TIERED + "_" + feeType.Name + "_" + feeRateConfig.Name + utilityReading + "': '" + CalculationType.TIERED + "_" + feeType.Name + "_" + feeRateConfig.Name + utilityReading + "'},";
-                jsonData += @"{'" + CalculationType.TIERED + "_" + feeType.Name + "_" + feeRateConfig.Name  + dateReaing + "':'" + CalculationType.TIERED + "_" + feeType.Name + "_" + feeRateConfig.Name + dateReaing + "'},";
+                jsonData += @"{'" + CalculationType.TIERED + "_" + feeType.Name + "_" + feeRateConfig.Name + dateReaing + "':'" + CalculationType.TIERED + "_" + feeType.Name + "_" + feeRateConfig.Name + dateReaing + "'},";
             }
             jsonData += @"],
                         'body': []
@@ -291,6 +293,7 @@ namespace ApartmentManagementSystem.Services.Impls
                 });
 
             }
+            var feeNotices = new List<FeeNotice>();
             foreach (var row in jsonData.body)
             {
                 if (row == null) continue;
@@ -321,7 +324,6 @@ namespace ApartmentManagementSystem.Services.Impls
                 };
                 var feeTypeIds = new List<Guid>();
                 var feeDetails = new List<CreateOrUpdateFeeDetailDto>();
-
 
                 foreach (var feeType in feeNoticeExcelCols)
                 {
@@ -390,7 +392,17 @@ namespace ApartmentManagementSystem.Services.Impls
                 creatFeeNotice.FeeDetails = feeDetails;
                 try
                 {
-                    await CreateFeeNotice(creatFeeNotice);
+                    var feeNotice = new FeeNotice()
+                    {
+                        ApartmentBuildingId = creatFeeNotice.ApartmentBuildingId,
+                        ApartmentId = creatFeeNotice.ApartmentId,
+                        BillingCycle = creatFeeNotice.BillingCycle,
+                        Status = FeeNoticeStatus.Issued,
+                        PaymentStatus = FeeNoticeStatus.UnPaid,
+
+                    };
+                    await CreateOrUpdateFeeNotice(feeNotice, creatFeeNotice);
+                    feeNotices.Add(feeNotice);
                 }
                 catch (DomainException ex)
                 {
@@ -401,6 +413,8 @@ namespace ApartmentManagementSystem.Services.Impls
                     });
                 }
             }
+            await _feeNoticeRepository.Add(feeNotices);
+            await _unitOfWork.CommitAsync();
             return result;
         }
 
@@ -438,9 +452,6 @@ namespace ApartmentManagementSystem.Services.Impls
             {
                 var feeType = _feeTypeRepository.List().Include(f => f.QuantityRateConfigs).Include(f => f.FeeRateConfigs).ThenInclude(f => f.FeeTiers).FirstOrDefault(f => feeTypeId.Equals(f.Id) && f.IsActive);
                 if (feeType == null) continue;
-                if (request.FeeDetails == null) continue;
-                var feeDetailReq = request.FeeDetails.FirstOrDefault(u => u.FeeTypeId.Equals(feeTypeId));
-                if (feeDetailReq == null) continue;
                 if (feeType.CalculationType.Equals(CalculationType.Area))
                 {
                     feeDetails.Add(new FeeDetail()
@@ -452,10 +463,13 @@ namespace ApartmentManagementSystem.Services.Impls
                 }
                 else if (feeType.CalculationType.Equals(CalculationType.QUANTITY) && apartment.ParkingRegistrations != null)
                 {
-                    var feeDetail = CreateFeeDetailByFeeTypeQuantity(feeType, feeDetailReq, apartment.ParkingRegistrations);
+                    var feeDetail = CreateFeeDetailByFeeTypeQuantity(feeType, apartment.ParkingRegistrations);
                     feeDetails.Add(feeDetail);
                     continue;
                 }
+                if (request.FeeDetails == null) continue;
+                var feeDetailReq = request.FeeDetails.FirstOrDefault(u => u.FeeTypeId.Equals(feeTypeId));
+                if (feeDetailReq == null) continue;
                 if (feeType.CalculationType.Equals(CalculationType.TIERED) && feeType.FeeRateConfigs != null && feeDetailReq.UtilityReading != null)
                 {
                     var feeDetail = CreateFeeDetailByFeeTypeTier(feeType, feeDetailReq);
@@ -573,7 +587,7 @@ namespace ApartmentManagementSystem.Services.Impls
                 VATCost = vatCost
             };
         }
-        private FeeDetail CreateFeeDetailByFeeTypeQuantity(FeeType feeType, CreateOrUpdateFeeDetailDto feeDetailReq, IEnumerable<ParkingRegistration> parkings)
+        private FeeDetail CreateFeeDetailByFeeTypeQuantity(FeeType feeType, IEnumerable<ParkingRegistration> parkings)
         {
             if (feeType.QuantityRateConfigs == null)
                 throw new DomainException(ErrorCodeConsts.FeeTypeNotConfigured, ErrorCodeConsts.FeeTypeNotConfigured, System.Net.HttpStatusCode.BadRequest);

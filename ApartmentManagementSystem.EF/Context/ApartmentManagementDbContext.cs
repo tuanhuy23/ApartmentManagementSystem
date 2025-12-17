@@ -20,7 +20,6 @@ namespace ApartmentManagementSystem.EF.Context
         public DbSet<UtilityReading> UtilityReadings { get; set; }
         public DbSet<Resident> Residents { get; set; }
         public DbSet<ApartmentResident> ApartmentResidents { get; set; }
-        public DbSet<Notification> Notifications { get; set; }
         public DbSet<Announcement> Announcements { get; set; }
         public DbSet<Request> Requests { get; set; }
         public DbSet<FileAttachment> FileAttachments { get; set; }
@@ -153,13 +152,7 @@ namespace ApartmentManagementSystem.EF.Context
              .OnDelete(DeleteBehavior.NoAction);
              
             #endregion
-            
-            #region Notification 
-            
-            builder.Entity<Notification>().HasIndex(u => u.UserId);
-             
-            #endregion
-            
+
             #region Announcement 
             
             builder.Entity<Announcement>().HasMany(c => c.Files)
