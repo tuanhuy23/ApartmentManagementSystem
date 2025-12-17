@@ -150,10 +150,8 @@ namespace ApartmentManagementSystem.Controllers
         [ProducesResponseType(typeof(ResponseData<IEnumerable<ImportFeeNoticeResult>>), StatusCodes.Status200OK)]
         public async Task<IActionResult> ImportFeeNotice([FromRoute] string apartmentBuildingId, IFormFile file)
         {
-            string fileName = "Sub-ProjectSetUpDefect/Fee-ExcelTemplate.xlsx";
-            string sheetName = "Data";
-            var excelData = _feeSerivce.DownloadExcelTemplate(fileName, sheetName, apartmentBuildingId);
-            return File(excelData, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"{fileName}.xlsx");
+            var excelData = await _feeSerivce.ImportFeeNoticeResult(apartmentBuildingId, file);
+            return Ok(new ResponseData<IEnumerable<ImportFeeNoticeResult>>(System.Net.HttpStatusCode.OK, excelData, null, null));
         }
     }
 }

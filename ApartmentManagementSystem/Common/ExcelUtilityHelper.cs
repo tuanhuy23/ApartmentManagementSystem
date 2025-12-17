@@ -105,8 +105,8 @@ namespace ApartmentManagementSystem.Common
                     IFormulaEvaluator evaluator = workbook.GetCreationHelper().CreateFormulaEvaluator();
                     var headerRow = sheet.GetRow(sheet.FirstRowNum);
                     var colCount = headerRow.LastCellNum;
-
-                    // Read headers
+                    var dicHeaders = new Dictionary<string, string>();
+                    
                     for (int col = 0; col < colCount; col++)
                     {
                         var cell = headerRow.GetCell(col, MissingCellPolicy.CREATE_NULL_AS_BLANK);
@@ -116,20 +116,34 @@ namespace ApartmentManagementSystem.Common
                             ColumnName = "column" + (col + 1),
                             ColumnValue = cellValue
                         });
+                        dicHeaders.Add("column" + (col + 1), cellValue);
                     }
 
-                    // Read rows
+                    
                     for (int rowIndex = 1; rowIndex <= sheet.LastRowNum; rowIndex++)
                     {
                         var row = sheet.GetRow(rowIndex);
                         if (row == null) continue;
-
+                        if (IsRowEmpty(row)) continue;
                         Dictionary<string, object> bodyRow = new Dictionary<string, object>();
                         for (int col = 0; col < colCount; col++)
                         {
                             var cell = row.GetCell(col, MissingCellPolicy.CREATE_NULL_AS_BLANK);
-                            var cellValue = evaluator.EvaluateInCell(cell).ToString();
-                            bodyRow.Add("column" + (col + 1), cellValue);
+                            evaluator.EvaluateInCell(cell);
+                            string resultString = "";
+
+                            if (cell.CellType == CellType.Numeric && DateUtil.IsCellDateFormatted(cell))
+                            {
+                                var dateValue = cell.DateCellValue;
+                                resultString = dateValue?.ToString("yyyy-MM-dd");
+                            }
+                            else
+                            {
+                                DataFormatter dataFormatter = new DataFormatter();
+                                resultString = dataFormatter.FormatCellValue(cell);
+                            }
+                            var headerValue = dicHeaders["column" + (col + 1)];
+                            bodyRow.Add(headerValue, resultString);
                         }
 
                         jsonData.body.Add(bodyRow);
@@ -143,6 +157,22 @@ namespace ApartmentManagementSystem.Common
                 Console.WriteLine(e);
                 throw;
             }
+        }
+        static bool IsRowEmpty(IRow row)
+        {
+            if (row == null) return true;
+            for (int j = row.FirstCellNum; j < row.LastCellNum; j++)
+            {
+                ICell cell = row.GetCell(j);
+                if (cell != null && cell.CellType != CellType.Blank)
+                {
+                    if (!string.IsNullOrWhiteSpace(cell.ToString()))
+                    {
+                        return false; 
+                    }
+                }
+            }
+            return true;
         }
     }
 }

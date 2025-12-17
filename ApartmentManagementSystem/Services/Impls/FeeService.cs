@@ -15,6 +15,7 @@ using ApartmentManagementSystem.Services.Interfaces;
 using Azure.Core;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using static ApartmentManagementSystem.Common.ExcelUtilityHelper;
 
 namespace ApartmentManagementSystem.Services.Impls
@@ -262,14 +263,18 @@ namespace ApartmentManagementSystem.Services.Impls
                 if ((feeType.CalculationType.Equals(CalculationType.Area) || feeType.CalculationType.Equals(CalculationType.QUANTITY)) && now > feeType.ApplyDate)
                 {
                     jsonData += @"{'" + feeType.CalculationType + "_" + feeType.Name + "': '" + feeType.CalculationType + "_" + feeType.Name + "'},";
+                    count++;
                     continue;
                 }
                 if (feeType.FeeRateConfigs == null) continue;
                 var feeRateConfig = feeType.FeeRateConfigs.FirstOrDefault(f => f.IsActive && now > f.ApplyDate);
                 if (feeRateConfig == null) continue;
                 string dateReaing = "_DateReading";
-                jsonData += @"{'" + feeType.CalculationType + "_" + feeType.Name + "_" + feeRateConfig.Name + "': '" + feeType.CalculationType + "_" + feeType.Name + "_" + feeRateConfig.Name + "'},";
-                jsonData += @"{'" + feeType.CalculationType + "_" + feeType.Name + "_" + feeRateConfig.Name + dateReaing + "':'" + feeType.CalculationType + "_" + feeType.Name + "_" + feeRateConfig.Name + dateReaing + "'},";
+                string utilityReading = "_UtilityReading";
+                jsonData += @"{'" + CalculationType.TIERED + "_" + feeType.Name + "': '" + CalculationType.TIERED + "_" + feeType.Name + "'},";
+                jsonData += @"{'" + CalculationType.TIERED + "_" + feeType.Name + "_" + feeRateConfig.Name + utilityReading + "': '" + CalculationType.TIERED + "_" + feeType.Name + "_" + feeRateConfig.Name + utilityReading + "'},";
+                jsonData += @"{'" + CalculationType.TIERED + "_" + feeType.Name + "_" + feeRateConfig.Name  + dateReaing + "':'" + CalculationType.TIERED + "_" + feeType.Name + "_" + feeRateConfig.Name + dateReaing + "'},";
+                count++;
             }
             jsonData += @"],
                         'body': []
@@ -280,36 +285,46 @@ namespace ApartmentManagementSystem.Services.Impls
         {
             ExcelData jsonData = ExcelUtilityHelper.ImportFromExcel(file);
             var result = new List<ImportFeeNoticeResult>();
-            int index = 1;
+            Dictionary<string, FeeNoticeExcelDto> feeNoticeExcelCols = new Dictionary<string, FeeNoticeExcelDto>();
             var now = DateTime.UtcNow;
-            Dictionary<string, FeeType> dicFeeType = new Dictionary<string, FeeType>();
-            var feeTypes = _feeTypeRepository.List(f => f.IsActive && f.ApartmentBuildingId.Equals(new Guid(apartmentBuildingId)) && now > f.ApplyDate).Include(f => f.FeeRateConfigs);
+            var feeTypes = _feeTypeRepository.List(f => f.IsActive && f.ApartmentBuildingId.Equals(new Guid(apartmentBuildingId))).Include(f => f.FeeRateConfigs);
             foreach (var feeType in feeTypes)
             {
-                string feeTypeName = $"{feeType.CalculationType}_{feeType.Name}";
-                if (feeType.FeeRateConfigs == null && feeType.CalculationType.Equals(CalculationType.TIERED)) continue;
+                if (feeType.ApplyDate != null && now < feeType.ApplyDate) continue;
+                if (!feeType.CalculationType.Equals(CalculationType.TIERED))
+                {
+                    feeNoticeExcelCols.Add($"{feeType.CalculationType}_{feeType.Name}", new FeeNoticeExcelDto()
+                    {
+                        FeeTypeId = feeType.Id
+                    });
+                    continue;
+                }
+                if (feeType.FeeRateConfigs == null) continue;
                 var feeRateConfig = feeType.FeeRateConfigs.FirstOrDefault(f => f.IsActive && now > f.ApplyDate);
-                dicFeeType.Add(feeTypeName, feeType);
-            }
-            foreach (var header in jsonData.header)
-            {
-                if (header.ColumnValue.Equals("ApartmentName") || header.ColumnValue.Equals("BillingCycle")) continue;
-                var headerSplit = header.ColumnName.Split(_);
-                var caculationFee = header.ColumnName;
+                if (feeRateConfig == null) continue;
+                feeNoticeExcelCols.Add($"{feeType.CalculationType}_{feeType.Name}", new FeeNoticeExcelDto()
+                {
+                    FeeTypeId = feeType.Id,
+                    FeeRateConfigId = feeRateConfig.Id,
+                    DateTimeCol = $"{CalculationType.TIERED}_{feeType.Name}_{feeRateConfig.Name}_DateReading",
+                    ReadingCol = $"{CalculationType.TIERED}_{feeType.Name}_{feeRateConfig.Name}_UtilityReading"
+                });
 
             }
             foreach (var row in jsonData.body)
             {
-                string apartmentName = row["ApartmentName"].ToString();
-                if (string.IsNullOrEmpty(apartmentName))
+                if (row == null) continue;
+
+                var colApartmentName = row["ApartmentName"].ToString();
+                if (colApartmentName.IsNullOrEmpty())
                 {
                     result.Add(new Dtos.ImportFeeNoticeResult()
                     {
-                        ErrorMessage = ErrorMessageConsts.ApartmentNotFound
+                        ErrorMessage = ErrorMessageConsts.ApartmentNotFound,
                     });
                     continue;
                 }
-                var apartment = _apartmentRepository.List(a => a.Name.Equals(apartmentName) && a.ApartmentBuildingId.Equals(new Guid(apartmentBuildingId))).FirstOrDefault();
+                var apartment = _apartmentRepository.List(a => a.Name.Equals(colApartmentName) && a.ApartmentBuildingId.Equals(new Guid(apartmentBuildingId))).FirstOrDefault();
                 if (apartment == null)
                 {
                     result.Add(new Dtos.ImportFeeNoticeResult()
@@ -320,15 +335,93 @@ namespace ApartmentManagementSystem.Services.Impls
                 }
                 var creatFeeNotice = new CreateOrUpdateFeeNoticeDto()
                 {
-                    ApartmentBuildingId = apartment.ApartmentBuildingId,
-                    ApartmentId = apartment.Id,
+                    ApartmentBuildingId = new Guid(apartmentBuildingId),
                     BillingCycle = row["BillingCycle"].ToString(),
+                    ApartmentId = apartment.Id,
                 };
+                var feeTypeIds = new List<Guid>();
+                var feeDetails = new List<CreateOrUpdateFeeDetailDto>();
 
 
-                index++;
+                foreach (var feeType in feeNoticeExcelCols)
+                {
+                    var rowValue = row[feeType.Key];
+                    if (rowValue == null) continue;
+                    var rowValueStr = rowValue.ToString();
+                    if (string.IsNullOrEmpty(rowValueStr)) continue;
+                    if (feeType.Value == null) continue;
+                    if (rowValueStr.ToString().ToLower().Equals("x"))
+                    {
+                        feeTypeIds.Add(feeType.Value.FeeTypeId);
+                    }
+                    if (string.IsNullOrEmpty(feeType.Value.DateTimeCol)) continue;
+                    var rowDateTimeValue = row[feeType.Value.DateTimeCol].ToString();
+                    var rowReadingValue = row[feeType.Value.ReadingCol].ToString();
+                    if (string.IsNullOrEmpty(rowDateTimeValue))
+                    {
+                        result.Add(new Dtos.ImportFeeNoticeResult()
+                        {
+                            ApartmentName = apartment.Name,
+                            ErrorMessage = ErrorMessageConsts.UtilityReadingDataIsRequired
+                        });
+                        continue;
+                    }
+                    if (string.IsNullOrEmpty(rowReadingValue))
+                    {
+                        result.Add(new Dtos.ImportFeeNoticeResult()
+                        {
+                            ApartmentName = apartment.Name,
+                            ErrorMessage = ErrorMessageConsts.UtilityReadingDataIsRequired
+                        });
+                        continue;
+                    }
+                    DateTime resultDatetimeParse;
+                    if (!DateTime.TryParseExact(rowDateTimeValue, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out resultDatetimeParse))
+                    {
+                        result.Add(new Dtos.ImportFeeNoticeResult()
+                        {
+                            ApartmentName = apartment.Name,
+                            ErrorMessage = ErrorMessageConsts.DateTimeReadingIncorrectFormat
+                        });
+                        continue;
+                    }
+                    double resultReadingParse;
+                    if (!double.TryParse(rowReadingValue, out resultReadingParse))
+                    {
+                        result.Add(new Dtos.ImportFeeNoticeResult()
+                        {
+                            ApartmentName = apartment.Name,
+                            ErrorMessage = ErrorMessageConsts.ReadingIncorrectFormat
+                        });
+                        continue;
+                    }
+                    feeDetails.Add(new CreateOrUpdateFeeDetailDto()
+                    {
+                        ApartmentId = apartment.Id,
+                        FeeTypeId = feeType.Value.FeeTypeId,
+                        UtilityReading = new CreateUtilityReadingDto()
+                        {
+                            CurrentReading = resultReadingParse,
+                            ReadingDate = resultDatetimeParse
+                        }
+                    });
+                }
+                creatFeeNotice.FeeTypeIds = feeTypeIds;
+                creatFeeNotice.FeeDetails = feeDetails;
+                try
+                {
+                    await CreateFeeNotice(creatFeeNotice);
+                }
+                catch (DomainException ex)
+                {
+                    result.Add(new Dtos.ImportFeeNoticeResult()
+                    {
+                        ApartmentName = apartment.Name,
+                        ErrorMessage = ex.Message
+                    });
+                }
             }
-            return null;
+            return result;
         }
         private async Task<FeeNotice> CreateOrUpdateFeeNotice(FeeNotice feeNotice, CreateOrUpdateFeeNoticeDto request)
         {
@@ -499,8 +592,16 @@ namespace ApartmentManagementSystem.Services.Impls
         }
         private BillingCycleExtract ExtractBillingCyle(string billingCycle)
         {
-            string format = "yyyy-MM";
-            if (DateTime.TryParseExact(billingCycle, format, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime parsedDate))
+            DateTime parsedDate;
+            if (DateTime.TryParseExact(billingCycle, "yyyy-MM", CultureInfo.InvariantCulture, DateTimeStyles.None, out parsedDate))
+            {
+                return new BillingCycleExtract()
+                {
+                    Month = parsedDate.Month,
+                    Year = parsedDate.Year
+                };
+            }
+            else if (DateTime.TryParseExact(billingCycle, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out parsedDate))
             {
                 return new BillingCycleExtract()
                 {
@@ -517,5 +618,12 @@ namespace ApartmentManagementSystem.Services.Impls
     {
         public int Year { get; set; }
         public int Month { get; set; }
+    }
+    internal class FeeNoticeExcelDto
+    {
+        public string DateTimeCol { get; set; }
+        public string ReadingCol { get; set; }
+        public Guid FeeTypeId { get; set; }
+        public Guid FeeRateConfigId { get; set; }
     }
 }
