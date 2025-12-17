@@ -16,6 +16,7 @@ using Azure.Core;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.VisualBasic;
 using static ApartmentManagementSystem.Common.ExcelUtilityHelper;
 
 namespace ApartmentManagementSystem.Services.Impls
@@ -38,45 +39,26 @@ namespace ApartmentManagementSystem.Services.Impls
             _feeTypeRepository = feeTypeRepository;
             _unitOfWork = unitOfWork;
         }
-        public async Task CreateFeeNotice(CreateOrUpdateFeeNoticeDto request)
+        public async Task CreateFeeNotice(IEnumerable<CreateOrUpdateFeeNoticeDto> requests)
         {
-            var billingCycleReqExtract = ExtractBillingCyle(request.BillingCycle);
-
-            if (billingCycleReqExtract == null)
-                throw new DomainException(ErrorCodeConsts.BillingCycleInvalidFormat, ErrorCodeConsts.BillingCycleInvalidFormat, System.Net.HttpStatusCode.BadRequest);
-
-            if (request.FeeDetails == null)
-                throw new DomainException(ErrorCodeConsts.FeeDetailIsRequired, ErrorCodeConsts.FeeDetailIsRequired, System.Net.HttpStatusCode.BadRequest);
-
-            var lastFeeNotice = _feeNoticeRepository.List().FirstOrDefault(f => f.ApartmentId.Equals(request.ApartmentId)
-                                    && f.ApartmentBuildingId.Equals(request.ApartmentBuildingId) && request.BillingCycle.Equals(f.BillingCycle)
-                                    && !FeeNoticeStatus.Canceled.Equals(f.Status) && !FeeNoticeStatus.UnPaid.Equals(f.PaymentStatus));
-            if (lastFeeNotice != null)
-                throw new DomainException(ErrorCodeConsts.FeeNoticeAlreadyExists, ErrorCodeConsts.FeeNoticeAlreadyExists, System.Net.HttpStatusCode.BadRequest);
-
-            var billingSetting = _billingCycleSettingRepository.List().FirstOrDefault(b => b.ApartmentBuildingId.Equals(request.ApartmentBuildingId));
-
-            if (billingSetting == null)
-                throw new DomainException(ErrorCodeConsts.BillingCycleSettingIsNotFound, ErrorCodeConsts.BillingCycleSettingIsNotFound, System.Net.HttpStatusCode.BadRequest);
-            var closingDate = new DateTime(billingCycleReqExtract.Year, billingCycleReqExtract.Month, billingSetting.ClosingDayOfMonth);
-
-            if (closingDate > DateTime.UtcNow)
-                throw new DomainException(ErrorCodeConsts.FeeNoticeNotDue, ErrorCodeConsts.FeeNoticeNotDue, System.Net.HttpStatusCode.BadRequest);
-
-            var feeNotice = new FeeNotice()
+            var feeNotices = new List<FeeNotice>();
+            foreach (var request in requests)
             {
-                ApartmentBuildingId = request.ApartmentBuildingId,
-                ApartmentId = request.ApartmentId,
-                BillingCycle = request.BillingCycle,
-                Status = FeeNoticeStatus.Issued,
-                PaymentStatus = FeeNoticeStatus.UnPaid
-            };
-            feeNotice = await CreateOrUpdateFeeNotice(feeNotice, request);
-            feeNotice.DueDate = DateTime.UtcNow.AddDays(billingSetting.PaymentDueDate);
-            await _feeNoticeRepository.Add(feeNotice);
+                var feeNotice = new FeeNotice()
+                {
+                    ApartmentBuildingId = request.ApartmentBuildingId,
+                    ApartmentId = request.ApartmentId,
+                    BillingCycle = request.BillingCycle,
+                    Status = FeeNoticeStatus.Issued,
+                    PaymentStatus = FeeNoticeStatus.UnPaid,
+
+                };
+                feeNotice = await CreateOrUpdateFeeNotice(feeNotice, request);
+            }
+            await _feeNoticeRepository.Add(feeNotices);
             await _unitOfWork.CommitAsync();
         }
-
+        
         public async Task<FeeNoticeDto> GetFeeDetail(Guid id)
         {
             var feeNotice = _feeNoticeRepository.List().Include(f => f.FeeDetails).ThenInclude(fd => fd.FeeDetailTiers)
@@ -263,7 +245,6 @@ namespace ApartmentManagementSystem.Services.Impls
                 if ((feeType.CalculationType.Equals(CalculationType.Area) || feeType.CalculationType.Equals(CalculationType.QUANTITY)) && now > feeType.ApplyDate)
                 {
                     jsonData += @"{'" + feeType.CalculationType + "_" + feeType.Name + "': '" + feeType.CalculationType + "_" + feeType.Name + "'},";
-                    count++;
                     continue;
                 }
                 if (feeType.FeeRateConfigs == null) continue;
@@ -274,7 +255,6 @@ namespace ApartmentManagementSystem.Services.Impls
                 jsonData += @"{'" + CalculationType.TIERED + "_" + feeType.Name + "': '" + CalculationType.TIERED + "_" + feeType.Name + "'},";
                 jsonData += @"{'" + CalculationType.TIERED + "_" + feeType.Name + "_" + feeRateConfig.Name + utilityReading + "': '" + CalculationType.TIERED + "_" + feeType.Name + "_" + feeRateConfig.Name + utilityReading + "'},";
                 jsonData += @"{'" + CalculationType.TIERED + "_" + feeType.Name + "_" + feeRateConfig.Name  + dateReaing + "':'" + CalculationType.TIERED + "_" + feeType.Name + "_" + feeRateConfig.Name + dateReaing + "'},";
-                count++;
             }
             jsonData += @"],
                         'body': []
@@ -423,11 +403,37 @@ namespace ApartmentManagementSystem.Services.Impls
             }
             return result;
         }
+
         private async Task<FeeNotice> CreateOrUpdateFeeNotice(FeeNotice feeNotice, CreateOrUpdateFeeNoticeDto request)
         {
+            var billingCycleReqExtract = ExtractBillingCyle(request.BillingCycle);
+
+            if (billingCycleReqExtract == null)
+                throw new DomainException(ErrorCodeConsts.BillingCycleInvalidFormat, ErrorCodeConsts.BillingCycleInvalidFormat, System.Net.HttpStatusCode.BadRequest);
+
+            if (request.FeeDetails == null)
+                throw new DomainException(ErrorCodeConsts.FeeDetailIsRequired, ErrorCodeConsts.FeeDetailIsRequired, System.Net.HttpStatusCode.BadRequest);
+
+            var lastFeeNotice = _feeNoticeRepository.List().FirstOrDefault(f => f.ApartmentId.Equals(request.ApartmentId)
+                                    && f.ApartmentBuildingId.Equals(request.ApartmentBuildingId) && request.BillingCycle.Equals(f.BillingCycle)
+                                    && !FeeNoticeStatus.Canceled.Equals(f.Status) && !FeeNoticeStatus.UnPaid.Equals(f.PaymentStatus));
+            if (lastFeeNotice != null)
+                throw new DomainException(ErrorCodeConsts.FeeNoticeAlreadyExists, ErrorCodeConsts.FeeNoticeAlreadyExists, System.Net.HttpStatusCode.BadRequest);
+
+            var billingSetting = _billingCycleSettingRepository.List().FirstOrDefault(b => b.ApartmentBuildingId.Equals(request.ApartmentBuildingId));
+
+            if (billingSetting == null)
+                throw new DomainException(ErrorCodeConsts.BillingCycleSettingIsNotFound, ErrorCodeConsts.BillingCycleSettingIsNotFound, System.Net.HttpStatusCode.BadRequest);
+            var closingDate = new DateTime(billingCycleReqExtract.Year, billingCycleReqExtract.Month, billingSetting.ClosingDayOfMonth);
+
+            if (closingDate > DateTime.UtcNow)
+                throw new DomainException(ErrorCodeConsts.FeeNoticeNotDue, ErrorCodeConsts.FeeNoticeNotDue, System.Net.HttpStatusCode.BadRequest);
+
             var apartment = _apartmentRepository.List().Include(a => a.ParkingRegistrations).FirstOrDefault(a => a.ApartmentBuildingId.Equals(request.ApartmentBuildingId) && a.Id.Equals(request.ApartmentId));
+
             if (apartment == null) throw new DomainException(ErrorCodeConsts.ApartmentNotFound, ErrorCodeConsts.ApartmentNotFound, System.Net.HttpStatusCode.NotFound);
             var feeDetails = new List<FeeDetail>();
+
             foreach (var feeTypeId in request.FeeTypeIds)
             {
                 var feeType = _feeTypeRepository.List().Include(f => f.QuantityRateConfigs).Include(f => f.FeeRateConfigs).ThenInclude(f => f.FeeTiers).FirstOrDefault(f => feeTypeId.Equals(f.Id) && f.IsActive);
@@ -458,6 +464,7 @@ namespace ApartmentManagementSystem.Services.Impls
             }
             feeNotice.FeeDetails = feeDetails;
             feeNotice.TotalAmount = feeDetails.Sum(f => f.SubTotal);
+            feeNotice.DueDate = DateTime.UtcNow.AddDays(billingSetting.PaymentDueDate);
             return feeNotice;
         }
 
