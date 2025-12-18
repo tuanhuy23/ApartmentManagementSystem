@@ -9,7 +9,13 @@ namespace ApartmentManagementSystem.Dtos
         public string Status { get; set; }
         public bool IsAll { get; set; }
         public IEnumerable<Guid>? ApartmentIds { get; set; }
+        public IEnumerable<ApartmentAnnouncementDto>? Apartments { get; set; }
         public DateTime PublishDate { get; set; }
-        public ICollection<FileAttachmentDto> Files { get; set; }
+        public IEnumerable<FileAttachmentDto> Files { get; set; }
+    }
+    public class ApartmentAnnouncementDto
+    {
+        public Guid Id {get; set;}
+        public string Name { get; set; }
     }
 }

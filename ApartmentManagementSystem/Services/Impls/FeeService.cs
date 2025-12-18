@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.VisualBasic;
+using NPOI.SS.Formula.Functions;
 using static ApartmentManagementSystem.Common.ExcelUtilityHelper;
 
 namespace ApartmentManagementSystem.Services.Impls
@@ -65,7 +66,7 @@ namespace ApartmentManagementSystem.Services.Impls
             var feeNotice = _feeNoticeRepository.List().Include(f => f.FeeDetails).ThenInclude(fd => fd.FeeDetailTiers)
                                                        .Include(f => f.FeeDetails).ThenInclude(f => f.FeeType).FirstOrDefault(f => f.Id.Equals(id));
             if (feeNotice == null)
-                throw new DomainException(ErrorCodeConsts.FeeNoticeNotFound, ErrorCodeConsts.FeeNoticeNotFound, System.Net.HttpStatusCode.BadRequest);
+                throw new DomainException(ErrorCodeConsts.FeeNoticeNotFound, ErrorMessageConsts.FeeNoticeNotFound, System.Net.HttpStatusCode.BadRequest);
             var response = new FeeNoticeDto()
             {
                 ApartmentBuildingId = feeNotice.ApartmentBuildingId,
@@ -131,7 +132,7 @@ namespace ApartmentManagementSystem.Services.Impls
         {
             var feeNotice = _feeNoticeRepository.List().Where(f => f.ApartmentId.Equals(request.Request));
             if (feeNotice == null)
-                throw new DomainException(ErrorCodeConsts.FeeNoticeNotFound, ErrorCodeConsts.FeeNoticeNotFound, System.Net.HttpStatusCode.BadRequest);
+                throw new DomainException(ErrorCodeConsts.FeeNoticeNotFound, ErrorMessageConsts.FeeNoticeNotFound, System.Net.HttpStatusCode.BadRequest);
             var feeNoticeDtos = feeNotice.Select(f => new FeeNoticeDto()
             {
                 ApartmentBuildingId = f.ApartmentBuildingId,
@@ -209,7 +210,7 @@ namespace ApartmentManagementSystem.Services.Impls
         {
             var utilityReading = _utilityReadingRepository.List().Include(u => u.FeeType).Where(u => request.Request.Equals(u.ApartmentId));
             if (utilityReading == null)
-                throw new DomainException(ErrorCodeConsts.UtilityReadingDataNotFound, ErrorCodeConsts.UtilityReadingDataNotFound, System.Net.HttpStatusCode.NotFound);
+                throw new DomainException(ErrorCodeConsts.UtilityReadingDataNotFound, ErrorMessageConsts.UtilityReadingDataNotFound, System.Net.HttpStatusCode.NotFound);
             var utilityReadingDtos = utilityReading.Select(u => new UtilityReadingDto()
             {
                 ApartmentId = u.ApartmentId,
@@ -423,29 +424,29 @@ namespace ApartmentManagementSystem.Services.Impls
             var billingCycleReqExtract = ExtractBillingCyle(request.BillingCycle);
 
             if (billingCycleReqExtract == null)
-                throw new DomainException(ErrorCodeConsts.BillingCycleInvalidFormat, ErrorCodeConsts.BillingCycleInvalidFormat, System.Net.HttpStatusCode.BadRequest);
+                throw new DomainException(ErrorCodeConsts.BillingCycleInvalidFormat, ErrorMessageConsts.BillingCycleInvalidFormat, System.Net.HttpStatusCode.BadRequest);
 
             if (request.FeeDetails == null)
-                throw new DomainException(ErrorCodeConsts.FeeDetailIsRequired, ErrorCodeConsts.FeeDetailIsRequired, System.Net.HttpStatusCode.BadRequest);
+                throw new DomainException(ErrorCodeConsts.FeeDetailIsRequired, ErrorMessageConsts.FeeDetailIsRequired, System.Net.HttpStatusCode.BadRequest);
 
             var lastFeeNotice = _feeNoticeRepository.List().FirstOrDefault(f => f.ApartmentId.Equals(request.ApartmentId)
                                     && f.ApartmentBuildingId.Equals(request.ApartmentBuildingId) && request.BillingCycle.Equals(f.BillingCycle)
                                     && !FeeNoticeStatus.Canceled.Equals(f.Status) && !FeeNoticeStatus.UnPaid.Equals(f.PaymentStatus));
             if (lastFeeNotice != null)
-                throw new DomainException(ErrorCodeConsts.FeeNoticeAlreadyExists, ErrorCodeConsts.FeeNoticeAlreadyExists, System.Net.HttpStatusCode.BadRequest);
+                throw new DomainException(ErrorCodeConsts.FeeNoticeAlreadyExists, ErrorMessageConsts.FeeNoticeAlreadyExists, System.Net.HttpStatusCode.BadRequest);
 
             var billingSetting = _billingCycleSettingRepository.List().FirstOrDefault(b => b.ApartmentBuildingId.Equals(request.ApartmentBuildingId));
 
             if (billingSetting == null)
-                throw new DomainException(ErrorCodeConsts.BillingCycleSettingIsNotFound, ErrorCodeConsts.BillingCycleSettingIsNotFound, System.Net.HttpStatusCode.BadRequest);
+                throw new DomainException(ErrorCodeConsts.BillingCycleSettingIsNotFound, ErrorMessageConsts.BillingCycleSettingIsNotFound, System.Net.HttpStatusCode.BadRequest);
             var closingDate = new DateTime(billingCycleReqExtract.Year, billingCycleReqExtract.Month, billingSetting.ClosingDayOfMonth);
 
             if (closingDate > DateTime.UtcNow)
-                throw new DomainException(ErrorCodeConsts.FeeNoticeNotDue, ErrorCodeConsts.FeeNoticeNotDue, System.Net.HttpStatusCode.BadRequest);
+                throw new DomainException(ErrorCodeConsts.FeeNoticeNotDue, ErrorMessageConsts.FeeNoticeNotDue, System.Net.HttpStatusCode.BadRequest);
 
             var apartment = _apartmentRepository.List().Include(a => a.ParkingRegistrations).FirstOrDefault(a => a.ApartmentBuildingId.Equals(request.ApartmentBuildingId) && a.Id.Equals(request.ApartmentId));
 
-            if (apartment == null) throw new DomainException(ErrorCodeConsts.ApartmentNotFound, ErrorCodeConsts.ApartmentNotFound, System.Net.HttpStatusCode.NotFound);
+            if (apartment == null) throw new DomainException(ErrorCodeConsts.ApartmentNotFound, ErrorMessageConsts.ApartmentNotFound, System.Net.HttpStatusCode.NotFound);
             var feeDetails = new List<FeeDetail>();
 
             foreach (var feeTypeId in request.FeeTypeIds)
@@ -454,11 +455,7 @@ namespace ApartmentManagementSystem.Services.Impls
                 if (feeType == null) continue;
                 if (feeType.CalculationType.Equals(CalculationType.Area))
                 {
-                    feeDetails.Add(new FeeDetail()
-                    {
-                        FeeTypeId = feeType.Id,
-                        SubTotal = (decimal)apartment.Area * feeType.DefaultRate
-                    });
+                    feeDetails.Add(CreateFeeDetailByFeeTypeArea(feeType, apartment));
                     continue;
                 }
                 else if (feeType.CalculationType.Equals(CalculationType.QUANTITY) && apartment.ParkingRegistrations != null)
@@ -481,20 +478,29 @@ namespace ApartmentManagementSystem.Services.Impls
             feeNotice.DueDate = DateTime.UtcNow.AddDays(billingSetting.PaymentDueDate);
             return feeNotice;
         }
-
+        private FeeDetail CreateFeeDetailByFeeTypeArea(FeeType feeType, Apartment apartment)
+        {
+            if (DateTime.UtcNow < feeType.ApplyDate)
+                throw new DomainException(ErrorCodeConsts.FeeTypeNotFound, ErrorMessageConsts.FeeTypeNotFound, System.Net.HttpStatusCode.BadRequest);
+            return new FeeDetail()
+            {
+                FeeTypeId = feeType.Id,
+                SubTotal = (decimal)apartment.Area * feeType.DefaultRate
+            };
+        }
         private FeeDetail CreateFeeDetailByFeeTypeTier(FeeType feeType, CreateOrUpdateFeeDetailDto feeDetailReq)
         {
             if (feeType.FeeRateConfigs == null)
-                throw new DomainException(ErrorCodeConsts.FeeTypeNotConfigured, ErrorCodeConsts.FeeTypeNotConfigured, System.Net.HttpStatusCode.BadRequest);
+                throw new DomainException(ErrorCodeConsts.FeeTypeNotConfigured, ErrorMessageConsts.FeeTypeNotConfigured, System.Net.HttpStatusCode.BadRequest);
 
             var feeRateConfig = feeType.FeeRateConfigs.FirstOrDefault(f => f.IsActive);
 
-            if (feeRateConfig == null)
-                throw new DomainException(ErrorCodeConsts.FeeTypeNotConfigured, ErrorCodeConsts.FeeTypeNotConfigured, System.Net.HttpStatusCode.BadRequest);
+            if (feeRateConfig == null || DateTime.UtcNow < feeRateConfig.ApplyDate)
+                throw new DomainException(ErrorCodeConsts.FeeTypeNotConfigured, ErrorMessageConsts.FeeTypeNotConfigured, System.Net.HttpStatusCode.BadRequest);
 
             var utilityReadingDto = feeDetailReq.UtilityReading;
             if (utilityReadingDto == null)
-                throw new DomainException(ErrorCodeConsts.UtilityReadingDataIsRequired, ErrorCodeConsts.UtilityReadingDataIsRequired, System.Net.HttpStatusCode.BadRequest);
+                throw new DomainException(ErrorCodeConsts.UtilityReadingDataIsRequired, ErrorMessageConsts.UtilityReadingDataIsRequired, System.Net.HttpStatusCode.BadRequest);
 
             var previousUtilityReading = _utilityReadingRepository.List().OrderByDescending(u => u.ReadingDate)
                                 .FirstOrDefault(u => u.ApartmentBuildingId.Equals(feeRateConfig.ApartmentBuildingId) && u.ApartmentId.Equals(feeDetailReq.ApartmentId) && u.FeeTypeId.Equals(feeRateConfig.Id)
@@ -504,7 +510,7 @@ namespace ApartmentManagementSystem.Services.Impls
             if (previousUtilityReading != null)
             {
                 if (utilityReadingDto.ReadingDate < previousUtilityReading.ReadingDate)
-                    throw new DomainException(ErrorCodeConsts.CurrentUtilityReadingDateCannotBeEarlier, ErrorCodeConsts.CurrentUtilityReadingDateCannotBeEarlier, System.Net.HttpStatusCode.BadRequest);
+                    throw new DomainException(ErrorCodeConsts.CurrentUtilityReadingDateCannotBeEarlier, ErrorMessageConsts.CurrentUtilityReadingDateCannotBeEarlier, System.Net.HttpStatusCode.BadRequest);
                 previousReading = previousUtilityReading.CurrentReading;
                 actualUserTotalDays = (utilityReadingDto.ReadingDate - previousUtilityReading.ReadingDate).TotalDays;
             }
@@ -589,7 +595,7 @@ namespace ApartmentManagementSystem.Services.Impls
         }
         private FeeDetail CreateFeeDetailByFeeTypeQuantity(FeeType feeType, IEnumerable<ParkingRegistration> parkings)
         {
-            if (feeType.QuantityRateConfigs == null)
+            if (feeType.QuantityRateConfigs == null || DateTime.UtcNow < feeType.ApplyDate)
                 throw new DomainException(ErrorCodeConsts.FeeTypeNotConfigured, ErrorCodeConsts.FeeTypeNotConfigured, System.Net.HttpStatusCode.BadRequest);
             var quantityRateConfigActives = feeType.QuantityRateConfigs.Where(f => f.IsActive);
             var feeDetail = new FeeDetail()

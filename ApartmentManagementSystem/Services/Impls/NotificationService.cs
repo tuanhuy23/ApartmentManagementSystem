@@ -8,6 +8,7 @@ using ApartmentManagementSystem.EF.Repositories.Interfaces.Base;
 using ApartmentManagementSystem.Exceptions;
 using ApartmentManagementSystem.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Org.BouncyCastle.Ocsp;
 
 namespace ApartmentManagementSystem.Services.Impls
 {
@@ -16,13 +17,20 @@ namespace ApartmentManagementSystem.Services.Impls
         private readonly IAnnouncementRepository _announcementRepository;
         private readonly IApartmentBuildingRepository _apartmentBuildingRepository;
         private readonly IUnitOfWork _unitOfWork;
-        public NotificationService(IAnnouncementRepository announcementRepository, IUnitOfWork unitOfWork, IApartmentBuildingRepository apartmentBuildingRepository)
+        private readonly IAccountService _accountService;
+        private readonly IApartmentRepository _apartmentRepository;
+        private readonly IFileAttachmentRepository _fileAttachmentRepository;
+        public NotificationService(IAnnouncementRepository announcementRepository, IUnitOfWork unitOfWork, IApartmentBuildingRepository apartmentBuildingRepository, IAccountService accountService,
+         IApartmentRepository apartmentRepository, IFileAttachmentRepository fileAttachmentRepository)
         {
             _announcementRepository = announcementRepository;
             _unitOfWork = unitOfWork;
             _apartmentBuildingRepository = apartmentBuildingRepository;
+            _accountService = accountService;
+            _apartmentRepository = apartmentRepository;
+            _fileAttachmentRepository = fileAttachmentRepository;
         }
-        
+
         public async Task CreateOrUpdateAnnouncements(AnnouncementDto request)
         {
             if (request.Id == null)
@@ -36,19 +44,115 @@ namespace ApartmentManagementSystem.Services.Impls
             await _unitOfWork.CommitAsync();
         }
 
-        public Task DeleteAnnouncements(List<string> ids)
+        public async Task DeleteAnnouncements(List<string> ids)
         {
-            throw new NotImplementedException();
+            var announcementIds = ids.Select(r => new Guid(r));
+            var announcementEntites = _announcementRepository.List(r => announcementIds.Contains(r.Id)).Include(r => r.Files).ToList();
+            foreach (var announcementEntity in announcementEntites)
+            {
+                var announcementFiles = announcementEntity.Files;
+                if (announcementFiles != null)
+                {
+                    _fileAttachmentRepository.Delete(announcementFiles);
+                }
+            }
+
+            _announcementRepository.Delete(announcementEntites);
+            await _unitOfWork.CommitAsync();
+        }
+
+        public byte[] DownloadExcelTemplate(string fileName, string sheetName)
+        {
+            string jsonData = @"{
+                            'header': [
+                                {'ApartmentName': 'ApartmentName'}";
+            jsonData += @"],
+                        'body': []
+                        }";
+            return ExcelUtilityHelper.ExportToExcel(fileName, sheetName, jsonData);
+        }
+
+        public async Task<IEnumerable<ApartmentAnnouncementDto>> ImportApartmentIdResult(string apartmentBuildingId, IFormFile file)
+        {
+            ExcelUtilityHelper.ExcelData jsonData = ExcelUtilityHelper.ImportFromExcel(file);
+            var apartmentNames = new List<string>();
+            foreach (var row in jsonData.body)
+            {
+                var colApartmentName = row["ApartmentName"].ToString();
+                if (string.IsNullOrEmpty(colApartmentName)) continue;
+                apartmentNames.Add(colApartmentName);
+            }
+            var apartments = _apartmentRepository.List(a => a.ApartmentBuildingId.Equals(new Guid(apartmentBuildingId)) && apartmentNames.Contains(a.Name)).Select(a => new ApartmentAnnouncementDto()
+            {
+                Id = a.Id,
+                Name = a.Name
+            });
+            return apartments.ToList();
+        }
+
+        public IEnumerable<ApartmentAnnouncementDto> GetApartmentData(string apartmentBuildingId)
+        {
+            var apartments = _apartmentRepository.List(a => a.ApartmentBuildingId.Equals(new Guid(apartmentBuildingId))).Select(a => new ApartmentAnnouncementDto()
+            {
+                Id = a.Id,
+                Name = a.Name
+            });
+            return apartments.ToList();
         }
 
         public AnnouncementDto GetAnnouncement(Guid id)
         {
-            throw new NotImplementedException();
+            var announcement = _announcementRepository.List(r => r.Id.Equals(id)).Include(r => r.Files).FirstOrDefault();
+            if (announcement == null)
+                throw new DomainException(ErrorCodeConsts.AnnouncementNotFound, ErrorMessageConsts.AnnouncementNotFound, System.Net.HttpStatusCode.NotFound);
+            var announcementDto = new AnnouncementDto()
+            {
+                ApartmentBuildingId = announcement.ApartmentBuildingId,
+                Body = announcement.Body,
+                Id = announcement.Id,
+                IsAll = announcement.IsAll,
+                PublishDate = announcement.PublishDate,
+                Status = announcement.Status,
+                Title = announcement.Title
+            };
+            if (announcement.ApartmentIds != null)
+            {
+                var apartments = _apartmentRepository.List(a => announcement.ApartmentIds.Contains(a.Id.ToString())).Select(a => new ApartmentAnnouncementDto()
+                {
+                    Id = a.Id,
+                    Name = a.Name
+                });
+                announcementDto.ApartmentIds = announcement.ApartmentIds.Select(a => new Guid(a));
+                announcementDto.Apartments = apartments.ToList();
+            }
+            if (announcement.Files == null) return announcementDto;
+            announcementDto.Files = announcement.Files.Select(r => new FileAttachmentDto()
+            {
+                Description = r.Description,
+                FileType = r.FileType,
+                Id = r.Id,
+                Name = r.Name,
+                Src = r.Src
+            });
+            return announcementDto;
         }
 
-        public Pagination<AnnouncementDto> GetAnnouncements(RequestQueryBaseDto<Guid> request)
+        public async Task<Pagination<AnnouncementDto>> GetAnnouncements(RequestQueryBaseDto<Guid> request)
         {
-            var announcements = _announcementRepository.List().Where(a => a.ApartmentBuildingId.Equals(request.Request)).Select(a => new AnnouncementDto()
+            IQueryable<Announcement> announcements = null;
+            var currentUser = await _accountService.GetAccountInfo();
+            if (currentUser.RoleName.Equals(Consts.RoleDefaulConsts.Management))
+            {
+                announcements = _announcementRepository.List().Where(r => r.ApartmentBuildingId.Equals(request.Request));
+            }
+            else if (currentUser.RoleName.Equals(Consts.RoleDefaulConsts.Resident))
+            {
+                var now = DateTime.UtcNow;
+                announcements = _announcementRepository.List().Where(r => r.ApartmentBuildingId.Equals(request.Request) && (r.IsAll ? true : r.ApartmentIds == null ? false : r.ApartmentIds.Contains(currentUser.ApartmentId))
+                                                                        && now >= r.PublishDate && r.Status.Equals(StatusConsts.Publish));
+            }
+
+            var data = announcements.Select(a => new AnnouncementDto()
             {
                 ApartmentBuildingId = a.ApartmentBuildingId,
                 Title = a.Title,
@@ -56,17 +160,17 @@ namespace ApartmentManagementSystem.Services.Impls
                 IsAll = a.IsAll,
                 Body = a.Body
             });
-            if (request.Filters!= null && request.Filters.Any())
+            if (request.Filters != null && request.Filters.Any())
             {
                 announcements = FilterHelper.ApplyFilters(announcements, request.Filters);
             }
-            if (request.Sorts!= null && request.Sorts.Any())
+            if (request.Sorts != null && request.Sorts.Any())
             {
                 announcements = SortHelper.ApplySort(announcements, request.Sorts);
             }
             return new Pagination<AnnouncementDto>()
             {
-                Items = announcements.Skip((request.Page - 1) * request.PageSize).Take(request.PageSize).ToList(),
+                Items = data.Skip((request.Page - 1) * request.PageSize).Take(request.PageSize).ToList(),
                 Totals = announcements.Count()
             };
         }
@@ -79,9 +183,10 @@ namespace ApartmentManagementSystem.Services.Impls
                 Status = StatusConsts.UnPublish,
                 Title = request.Title,
                 Body = request.Body,
-                IsAll = request.IsAll
+                IsAll = request.IsAll,
+                PublishDate = request.PublishDate
             };
-            
+
             if (request.Files != null)
             {
                 announcementNew.Files = request.Files.Select(f => new FileAttachment()
@@ -105,16 +210,17 @@ namespace ApartmentManagementSystem.Services.Impls
             announcementEntity.Title = request.Title;
             announcementEntity.Body = request.Body;
             announcementEntity.IsAll = request.IsAll;
-           
+            announcementEntity.PublishDate = request.PublishDate;
+            announcementEntity.Status = request.Status;
             var files = announcementEntity.Files;
 
             if (request.Files == null)
             {
                 request.Files = new List<FileAttachmentDto>();
             }
-            foreach(var file in request.Files)
+            foreach (var file in request.Files)
             {
-                if(file.Id == null)
+                if (file.Id == null)
                 {
                     files.Add(new FileAttachment()
                     {

@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using ApartmentManagementSystem.Consts.Permissions;
 using ApartmentManagementSystem.Dtos;
 using ApartmentManagementSystem.Dtos.Base;
@@ -45,7 +41,7 @@ namespace ApartmentManagementSystem.Controllers
             {
                 sorts = JsonConvert.DeserializeObject<List<SortQuery>>(sortsJson);
             }
-            var response = _notificationService.GetAnnouncements(new RequestQueryBaseDto<Guid>()
+            var response = await _notificationService.GetAnnouncements(new RequestQueryBaseDto<Guid>()
             {
                 Filters = filters,
                 Sorts = sorts,
@@ -95,6 +91,34 @@ namespace ApartmentManagementSystem.Controllers
         {
             await _notificationService.DeleteAnnouncements(request);
             return Ok(new ResponseData<object>(System.Net.HttpStatusCode.OK, null, null, null));
+        }
+
+        [HttpGet("download-excel-template")]
+        [Authorize(Policy = FeeNoticePermissions.Read)]
+        public async Task<IActionResult> DownloadExcelTemplate()
+        {
+            string fileName = "Sub-ProjectSetUpDefect/Fee-ExcelTemplate.xlsx";
+            string sheetName = "Data";
+            var excelData = _notificationService.DownloadExcelTemplate(fileName, sheetName);
+            return File(excelData, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"{fileName}.xlsx");
+        }
+
+        [HttpPost("import-apartment")]
+        [Authorize(Policy = FeeNoticePermissions.ReadWrite)]
+        [ProducesResponseType(typeof(ResponseData<IEnumerable<ApartmentAnnouncementDto>>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> ImportAparmentData([FromRoute] string apartmentBuildingId, IFormFile file)
+        {
+            var excelData = await _notificationService.ImportApartmentIdResult(apartmentBuildingId, file);
+            return Ok(new ResponseData<IEnumerable<ApartmentAnnouncementDto>>(System.Net.HttpStatusCode.OK, excelData, null, null));
+        }
+
+        [HttpGet("apartments")]
+        [Authorize(Policy = FeeNoticePermissions.ReadWrite)]
+        [ProducesResponseType(typeof(ResponseData<IEnumerable<ApartmentAnnouncementDto>>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetApartmentData([FromRoute] string apartmentBuildingId)
+        {
+            var excelData = _notificationService.GetApartmentData(apartmentBuildingId);
+            return Ok(new ResponseData<IEnumerable<ApartmentAnnouncementDto>>(System.Net.HttpStatusCode.OK, excelData, null, null));
         }
     }
 }

@@ -160,15 +160,9 @@ namespace ApartmentManagementSystem.EF.Context
               .HasForeignKey(c => c.AnnouncementId)
               .OnDelete(DeleteBehavior.NoAction);
               
-            builder.Entity<Announcement>().HasMany(c => c.UserReadStatuses)
-              .WithOne(ci => ci.Announcement)
-              .HasPrincipalKey(ci => ci.Id)
-              .HasForeignKey(c => c.AnnouncementId)
-              .OnDelete(DeleteBehavior.Cascade);
-              
             builder.Entity<Announcement>(e =>
             {
-                e.Property(e => e.UserIds)
+                e.Property(e => e.ApartmentIds)
                 .HasConversion(
                     v => string.Join(',', v),
                     v => v.Split(',', StringSplitOptions.RemoveEmptyEntries));
