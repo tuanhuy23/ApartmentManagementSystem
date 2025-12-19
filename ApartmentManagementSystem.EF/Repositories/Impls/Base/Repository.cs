@@ -26,11 +26,12 @@ namespace ApartmentManagementSystem.EF.Repositories.Impls.Base
                 if (typeof(IEntityBase<Guid>).IsAssignableFrom(typeof(T)))
                 {
                     ((IEntityBase<Guid>)entity).Id = Guid.NewGuid();
-                    
+
                 }
                 ((IAuditEntity)entity).CreatedDate = DateTime.UtcNow;
                 ((IAuditEntity)entity).CreatedBy = _userAudit.UserId;
                 ((IAuditEntity)entity).CreatedByUserName = _userAudit.UserName;
+                ((IAuditEntity)entity).CreatedByUserDisplayName = _userAudit.UserDisplayName;
             }
             var newEntityEntry = await DbSet.AddAsync(entity);
             return newEntityEntry.Entity;
@@ -49,6 +50,7 @@ namespace ApartmentManagementSystem.EF.Repositories.Impls.Base
                     ((IAuditEntity)entity).CreatedDate = DateTime.UtcNow;
                     ((IAuditEntity)entity).CreatedBy = _userAudit.UserId;
                     ((IAuditEntity)entity).CreatedByUserName = _userAudit.UserName;
+                    ((IAuditEntity)entity).CreatedByUserDisplayName = _userAudit.UserDisplayName;
                 }
             }
             await DbSet.AddRangeAsync(entities);
@@ -76,6 +78,7 @@ namespace ApartmentManagementSystem.EF.Repositories.Impls.Base
                 ((IAuditEntity)entity).UpdatedDate = DateTime.UtcNow;
                 ((IAuditEntity)entity).UpdatedBy = _userAudit.UserId;
                 ((IAuditEntity)entity).UpdatedByUserName = _userAudit.UserName;
+                ((IAuditEntity)entity).UpdatedByUserDisplayName = _userAudit.UserDisplayName;
             }
             var updateEntityEntry = DbSet.Update(entity);
             return updateEntityEntry.Entity;
@@ -89,6 +92,7 @@ namespace ApartmentManagementSystem.EF.Repositories.Impls.Base
                     ((IAuditEntity)entity).UpdatedDate = DateTime.UtcNow;
                     ((IAuditEntity)entity).UpdatedBy = _userAudit.UserId;
                     ((IAuditEntity)entity).UpdatedByUserName = _userAudit.UserName;
+                    ((IAuditEntity)entity).UpdatedByUserDisplayName = _userAudit.UserDisplayName;
                 }
             }
             DbSet.UpdateRange(entities);

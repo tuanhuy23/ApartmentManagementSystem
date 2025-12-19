@@ -90,7 +90,7 @@ namespace ApartmentManagementSystem.Controllers
 
         [HttpDelete]
         [ProducesResponseType(typeof(ResponseData<>), StatusCodes.Status200OK)]
-        [Authorize(Policy = RequestPermissions.ReadWriteAll)]
+        [Authorize(Policy = RequestPermissions.ReadWrite)]
         public async Task<IActionResult> DeleteRequest([FromBody] List<string> request)
         {
             await _requestService.DeleteRequest(request);
@@ -135,9 +135,9 @@ namespace ApartmentManagementSystem.Controllers
         [HttpGet("user-handler")]
         [ProducesResponseType(typeof(ResponseData<IEnumerable<UserDto>>), StatusCodes.Status200OK)]
         [Authorize(Policy = RequestPermissions.ReadWrite)]
-        public async Task<IActionResult> GetUserHandler([FromRoute] string appartmentBuildingId)
+        public async Task<IActionResult> GetUserHandler([FromRoute] string apartmentBuildingId)
         {
-            var result = await _requestService.GetUserHandlers(appartmentBuildingId);
+            var result = await _requestService.GetUserHandlers(apartmentBuildingId);
             return Ok(new ResponseData<IEnumerable<UserDto>>(System.Net.HttpStatusCode.OK, result, null, null));
         }
     }

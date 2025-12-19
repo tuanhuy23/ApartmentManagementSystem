@@ -8,8 +8,8 @@ namespace ApartmentManagementSystem.Dtos
         public string Status { get; set; }
         public string RequestType{ get; set; }
         public string? CurrentHandlerId { get; set; } 
-        public IEnumerable<FileAttachmentDto> Files { get; set; }
-        public IEnumerable<RequestHistoryDto> RequestHistories { get; set; }
+        public IEnumerable<FileAttachmentDto>? Files { get; set; }
+        public IEnumerable<RequestHistoryDto>? RequestHistories { get; set; }
         public Guid ApartmentBuildingId { get; set; }
         public int? Rate { get; set; }
         public DateTime? CreatedDate { get; set; }
@@ -29,7 +29,8 @@ namespace ApartmentManagementSystem.Dtos
         public Guid? Id { get; set; }
         public string? Note { get; set; }
         public Guid RequestId { get;set;}
-        public IEnumerable<FileAttachmentDto> Files { get; set; }
+        public string ActionType {get; set; }
+        public IEnumerable<FileAttachmentDto>? Files { get; set; }
         public DateTime? CreatedDate { get; set; }
         public string? CreatedUserId { get; set; }
         public string? CreatedDisplayUser { get; set; }

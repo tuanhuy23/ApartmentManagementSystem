@@ -145,7 +145,7 @@ namespace ApartmentManagementSystem.Services.Impls
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(AppSettings.JwtSettings.Secret));
 
             var claims = await CreateClaims(user);
-            var tokenExpireTime = DateTime.UtcNow.AddMinutes(2);
+            var tokenExpireTime = DateTime.UtcNow.AddMinutes(40);
             var token = new JwtSecurityToken(
                 issuer: AppSettings.JwtSettings.Issuer,
                 audience: AppSettings.JwtSettings.Audience,

@@ -38,6 +38,8 @@ namespace ApartmentManagementSystem.Services.Impls
                     if (allClaims.Any(a => a.Type == "Permission" && a.Value == permission.Name)) continue;
                     await _roleManager.AddClaimAsync(roleNew, new Claim("Permission", permission.Name));
                 }
+                await _roleManager.AddClaimAsync(roleNew, new Claim("Permission", RequestPermissions.Read));
+                await _roleManager.AddClaimAsync(roleNew, new Claim("Permission", RequestPermissions.ReadWrite));
                 request.RoleId = roleNew.Id;
                 return request;
             }
@@ -52,8 +54,7 @@ namespace ApartmentManagementSystem.Services.Impls
             {
                 await _roleManager.AddClaimAsync(roleUpdate, new Claim("Permission", permission.Name));
             }
-            await _roleManager.AddClaimAsync(roleUpdate, new Claim("Permission", RequestPermissions.Read));
-            await _roleManager.AddClaimAsync(roleUpdate, new Claim("Permission", RequestPermissions.ReadWrite));
+
             return request;
         }
 
@@ -68,11 +69,11 @@ namespace ApartmentManagementSystem.Services.Impls
             {
                 var role = await _roleManager.FindByIdAsync(roleId);
 
-                if (role == null) 
+                if (role == null)
                 {
                     result.RoleIdsDeleteError.Add(roleId);
                     continue;
-                }         
+                }
                 var lstUserInRole = await _userManager.GetUsersInRoleAsync(role.Name);
                 foreach (var userRole in lstUserInRole)
                 {
@@ -91,7 +92,7 @@ namespace ApartmentManagementSystem.Services.Impls
 
         public async Task<IEnumerable<PermissionInfo>> GetPermissionInfos()
         {
-            return PermissionsHelper.GetPermissionInfos(); 
+            return PermissionsHelper.GetPermissionInfos();
         }
 
         public async Task<RoleDto> GetRole(string roleId)
@@ -143,12 +144,12 @@ namespace ApartmentManagementSystem.Services.Impls
                     roleDtos.Add(roleDto);
                 }
             }
-             var roleQuery = roleDtos.AsQueryable();
-            if (request.Filters!= null && request.Filters.Any())
+            var roleQuery = roleDtos.AsQueryable();
+            if (request.Filters != null && request.Filters.Any())
             {
                 roleQuery = FilterHelper.ApplyFilters(roleQuery, request.Filters);
             }
-            if (request.Sorts!= null && request.Sorts.Any())
+            if (request.Sorts != null && request.Sorts.Any())
             {
                 roleQuery = SortHelper.ApplySort(roleQuery, request.Sorts);
             }

@@ -81,7 +81,6 @@ namespace ApartmentManagementSystem.Services.Impls
             if (apartmentCurent == null) throw new DomainException(ErrorCodeConsts.ResidentNotExistInApartment, ErrorMessageConsts.ResidentNotExistInApartment, System.Net.HttpStatusCode.NotFound);
             residentDto.ApartmentId = apartmentCurent.ApartmentId;
             residentDto.MemberType = apartmentCurent.MemberType;
-            residentDto.IsOwner = apartmentCurent.MemberType.Equals(MemberType.Owner) ? true : false;
             if (string.IsNullOrEmpty(resident.UserId))
             {
                 return residentDto;

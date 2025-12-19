@@ -139,39 +139,53 @@ namespace ApartmentManagementSystem.Services.Impls
 
         public async Task<Pagination<AnnouncementDto>> GetAnnouncements(RequestQueryBaseDto<Guid> request)
         {
-            IQueryable<Announcement> announcements = null;
+            List<Announcement> announcements = new List<Announcement>();
             var currentUser = await _accountService.GetAccountInfo();
             if (currentUser.RoleName.Equals(Consts.RoleDefaulConsts.Management))
             {
-                announcements = _announcementRepository.List().Where(r => r.ApartmentBuildingId.Equals(request.Request));
+                announcements = _announcementRepository.List().Where(r => r.ApartmentBuildingId.Equals(request.Request)).ToList();
             }
             else if (currentUser.RoleName.Equals(Consts.RoleDefaulConsts.Resident))
             {
                 var now = DateTime.UtcNow;
-                announcements = _announcementRepository.List().Where(r => r.ApartmentBuildingId.Equals(request.Request) && (r.IsAll ? true : r.ApartmentIds == null ? false : r.ApartmentIds.Contains(currentUser.ApartmentId))
+                var announcementsData = _announcementRepository.List(r => r.ApartmentBuildingId.Equals(request.Request)
                                                                         && now >= r.PublishDate && r.Status.Equals(StatusConsts.Publish));
+                foreach (var announcement in announcementsData)
+                {
+                    if (announcement.IsAll)
+                    {
+                        announcements.Add(announcement);
+                    }
+                    else if (announcement.ApartmentIds == null)continue;
+                    if (announcement.ApartmentIds.Contains(currentUser.ApartmentId))
+                    {
+                        announcements.Add(announcement);
+                    }
+                }
             }
 
             var data = announcements.Select(a => new AnnouncementDto()
             {
+                Id = a.Id,
                 ApartmentBuildingId = a.ApartmentBuildingId,
                 Title = a.Title,
                 Status = a.Status,
                 IsAll = a.IsAll,
-                Body = a.Body
-            });
+                Body = a.Body,
+                PublishDate = a.PublishDate
+            }).AsQueryable();
             if (request.Filters != null && request.Filters.Any())
             {
-                announcements = FilterHelper.ApplyFilters(announcements, request.Filters);
+                data = FilterHelper.ApplyFilters(data, request.Filters);
             }
             if (request.Sorts != null && request.Sorts.Any())
             {
-                announcements = SortHelper.ApplySort(announcements, request.Sorts);
+                data = SortHelper.ApplySort(data, request.Sorts);
             }
             return new Pagination<AnnouncementDto>()
             {
                 Items = data.Skip((request.Page - 1) * request.PageSize).Take(request.PageSize).ToList(),
-                Totals = announcements.Count()
+                Totals = data.Count()
             };
         }
 
@@ -184,9 +198,12 @@ namespace ApartmentManagementSystem.Services.Impls
                 Title = request.Title,
                 Body = request.Body,
                 IsAll = request.IsAll,
-                PublishDate = request.PublishDate
+                PublishDate = DateTime.SpecifyKind(request.PublishDate, DateTimeKind.Utc),
             };
-
+            if (request.ApartmentIds != null)
+            {
+                announcementNew.ApartmentIds = request.ApartmentIds.Select(a => a.ToString());
+            }
             if (request.Files != null)
             {
                 announcementNew.Files = request.Files.Select(f => new FileAttachment()
@@ -210,7 +227,7 @@ namespace ApartmentManagementSystem.Services.Impls
             announcementEntity.Title = request.Title;
             announcementEntity.Body = request.Body;
             announcementEntity.IsAll = request.IsAll;
-            announcementEntity.PublishDate = request.PublishDate;
+            announcementEntity.PublishDate = DateTime.SpecifyKind(request.PublishDate, DateTimeKind.Utc);
             announcementEntity.Status = request.Status;
             var files = announcementEntity.Files;
 

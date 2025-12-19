@@ -60,6 +60,11 @@ namespace ApartmentManagementSystem.Common
             {
                 accountInfo.Permissions = claimPermission;
             }
+            var apartmentId = identity.FindFirst("ApartmentId");
+            if (apartmentId != null)
+            {
+                accountInfo.ApartmentId = apartmentId.Value;
+            }
             return accountInfo;
         }
     }

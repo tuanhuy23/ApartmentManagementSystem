@@ -65,8 +65,8 @@ namespace ApartmentManagementSystem.Services.Impls
                     _fileAttachmentRepository.Delete(requestFiles);
                 }
             }
-            _requestRepository.Delete(requestEntites);
             _requestHistoryRepository.Delete(requestHistorys);
+            _requestRepository.Delete(requestEntites);
             await _unitOfWork.CommitAsync();
         }
 
@@ -148,10 +148,11 @@ namespace ApartmentManagementSystem.Services.Impls
                 {
                     Note = reqHistory.Note,
                     Id = reqHistory.Id,
+                    ActionType = reqHistory.ActionType,
                     RequestId = reqHistory.RequestId,
                     CreatedDate = reqHistory.CreatedDate,
                     CreatedUserId = reqHistory.CreatedBy,
-                    CreatedDisplayUser = reqHistory.CreatedByUserDisplayName
+                    CreatedDisplayUser = reqHistory.CreatedByUserDisplayName, 
                 };
                 if (reqHistory.Files != null)
                 {
