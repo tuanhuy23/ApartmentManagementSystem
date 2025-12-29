@@ -2,8 +2,8 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 COPY . .
-RUN dotnet restore "ApartmentManagementSystem.csproj"
-RUN dotnet publish "ApartmentManagementSystem.csproj" -c Release -o /app/publish
+RUN dotnet restore "./ApartmentManagementSystem/ApartmentManagementSystem.csproj"
+RUN dotnet publish "./ApartmentManagementSystem/ApartmentManagementSystem.csproj" -c Release -o /app/publish
 
 # Serve Stage
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
