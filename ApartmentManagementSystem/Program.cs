@@ -2,6 +2,7 @@
 using ApartmentManagementSystem.DbContext;
 using ApartmentManagementSystem.Register;
 using ApartmentManagementSystem.EF;
+using Microsoft.EntityFrameworkCore;
 
 namespace ApartmentManagementSystem
 {
@@ -68,7 +69,8 @@ namespace ApartmentManagementSystem
             
             // Seed data
             var authenticationCtx = app.Services.CreateScope().ServiceProvider.GetRequiredService<AuthenticationDbContext>();
-            bool dbExist = authenticationCtx.Database.EnsureCreated();
+            var a = authenticationCtx.Database.CanConnect();
+           var b = authenticationCtx.Database.GenerateCreateScript();
             var testUserPw = AppSettings.SeedPwd;
             SeedData.SeedData.Initialize(app.Services.CreateScope().ServiceProvider, testUserPw).GetAwaiter().GetResult();
 

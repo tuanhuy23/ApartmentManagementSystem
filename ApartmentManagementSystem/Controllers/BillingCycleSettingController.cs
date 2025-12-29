@@ -34,7 +34,7 @@ namespace ApartmentManagementSystem.Controllers
         [HttpPost()]
         [ProducesResponseType(typeof(ResponseData<>), StatusCodes.Status200OK)]
         [Authorize(Policy = FeeConfigurationPermissions.ReadWrite)]
-        public async Task<IActionResult> CreateApartment([FromBody] BillingCycleSettingDto request)
+        public async Task<IActionResult> CreateBillingCycleSetting([FromBody] BillingCycleSettingDto request)
         {
             await _billingCycleSettingService.CreateBillingCycleSetting(request);
             return Ok(new ResponseData<object>(System.Net.HttpStatusCode.OK, null, null, null));
