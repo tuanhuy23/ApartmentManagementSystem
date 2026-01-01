@@ -19,7 +19,8 @@ namespace ApartmentManagementSystem.Services.Impls
         private readonly IRoleService _roleService;
         private readonly ApartmentBuildingData _apartmentBuildingData;
 
-        public ApartmentBuildingService(IUnitOfWork unitOfWork, IApartmentBuildingRepository apartmentBuildingRepository, IUserService userService, IRoleService roleService, ApartmentBuildingData apartmentBuildingData)
+        public ApartmentBuildingService(IUnitOfWork unitOfWork, IApartmentBuildingRepository apartmentBuildingRepository, IUserService userService, IRoleService roleService,
+         ApartmentBuildingData apartmentBuildingData)
         {
             _unitOfWork = unitOfWork;
             _apartmentBuildingRepository = apartmentBuildingRepository;
@@ -91,6 +92,8 @@ namespace ApartmentManagementSystem.Services.Impls
 
         public async Task DeleteApartmentBuilding(List<string> ids)
         {
+            if (ids == null || !ids.Any())
+                throw new DomainException(ErrorCodeConsts.ApartmentBuildingNotFound, ErrorMessageConsts.ApartmentBuildingNotFound, System.Net.HttpStatusCode.NotFound);
             var apartmentBuidlingIds = ids.Select(i => new Guid(i));
             var apartmentBuildings = _apartmentBuildingRepository.List(a => apartmentBuidlingIds.Contains(a.Id) && !a.IsDeleted);
             foreach(var apartmentBuilding in apartmentBuildings)
@@ -107,7 +110,8 @@ namespace ApartmentManagementSystem.Services.Impls
             var apartmentBuilding = _apartmentBuildingRepository.List(a => a.Id.Equals(id)).FirstOrDefault();
             if (apartmentBuilding == null)
                 throw new DomainException(ErrorCodeConsts.ApartmentBuildingNotFound, ErrorMessageConsts.ApartmentBuildingNotFound, System.Net.HttpStatusCode.NotFound);
-            if (!request.Status.Equals(StatusConsts.Active) || !request.Status.Equals(StatusConsts.InActive))
+            var validStatuses = new List<string> { StatusConsts.Active, StatusConsts.InActive };
+            if (!validStatuses.Contains(request.Status))
                 throw new DomainException(ErrorCodeConsts.ApartmentBuildingStatusInvalidFormat, ErrorMessageConsts.ApartmentBuildingStatusInvalidFormat, System.Net.HttpStatusCode.BadRequest);
             apartmentBuilding.Status = request.Status;
             _apartmentBuildingRepository.Update(apartmentBuilding);

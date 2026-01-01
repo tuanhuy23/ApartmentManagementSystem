@@ -19,7 +19,8 @@ namespace ApartmentManagementSystem
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.RegisterService();
             builder.Services.RegisterAuthenticationService();
-            builder.Services.RegisterDbContextApartmentManagementService(AppSettings.ConnectionStrings.DataApartment);
+            builder.Services.RegisterDatabase(AppSettings.ConnectionStrings.DataApartment);
+            builder.Services.RegisterDbContextApartmentManagementService();
             builder.Services.RegisterRepository();
             builder.Services.AddSwaggerGen(options =>
             {

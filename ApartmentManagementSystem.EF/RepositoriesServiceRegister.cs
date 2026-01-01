@@ -29,15 +29,17 @@ namespace ApartmentManagementSystem.EF
                  
             services.AddScoped<IUnitOfWork, UnitOfWork>();
         }
-        public static void RegisterDbContextApartmentManagementService(this IServiceCollection services, string connectionString)
+        public static void RegisterDatabase(this IServiceCollection services, string connectionString)
         {
             services.AddDbContext<ApartmentManagementDbContext>((optionBuilder) =>
             {
                 optionBuilder.UseNpgsql(connectionString);
             });
+        }
+        public static void RegisterDbContextApartmentManagementService(this IServiceCollection services)
+        {
             services.AddScoped<Func<ApartmentManagementDbContext>>((provider) => () => provider.GetService<ApartmentManagementDbContext>());
             services.AddScoped<DbFactory>();
-
         }
     }
 }
