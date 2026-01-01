@@ -19,7 +19,8 @@ namespace ApartmentManagementSystem.Services.Impls
         private readonly AuthenticationDbContext _authenticationDbContext;
         private readonly RoleManager<AppRole> _roleManager;
         private readonly HttpContext _httpContext = null;
-        public TokenService(UserManager<AppUser> userManager, AuthenticationDbContext authenticationDbContext, RoleManager<AppRole> roleManager, IHttpContextAccessor httpContextAccessor)
+        public TokenService(UserManager<AppUser> userManager, AuthenticationDbContext authenticationDbContext, RoleManager<AppRole> roleManager,
+                                 IHttpContextAccessor httpContextAccessor)
         {
             _userManager = userManager;
             _authenticationDbContext = authenticationDbContext;
