@@ -20,6 +20,8 @@ namespace ApartmentManagementSystem.Services.Impls
         }
         public async Task CreateApartment(ApartmentDto request)
         {
+            if(_apartmentRepository.List(a => a.Name.Equals(request.Name)).Any())
+                throw new DomainException(ErrorCodeConsts.ApartmentNameIsDuplicate, ErrorMessageConsts.ApartmentNameIsDuplicate, System.Net.HttpStatusCode.BadRequest);
             var apartment = new Apartment()
             {
                 ApartmentBuildingId = request.ApartmentBuildingId,

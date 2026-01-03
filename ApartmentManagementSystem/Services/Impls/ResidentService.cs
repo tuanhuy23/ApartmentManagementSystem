@@ -19,7 +19,8 @@ namespace ApartmentManagementSystem.Services.Impls
         private readonly IUserService _userService;
         private readonly IRoleService _roleService;
         private readonly IUnitOfWork _unitOfWork;
-        public ResidentService(IApartmentRepository apartmentRepository, IApartmentResidentsRepository apartmentResidentsRepository, IResidentRepository residentRepository, IUserService userService, IRoleService roleService, IUnitOfWork unitOfWork)
+        public ResidentService(IApartmentRepository apartmentRepository, IApartmentResidentsRepository apartmentResidentsRepository, IResidentRepository residentRepository,
+         IUserService userService, IRoleService roleService, IUnitOfWork unitOfWork)
         {
             _apartmentRepository = apartmentRepository;
             _residentRepository = residentRepository;
@@ -132,7 +133,7 @@ namespace ApartmentManagementSystem.Services.Impls
             var residentNew = new Resident()
             {
                 ApartmentBuildingId = apartment.ApartmentBuildingId,
-                BrithDay = DateTime.SpecifyKind(request.BrithDay.Value, DateTimeKind.Utc),
+                BrithDay = request.BrithDay != null ? DateTime.SpecifyKind(request.BrithDay.Value, DateTimeKind.Utc) : null,
                 IdentityNumber = request.IdentityNumber,
                 Name = request.Name,
                 PhoneNumber = request.PhoneNumber
@@ -181,7 +182,7 @@ namespace ApartmentManagementSystem.Services.Impls
             var resident = _residentRepository.List().FirstOrDefault(r => r.Id.Equals(request.Id.Value));
             if (resident == null)
                 throw new DomainException(ErrorCodeConsts.ResidentNotFound, ErrorMessageConsts.ResidentNotFound, System.Net.HttpStatusCode.NotFound);
-            resident.BrithDay = DateTime.SpecifyKind(request.BrithDay.Value, DateTimeKind.Utc);
+            resident.BrithDay = request.BrithDay != null ? DateTime.SpecifyKind(request.BrithDay.Value, DateTimeKind.Utc) : null;
             resident.Name = request.Name;
             resident.IdentityNumber = request.IdentityNumber;
             resident.PhoneNumber = request.PhoneNumber;

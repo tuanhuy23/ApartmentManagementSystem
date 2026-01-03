@@ -68,12 +68,13 @@ namespace ApartmentManagementSystem.Services.Impls
 
         public async Task DeleteFeeType(IEnumerable<string> ids)
         {
+            if (ids == null || !ids.Any()) throw new DomainException(ErrorCodeConsts.FeeTypeNotFound, ErrorMessageConsts.FeeTypeNotFound, System.Net.HttpStatusCode.NotFound);
             var feeConfigIds = ids.Select(i => new Guid(i));
             var feeConfigs = _feeTypeRepository.List(f => feeConfigIds.Contains(f.Id)).Include(f => f.FeeDetails).ToList();
             foreach(var feeConfig in feeConfigs)
             {
                 if (feeConfig.FeeDetails.Any())
-                    throw new DomainException(ErrorCodeConsts.FeeTypeIsApply, ErrorCodeConsts.FeeTypeIsApply, System.Net.HttpStatusCode.BadRequest);
+                    throw new DomainException(ErrorCodeConsts.FeeTypeIsApply, ErrorMessageConsts.FeeTypeIsApply, System.Net.HttpStatusCode.BadRequest);
                 _feeTypeRepository.Delete(feeConfig);
             }
             await _unitOfWork.CommitAsync();

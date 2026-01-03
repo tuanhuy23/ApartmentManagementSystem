@@ -131,7 +131,7 @@ namespace ApartmentManagementSystem.Controllers
         [Authorize(Policy = FeeNoticePermissions.ReadWrite)]
         public async Task<IActionResult> DeleteFeeNotice([FromBody] List<string> request)
         {
-            await _feeSerivce.DeletFeeeNotice(request);
+            await _feeSerivce.DeletFeeNotice(request);
             return Ok(new ResponseData<object>(System.Net.HttpStatusCode.OK, null, null, null));
         }
 

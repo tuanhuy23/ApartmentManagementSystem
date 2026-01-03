@@ -20,7 +20,8 @@ namespace ApartmentManagementSystem.Services.Impls
         private readonly IAccountService _accountService;
         private readonly IResidentRepository _residentRepository;
         private readonly IFileAttachmentRepository _fileAttachmentRepository;
-        public RequestService(IRequestHistoryRepository requestHistoryRepository, IUserService userService, IRequestRepository requestRepository, IUnitOfWork unitOfWork, IAccountService accountService, IResidentRepository residentRepository, IFileAttachmentRepository fileAttachmentRepository)
+        public RequestService(IRequestHistoryRepository requestHistoryRepository, IUserService userService, IRequestRepository requestRepository, IUnitOfWork unitOfWork,
+         IAccountService accountService, IResidentRepository residentRepository, IFileAttachmentRepository fileAttachmentRepository)
         {
             _requestHistoryRepository = requestHistoryRepository;
             _userService = userService;
@@ -314,7 +315,6 @@ namespace ApartmentManagementSystem.Services.Impls
             requestEntity.Title = request.Title;
             requestEntity.Description = request.Description;
             requestEntity.RequestType = request.RequestType;
-            requestEntity.Status = request.Status;
             var files = requestEntity.Files;
 
             if (request.Files == null)
