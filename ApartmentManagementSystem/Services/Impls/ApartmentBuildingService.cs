@@ -179,6 +179,11 @@ namespace ApartmentManagementSystem.Services.Impls
                 UserName = request.ManagementUserName,
                 RoleId = roleManagementId,
             });
+            _apartmentBuildingData.AddApartmentBuilding(new ApartmentBuildingDto()
+            {
+                Id = apartmentBuilding.Id.ToString(),
+                Name = apartmentBuilding.Name
+            });
         }
 
         private async Task UpdateApartmentBuilding(CreateOrUpdateApartmentBuildingDto request)
