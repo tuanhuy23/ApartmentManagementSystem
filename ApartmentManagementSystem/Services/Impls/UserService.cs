@@ -66,7 +66,8 @@ namespace ApartmentManagementSystem.Services.Impls
                 await _userManager.AddToRoleAsync(userNew, role.Name);
                 result.UserId = userNew.Id;
                 result.RoleName = role.Name;
-                await _emailService.SendEmailAsync(request.Email, "Password Active Account", $"<h5>This is my password. Please login to acction. Password : {request.Password}</h5>");
+                //TODO: send email
+                //await _emailService.SendEmailAsync(request.Email, "Password Active Account", $"<h5>This is my password. Please login to acction. Password : {request.Password}</h5>");
                 return result;
             }
             var user = await _userManager.FindByIdAsync(request.UserId);
