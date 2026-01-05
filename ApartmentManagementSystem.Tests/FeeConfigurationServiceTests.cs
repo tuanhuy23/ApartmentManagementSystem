@@ -253,13 +253,36 @@ namespace ApartmentManagementSystem.Tests
         public async Task GetById_TieredType_ShouldIncludeConfigsAndTiers()
         {
             var id = Guid.NewGuid();
-            var feeType = new FeeType { Id = id, Name = "Điện", CalculationType = CalculationType.TIERED, IsActive = true, };
-
-            var rateConfig = new FeeRateConfig { Id = Guid.NewGuid(), FeeTypeId = id, Name = "Giá điện", UnitName = "kWh", IsActive = true, ApplyDate = new DateTime(2024, 1, 1), VATRate = 5 };
-            var tier = new FeeTier { Id = Guid.NewGuid(), FeeRateConfigId = rateConfig.Id, UnitRate = 2000 };
-
-            feeType.FeeRateConfigs = new List<FeeRateConfig> { rateConfig };
-            rateConfig.FeeTiers = new List<FeeTier> { tier };
+            var feeRateConfigId = Guid.NewGuid();
+            var feeType = new FeeType
+            {
+                Id = id,
+                Name = "Điện",
+                CalculationType = CalculationType.TIERED,
+                IsActive = true,
+                FeeRateConfigs = new List<FeeRateConfig>()
+                {
+                    new FeeRateConfig
+                    {
+                        Id = feeRateConfigId,
+                        FeeTypeId = id,
+                        Name = "Giá điện",
+                        UnitName = "kWh",
+                        IsActive = true,
+                        ApplyDate = new DateTime(2024, 1, 1),
+                        VATRate = 5,
+                        FeeTiers = new List<FeeTier>()
+                        {
+                            new FeeTier
+                            {
+                                Id = Guid.NewGuid(),
+                                FeeRateConfigId = feeRateConfigId,
+                                UnitRate = 2000
+                            }
+                        }
+                    },
+                },
+            };
 
             _dbContext.FeeTypes.Add(feeType);
             await _dbContext.SaveChangesAsync();
@@ -309,7 +332,7 @@ namespace ApartmentManagementSystem.Tests
             );
             await _dbContext.SaveChangesAsync();
 
-            var request = new RequestQueryBaseDto<string> { Page = 1, PageSize = 10, Request = ApartmentBuildingId.ToString()};
+            var request = new RequestQueryBaseDto<string> { Page = 1, PageSize = 10, Request = ApartmentBuildingId.ToString() };
             var result = _service.GetFeeTypes(request);
             Assert.That(result.Totals, Is.EqualTo(3));
             Assert.That(result.Items.Count, Is.EqualTo(3));
@@ -319,6 +342,7 @@ namespace ApartmentManagementSystem.Tests
         public async Task DeleteFeeType_ShouldDeleteCascadeConfigs()
         {
             var id = Guid.NewGuid();
+            var apartmetnBuildingId = Guid.NewGuid();
             var feeType = new FeeType
             {
                 Id = id,
@@ -327,9 +351,18 @@ namespace ApartmentManagementSystem.Tests
                 ApplyDate = new DateTime(2024, 1, 1),
                 ApartmentBuildingId = Guid.NewGuid(),
                 Name = "Phí Gửi Xe",
+                QuantityRateConfigs = new List<QuantityRateConfig>()
+                {
+                   new QuantityRateConfig {
+                       Id = Guid.NewGuid(),
+                       FeeTypeId = id,
+                       ItemType = "Test",
+                       UnitRate = 1000,
+                       ApartmentBuildingId = apartmetnBuildingId,
+                       IsActive = true
+                   }
+                }
             };
-            var config = new QuantityRateConfig { Id = Guid.NewGuid(), FeeTypeId = id, ItemType = "Test", UnitRate = 1000, ApartmentBuildingId = feeType.ApartmentBuildingId, IsActive = true };
-            feeType.QuantityRateConfigs = new List<QuantityRateConfig> { config };
             _dbContext.FeeTypes.Add(feeType);
             await _dbContext.SaveChangesAsync();
 
@@ -342,8 +375,8 @@ namespace ApartmentManagementSystem.Tests
         [Test]
         public void DeleteFeeType_EmptyList_ShouldNotThrow()
         {
-             var ex = Assert.ThrowsAsync<DomainException>(async () =>
-                await _service.DeleteFeeType(new List<string>()));
+            var ex = Assert.ThrowsAsync<DomainException>(async () =>
+               await _service.DeleteFeeType(new List<string>()));
             Assert.That(ex.Code, Is.EqualTo(ErrorCodeConsts.FeeTypeNotFound));
         }
     }

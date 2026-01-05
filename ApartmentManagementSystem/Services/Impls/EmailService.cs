@@ -24,15 +24,24 @@ namespace ApartmentManagementSystem.Services.Impls
             var bodyBuilder = new BodyBuilder();
             bodyBuilder.HtmlBody = message;
             email.Body = bodyBuilder.ToMessageBody();
-
-            using (var client = new SmtpClient())
+            try
             {
-                await client.ConnectAsync("smtp.gmail.com", 587, SecureSocketOptions.StartTls);
-                await client.AuthenticateAsync(_emailSetting.Email, _emailSetting.Password);
+                using (var client = new SmtpClient())
+                {
+                    Console.WriteLine("Starting to send email...");
+                    await client.ConnectAsync("smtp.gmail.com", 587, SecureSocketOptions.StartTls);
+                    await client.AuthenticateAsync(_emailSetting.Email, _emailSetting.Password);
 
-                await client.SendAsync(email);
-                await client.DisconnectAsync(true);
+                    await client.SendAsync(email);
+                    await client.DisconnectAsync(true);
+                    Console.WriteLine("Email sent successfully.");
+                }
             }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+
         }
     }
 }
