@@ -29,8 +29,8 @@ namespace ApartmentManagementSystem.Services.Impls
                 using (var client = new SmtpClient())
                 {
                     Console.WriteLine("Starting to send email...");
-                    await client.ConnectAsync("smtp.gmail.com", 587, SecureSocketOptions.StartTls);
-                    await client.AuthenticateAsync(_emailSetting.Email, _emailSetting.Password);
+                    await client.ConnectAsync("smtp-relay.brevo.com", 2525, SecureSocketOptions.StartTls);
+                    await client.AuthenticateAsync("9f5833001@smtp-brevo.com", _emailSetting.Password);
 
                     await client.SendAsync(email);
                     await client.DisconnectAsync(true);
