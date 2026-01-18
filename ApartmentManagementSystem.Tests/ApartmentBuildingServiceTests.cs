@@ -98,12 +98,60 @@ namespace ApartmentManagementSystem.Tests
         }
 
         [Test]
-        public async Task CreateOrUpdate_ExistingId_ShouldUpdateRecord()
+        public async Task Create_DuplicateName_ShouldSucceed()
         {
-            var id = Guid.NewGuid();
             _dbContext.ApartmentBuildings.Add(new ApartmentBuilding
             {
-                Id = id,
+                Id = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835b"),
+                Name = "Grand Marina",
+                Address = "Old Address",
+                ContactEmail = "email@example.com",
+                ContactPhone = "123456789",
+                CurrencyUnit = "USD",
+                ApartmentBuildingImgUrl = "http://example.com/image.jpg",
+                Description = "Old Description",
+                Status = StatusConsts.Active
+            });
+            await _dbContext.SaveChangesAsync();
+
+            var request = new CreateOrUpdateApartmentBuildingDto
+            {
+                Id = null,
+                Name = "Grand Marina",
+                Address = "New Location",
+                ContactEmail = "email@example.com",
+                ContactPhone = "123456789",
+                CurrencyUnit = "USD",
+                ApartmentBuildingImgUrl = "http://example.com/image.jpg",
+                Description = "Old Description",
+            };
+
+            await _service.CreateOrUpdateApartmentBuilding(request);
+
+            var count = await _dbContext.ApartmentBuildings.CountAsync(x => x.Name == "Grand Marina");
+            Assert.That(count, Is.EqualTo(2));
+        }
+
+        [Test]
+        public async Task Create_EmptyAddress_ShouldThrowException()
+        {
+            var request = new CreateOrUpdateApartmentBuildingDto
+            {
+                Id = null,
+                Name = "Valid Name",
+                Address = "" 
+            };
+            Assert.ThrowsAsync<Microsoft.EntityFrameworkCore.DbUpdateException>(async () => 
+                await _service.CreateOrUpdateApartmentBuilding(request));
+        }
+
+        [Test]
+        public async Task CreateOrUpdate_ExistingId_ShouldUpdateRecord()
+        {
+
+            _dbContext.ApartmentBuildings.Add(new ApartmentBuilding
+            {
+                Id = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835b"),
                 Name = "A",
                 Address = "District 1, HCMC",
                 ContactEmail = "email@example.com",
@@ -117,14 +165,14 @@ namespace ApartmentManagementSystem.Tests
 
             var request = new CreateOrUpdateApartmentBuildingDto
             {
-                Id = id,
+                Id = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835b"),
                 Name = "New Name",
                 Address = "New Address"
             };
 
             await _service.CreateOrUpdateApartmentBuilding(request);
 
-            var updated = await _dbContext.ApartmentBuildings.FindAsync(id);
+            var updated = await _dbContext.ApartmentBuildings.FindAsync(new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835b"));
             Assert.That(updated.Name, Is.EqualTo("New Name"));
             Assert.That(updated.Address, Is.EqualTo("New Address"));
         }
@@ -134,7 +182,7 @@ namespace ApartmentManagementSystem.Tests
         {
             var request = new CreateOrUpdateApartmentBuildingDto
             {
-                Id = Guid.NewGuid(),
+                Id = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"),
                 Name = "Fail"
             };
             var exception = Assert.ThrowsAsync<Exceptions.DomainException>(async () => await _service.CreateOrUpdateApartmentBuilding(request));
@@ -143,12 +191,38 @@ namespace ApartmentManagementSystem.Tests
         }
 
         [Test]
+        public async Task Create_VeryLongDescription_ShouldSucceed()
+        {
+            var request = new CreateOrUpdateApartmentBuildingDto
+            {
+                Id = null,
+                Name = "Grand Marina",
+                Address = "District 1, HCMC",
+                ContactEmail = "email@example.com",
+                ContactPhone = "123456789",
+                CurrencyUnit = "USD",
+                ApartmentBuildingImgUrl = "http://example.com/image.jpg",
+                ManagementDisplayName = "Manager Name",
+                ManagementEmail = "emal@emample.com",
+                ManagementUserName = "manageruser",
+                ManagementPhoneNumber = "987654321",
+                ManagementPassword = "SecurePassword123!",
+                Description = new string('A', 999),
+            };
+            await _service.CreateOrUpdateApartmentBuilding(request);
+
+            var inDb = await _dbContext.ApartmentBuildings.FirstOrDefaultAsync(x => x.Name == "Grand Marina");
+            Assert.That(inDb, Is.Not.Null);
+            Assert.That(inDb.Address, Is.EqualTo("District 1, HCMC"));
+        }
+
+        [Test]
         public async Task GetApartmentBuildings_WithData_ReturnsCorrectPagination()
         {
             _dbContext.ApartmentBuildings.AddRange(
                 new ApartmentBuilding
                 {
-                    Id = Guid.NewGuid(),
+                    Id = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835b"),
                     Name = "A",
                     Address = "District 1, HCMC",
                     ContactEmail = "email@example.com",
@@ -160,7 +234,7 @@ namespace ApartmentManagementSystem.Tests
                 },
                 new ApartmentBuilding
                 {
-                    Id = Guid.NewGuid(),
+                    Id = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"),
                     Name = "B",
                     Address = "District 1, HCMC",
                     ContactEmail = "email@example.com",
@@ -172,7 +246,7 @@ namespace ApartmentManagementSystem.Tests
                 },
                 new ApartmentBuilding
                 {
-                    Id = Guid.NewGuid(),
+                    Id = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835d"),
                     Name = "C",
                     Address = "District 1, HCMC",
                     ContactEmail = "email@example.com",
@@ -216,7 +290,7 @@ namespace ApartmentManagementSystem.Tests
             var id = Guid.NewGuid();
             _dbContext.ApartmentBuildings.Add(new ApartmentBuilding
             {
-                Id = id,
+                Id = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835d"),
                 Name = "Target",
                 Address = "District 1, HCMC",
                 ContactEmail = "email@example.com",
@@ -228,7 +302,7 @@ namespace ApartmentManagementSystem.Tests
             });
             await _dbContext.SaveChangesAsync();
 
-            var result = await _service.GetApartmentBuilding(id);
+            var result = await _service.GetApartmentBuilding(new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835d"));
 
             Assert.That(result, Is.Not.Null);
             Assert.That(result.Name, Is.EqualTo("Target"));
@@ -251,7 +325,7 @@ namespace ApartmentManagementSystem.Tests
             _dbContext.ApartmentBuildings.AddRange(
                 new ApartmentBuilding
                 {
-                    Id = id1,
+                    Id = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835d"),
                     Name = "Del1",
                     Address = "District 1, HCMC",
                     ContactEmail = "email@example.com",
@@ -263,7 +337,7 @@ namespace ApartmentManagementSystem.Tests
                 },
                 new ApartmentBuilding
                 {
-                    Id = id2,
+                    Id = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"),
                     Name = "Del2",
                     Address = "District 1, HCMC",
                     ContactEmail = "email@example.com",
@@ -276,7 +350,7 @@ namespace ApartmentManagementSystem.Tests
             );
             await _dbContext.SaveChangesAsync();
 
-            var ids = new List<string> { id1.ToString(), id2.ToString() };
+            var ids = new List<string> { "8901c8ad-0d02-4d11-85c6-e1e3ba9d835d","8901c8ad-0d02-4d11-85c6-e1e3ba9d835c" };
             await _service.DeleteApartmentBuilding(ids);
 
             var count = await _dbContext.ApartmentBuildings.CountAsync();

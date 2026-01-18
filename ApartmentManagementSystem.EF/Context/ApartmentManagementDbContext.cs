@@ -168,7 +168,6 @@ namespace ApartmentManagementSystem.EF.Context
                     v => v.Split(',', StringSplitOptions.RemoveEmptyEntries));
             });
             
-            builder.Entity<UserReadStatus>().HasIndex(u => new { u.UserId, u.AnnouncementId});
             #endregion
             
             #region Request 

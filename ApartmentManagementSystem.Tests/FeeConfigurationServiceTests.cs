@@ -168,12 +168,59 @@ namespace ApartmentManagementSystem.Tests
         }
 
         [Test]
+        public async Task Create_TieredType_InvalidRange_ShouldThrowException()
+        {
+            var request = new CreateOrUpdateFeeTypeDto
+            {
+                Name = "Tiền Nước Sinh Hoạt",
+                CalculationType = CalculationType.TIERED,
+                IsActive = true,
+                FeeRateConfigs = new List<CreateOrUpdateFeeRateConfigDto>
+                {
+                    new CreateOrUpdateFeeRateConfigDto
+                    {
+                        Name = "Bảng giá nước 2024",
+                        UnitName = "m3",
+                        IsActive = true,
+                        ApplyDate = new DateTime(2024, 1, 1),
+                        VATRate = 5,
+                        FeeTiers = new List<CreateOrUpdateFeeRateTierDto>
+                        {
+                            new CreateOrUpdateFeeRateTierDto { TierOrder = 1, ConsumptionStart = 10, ConsumptionEnd = 5, UnitRate = 6000 },
+                        }
+                    }
+                }
+            };
+
+           var ex = Assert.ThrowsAsync<DomainException>(async () => 
+                await _service.CreateOrUpdateFeeType(request));
+            Assert.That(ex.Message, Does.Contain(ErrorMessageConsts.FeeTierConsumptionStartMustLessThanEnd));
+        }
+
+        [Test]
+        public async Task Create_BoundaryVATRate_ShouldSucceed()
+        {
+            var request = new CreateOrUpdateFeeTypeDto
+            {
+                Name = "VAT Cao",
+                CalculationType = CalculationType.Area,
+                DefaultRate = 1000,
+                IsVATApplicable = true,
+                DefaultVATRate = 100,
+                IsActive = true
+            };
+
+            await _service.CreateOrUpdateFeeType(request);
+            var inDb = await _dbContext.FeeTypes.FirstOrDefaultAsync(x => x.Name == "VAT Cao");
+            Assert.That(inDb.DefaultVATRate, Is.EqualTo(100));
+        }
+
+        [Test]
         public async Task Update_FeeType_ShouldUpdateProperties_AndConfigs()
         {
-            var id = Guid.NewGuid();
             var oldEntity = new FeeType
             {
-                Id = id,
+                Id =  new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"),
                 Name = "Cũ",
                 CalculationType = CalculationType.Area,
                 DefaultRate = 5000,
@@ -186,7 +233,7 @@ namespace ApartmentManagementSystem.Tests
 
             var request = new CreateOrUpdateFeeTypeDto
             {
-                Id = id,
+                Id =  new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"),
                 Name = "Mới",
                 CalculationType = CalculationType.Area,
                 DefaultRate = 10000,
@@ -195,7 +242,7 @@ namespace ApartmentManagementSystem.Tests
 
             await _service.CreateOrUpdateFeeType(request);
 
-            var updated = await _dbContext.FeeTypes.FindAsync(id);
+            var updated = await _dbContext.FeeTypes.FindAsync(new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"));
             Assert.That(updated.Name, Is.EqualTo("Mới"));
             Assert.That(updated.DefaultRate, Is.EqualTo(10000));
         }
@@ -203,7 +250,7 @@ namespace ApartmentManagementSystem.Tests
         [Test]
         public void CreateOrUpdate_InvalidId_ShouldThrowException()
         {
-            var request = new CreateOrUpdateFeeTypeDto { Id = Guid.NewGuid(), Name = "Fake" };
+            var request = new CreateOrUpdateFeeTypeDto { Id =  new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"), Name = "Fake" };
 
             var ex = Assert.ThrowsAsync<DomainException>(async () =>
                 await _service.CreateOrUpdateFeeType(request));
@@ -213,10 +260,9 @@ namespace ApartmentManagementSystem.Tests
         [Test]
         public async Task GetById_QuantityType_ShouldIncludeConfigs()
         {
-            var id = Guid.NewGuid();
             var feeType = new FeeType
             {
-                Id = id,
+                Id =  new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"),
                 Name = "Gửi xe máy",
                 CalculationType = CalculationType.QUANTITY,
                 ApartmentBuildingId = Guid.NewGuid(),
@@ -228,8 +274,8 @@ namespace ApartmentManagementSystem.Tests
                 {
                     new QuantityRateConfig
                     {
-                        Id = Guid.NewGuid(),
-                        FeeTypeId = id,
+                        Id =  new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835d"),
+                        FeeTypeId = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"),
                         ItemType = "Honda",
                         UnitRate = 50000
                     }
@@ -239,10 +285,10 @@ namespace ApartmentManagementSystem.Tests
             _dbContext.FeeTypes.Add(feeType);
             await _dbContext.SaveChangesAsync();
 
-            var result = await _service.GetFeeType(id);
+            var result = await _service.GetFeeType(new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"));
 
             Assert.That(result, Is.Not.Null);
-            Assert.That(result.Id, Is.EqualTo(id));
+            Assert.That(result.Id, Is.EqualTo(new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c")));
 
             Assert.That(result.QuantityRateConfigs, Is.Not.Null);
             Assert.That(result.QuantityRateConfigs.Count(), Is.EqualTo(1));
@@ -252,11 +298,9 @@ namespace ApartmentManagementSystem.Tests
         [Test]
         public async Task GetById_TieredType_ShouldIncludeConfigsAndTiers()
         {
-            var id = Guid.NewGuid();
-            var feeRateConfigId = Guid.NewGuid();
             var feeType = new FeeType
             {
-                Id = id,
+                Id =  new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"),
                 Name = "Điện",
                 CalculationType = CalculationType.TIERED,
                 IsActive = true,
@@ -264,8 +308,8 @@ namespace ApartmentManagementSystem.Tests
                 {
                     new FeeRateConfig
                     {
-                        Id = feeRateConfigId,
-                        FeeTypeId = id,
+                        Id = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"),
+                        FeeTypeId = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"),
                         Name = "Giá điện",
                         UnitName = "kWh",
                         IsActive = true,
@@ -275,8 +319,8 @@ namespace ApartmentManagementSystem.Tests
                         {
                             new FeeTier
                             {
-                                Id = Guid.NewGuid(),
-                                FeeRateConfigId = feeRateConfigId,
+                                Id =  new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835a"),
+                                FeeRateConfigId = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"),
                                 UnitRate = 2000
                             }
                         }
@@ -287,7 +331,7 @@ namespace ApartmentManagementSystem.Tests
             _dbContext.FeeTypes.Add(feeType);
             await _dbContext.SaveChangesAsync();
 
-            var result = await _service.GetFeeType(id);
+            var result = await _service.GetFeeType(new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"));
 
             Assert.That(result, Is.Not.Null);
             Assert.That(result.FeeRateConfigs, Is.Not.Null.And.Not.Empty);
@@ -300,39 +344,41 @@ namespace ApartmentManagementSystem.Tests
         [Test]
         public async Task GetFeeTypes_FilterByName_ShouldReturnFilteredResult()
         {
-            var ApartmentBuildingId = Guid.NewGuid();
             _dbContext.FeeTypes.AddRange(
                 new FeeType
                 {
+                    Id =  new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"),
                     Name = "Dịch vụ A",
                     CalculationType = "AREA",
                     DefaultRate = 5000,
                     IsActive = true,
                     ApplyDate = new DateTime(2024, 1, 1),
-                    ApartmentBuildingId = ApartmentBuildingId,
+                    ApartmentBuildingId =  new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"),
                 },
                 new FeeType
                 {
+                    Id =  new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835d"),
                     Name = "Dịch vụ B",
                     CalculationType = "AREA",
                     DefaultRate = 5000,
                     IsActive = true,
                     ApplyDate = new DateTime(2024, 1, 1),
-                    ApartmentBuildingId = ApartmentBuildingId,
+                    ApartmentBuildingId =  new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"),
                 },
                 new FeeType
                 {
+                    Id =  new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835b"),
                     Name = "Khác",
                     CalculationType = "AREA",
                     DefaultRate = 5000,
                     IsActive = true,
                     ApplyDate = new DateTime(2024, 1, 1),
-                    ApartmentBuildingId = ApartmentBuildingId,
+                    ApartmentBuildingId =  new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"),
                 }
             );
             await _dbContext.SaveChangesAsync();
 
-            var request = new RequestQueryBaseDto<string> { Page = 1, PageSize = 10, Request = ApartmentBuildingId.ToString() };
+            var request = new RequestQueryBaseDto<string> { Page = 1, PageSize = 10, Request = "8901c8ad-0d02-4d11-85c6-e1e3ba9d835c" };
             var result = _service.GetFeeTypes(request);
             Assert.That(result.Totals, Is.EqualTo(3));
             Assert.That(result.Items.Count, Is.EqualTo(3));
@@ -341,24 +387,22 @@ namespace ApartmentManagementSystem.Tests
         [Test]
         public async Task DeleteFeeType_ShouldDeleteCascadeConfigs()
         {
-            var id = Guid.NewGuid();
-            var apartmetnBuildingId = Guid.NewGuid();
             var feeType = new FeeType
             {
-                Id = id,
+                Id = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835b"),
                 CalculationType = CalculationType.QUANTITY,
                 IsActive = true,
                 ApplyDate = new DateTime(2024, 1, 1),
-                ApartmentBuildingId = Guid.NewGuid(),
+                ApartmentBuildingId = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835b"),
                 Name = "Phí Gửi Xe",
                 QuantityRateConfigs = new List<QuantityRateConfig>()
                 {
                    new QuantityRateConfig {
-                       Id = Guid.NewGuid(),
-                       FeeTypeId = id,
+                       Id = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"),
+                       FeeTypeId = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835b"),
                        ItemType = "Test",
                        UnitRate = 1000,
-                       ApartmentBuildingId = apartmetnBuildingId,
+                       ApartmentBuildingId = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835b"),
                        IsActive = true
                    }
                 }
@@ -366,9 +410,9 @@ namespace ApartmentManagementSystem.Tests
             _dbContext.FeeTypes.Add(feeType);
             await _dbContext.SaveChangesAsync();
 
-            await _service.DeleteFeeType(new List<string> { id.ToString() });
+            await _service.DeleteFeeType(new List<string> { "8901c8ad-0d02-4d11-85c6-e1e3ba9d835b" });
 
-            var deletedParent = await _dbContext.FeeTypes.FindAsync(id);
+            var deletedParent = await _dbContext.FeeTypes.FindAsync(new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"));
             Assert.That(deletedParent, Is.Null);
         }
 

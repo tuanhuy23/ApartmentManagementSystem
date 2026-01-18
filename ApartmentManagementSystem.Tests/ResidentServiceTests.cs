@@ -61,17 +61,15 @@ namespace ApartmentManagementSystem.Tests
         [Test]
         public async Task CreateResident_ValidRequest_ShouldSaveToDb_AndCallUserService()
         {
-            var apartmentId = Guid.NewGuid();
-            var buildingId = Guid.NewGuid();
 
-            _dbContext.Apartments.Add(new Apartment { Id = apartmentId, ApartmentBuildingId = buildingId, Name = "A101" });
+            _dbContext.Apartments.Add(new Apartment { Id = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"), ApartmentBuildingId = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"), Name = "A101" });
             await _dbContext.SaveChangesAsync();
 
             var request = new ResidentDto
             {
                 Id = null,
-                ApartmentId = apartmentId,
-                ApartmentBuildingId = buildingId,
+                ApartmentId = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"),
+                ApartmentBuildingId = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"),
                 Name = "Nguyen Van A",
                 PhoneNumber = "0988888888",
                 Email = "test@email.com",
@@ -88,30 +86,28 @@ namespace ApartmentManagementSystem.Tests
             Assert.That(residentInDb.PhoneNumber, Is.EqualTo("0988888888"));
 
             var relation = await _dbContext.ApartmentResidents
-                                           .FirstOrDefaultAsync(x => x.ResidentId == residentInDb.Id && x.ApartmentId == apartmentId);
+                                           .FirstOrDefaultAsync(x => x.ResidentId == residentInDb.Id && x.ApartmentId == new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"));
             Assert.That(relation, Is.Not.Null, "Relation Apartment-Resident should be created");
         }
 
         [Test]
         public async Task UpdateResident_ExistingId_ShouldUpdateFields()
         {
-            var residentId = Guid.NewGuid();
-            var apartmentId = Guid.NewGuid();
             var oldResident = new Resident
             {
-                Id = residentId,
+                Id = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"),
                 Name = "Old Name",
                 PhoneNumber = "000",
             };
             _dbContext.Residents.Add(oldResident);
-            _dbContext.Apartments.Add(new Apartment { Id = apartmentId, Name = "A101", ApartmentBuildingId = Guid.NewGuid() });
-            _dbContext.ApartmentResidents.Add(new ApartmentResident { ResidentId = residentId, ApartmentId = apartmentId, MemberType = MemberType.Member });
+            _dbContext.Apartments.Add(new Apartment { Id = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"), Name = "A101", ApartmentBuildingId = Guid.NewGuid() });
+            _dbContext.ApartmentResidents.Add(new ApartmentResident { ResidentId = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"), ApartmentId = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"), MemberType = MemberType.Member });
             await _dbContext.SaveChangesAsync();
 
             var request = new ResidentDto
             {
-                Id = residentId,
-                ApartmentId = apartmentId,
+                Id = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"),
+                ApartmentId = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"),
                 Name = "New Name",
                 PhoneNumber = "999",
                 Email = "new@mail.com",
@@ -120,7 +116,7 @@ namespace ApartmentManagementSystem.Tests
 
             await _service.CreateOrUpdateResident(request);
 
-            var updatedEntity = await _dbContext.Residents.FindAsync(residentId);
+            var updatedEntity = await _dbContext.Residents.FindAsync(new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"));
             Assert.That(updatedEntity.Name, Is.EqualTo("New Name"));
             Assert.That(updatedEntity.PhoneNumber, Is.EqualTo("999"));
         }
@@ -128,27 +124,25 @@ namespace ApartmentManagementSystem.Tests
         [Test]
         public async Task GetResident_ValidId_ReturnsDto()
         {
-            var residentId = Guid.NewGuid();
-            var apartmentId = Guid.NewGuid();
 
             _dbContext.Residents.Add(new Resident
             {
-                Id = residentId,
+                Id = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"),
                 Name = "Target Resident",
                 IdentityNumber = "ID001"
             });
             _dbContext.ApartmentResidents.Add(new ApartmentResident
             {
-                ResidentId = residentId,
-                ApartmentId = apartmentId,
+                ResidentId = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"),
+                ApartmentId = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"),
                 MemberType = MemberType.Member
             });
             await _dbContext.SaveChangesAsync();
 
-            var result = await _service.GetResident(residentId, apartmentId);
+            var result = await _service.GetResident(new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"), new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"));
 
             Assert.That(result, Is.Not.Null);
-            Assert.That(result.Id, Is.EqualTo(residentId));
+            Assert.That(result.Id, Is.EqualTo(new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c")));
             Assert.That(result.Name, Is.EqualTo("Target Resident"));
             Assert.That(result.IdentityNumber, Is.EqualTo("ID001"));
         }
@@ -184,29 +178,26 @@ namespace ApartmentManagementSystem.Tests
         [Test]
         public async Task DeleteResident_ValidIds_ShouldRemoveFromDb()
         {
-            var rId1 = Guid.NewGuid();
-            var rId2 = Guid.NewGuid();
-            var apartmentId = Guid.NewGuid();
 
             _dbContext.Residents.AddRange(
-                new Resident { Id = rId1, Name = "Del 1" },
-                new Resident { Id = rId2, Name = "Del 2" }
+                new Resident { Id = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"), Name = "Del 1" },
+                new Resident { Id = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835d"), Name = "Del 2" }
             );
             _dbContext.ApartmentResidents.AddRange(
-                new ApartmentResident { ResidentId = rId1, ApartmentId = apartmentId, MemberType = MemberType.Member },
-                new ApartmentResident { ResidentId = rId2, ApartmentId = apartmentId, MemberType = MemberType.Member }
+                new ApartmentResident { ResidentId = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"), ApartmentId = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"), MemberType = MemberType.Member },
+                new ApartmentResident { ResidentId = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835d"), ApartmentId = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"), MemberType = MemberType.Member }
             );
             await _dbContext.SaveChangesAsync();
 
-            var idsToDelete = new List<string> { rId1.ToString(), rId2.ToString() };
+            var idsToDelete = new List<string> { new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c").ToString(), new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835d").ToString() };
 
-            await _service.DeleteResident(apartmentId, idsToDelete);
+            await _service.DeleteResident(new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"), idsToDelete);
 
 
-            var countRelation = await _dbContext.ApartmentResidents.CountAsync(x => x.ApartmentId == apartmentId);
+            var countRelation = await _dbContext.ApartmentResidents.CountAsync(x => x.ApartmentId == new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"));
             Assert.That(countRelation, Is.EqualTo(0));
 
-            var res1 = await _dbContext.Residents.FindAsync(rId1);
+            var res1 = await _dbContext.Residents.FindAsync(new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"));
             Assert.That(res1, Is.Null);
         }
     }

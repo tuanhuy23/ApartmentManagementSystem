@@ -61,7 +61,7 @@ namespace ApartmentManagementSystem.Tests
             var request = new ApartmentDto
             {
                 Id = null, 
-                ApartmentBuildingId = buildingId,
+                ApartmentBuildingId = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"),
                 Name = "P101",
                 Area = 85.5,
                 Floor = 1
@@ -74,19 +74,61 @@ namespace ApartmentManagementSystem.Tests
             Assert.That(inDb, Is.Not.Null, "Apartment should be saved to DB");
             Assert.That(inDb.Area, Is.EqualTo(85.5));
             Assert.That(inDb.Floor, Is.EqualTo(1));
-            Assert.That(inDb.ApartmentBuildingId, Is.EqualTo(buildingId));
+            Assert.That(inDb.ApartmentBuildingId, Is.EqualTo(new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c")));
+        }
+
+        [Test]
+        public async Task CreateApartment_NegativeArea_ShouldThrowException()
+        {
+            var request = new ApartmentDto
+            {
+                ApartmentBuildingId = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"),
+                Name = "Invalid Area Room",
+                Area = -50, 
+                Floor = 1
+            };
+
+            var ex = Assert.ThrowsAsync<DomainException>(async () => 
+                await _service.CreateApartment(request));
+            Assert.That(ex.Message, Does.Contain(ErrorMessageConsts.ApartmentAreaGreaterThanZero)); 
+        }
+
+        [Test]
+        public async Task CreateApartment_DuplicateNameInSameBuilding_ShouldThrowException()
+        {
+            var buildingId =  new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c");
+            _dbContext.Apartments.Add(new Apartment 
+            { 
+                Id =  new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"),
+                ApartmentBuildingId = buildingId, 
+                Name = "P101", 
+                Area = 100 
+            });
+            await _dbContext.SaveChangesAsync();
+
+            var request = new ApartmentDto
+            {
+                ApartmentBuildingId = buildingId,
+                Name = "P101", 
+                Area = 50,
+                Floor = 1
+            };
+
+            var ex = Assert.ThrowsAsync<DomainException>(async () => 
+                await _service.CreateApartment(request));
+            Assert.That(ex.Message, Is.EqualTo(ErrorMessageConsts.ApartmentNameIsDuplicate));
         }
 
         [Test]
         public async Task GetApartment_ExistingId_ShouldReturnCorrectDto()
         {
-            var id = Guid.NewGuid();
-            var buildingId = Guid.NewGuid();
+            var id = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c");
+            var buildingId = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c");
             
             _dbContext.Apartments.Add(new Apartment 
             { 
-                Id = id, 
-                ApartmentBuildingId = buildingId,
+                Id = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"), 
+                ApartmentBuildingId = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"),
                 Name = "Penthouse A", 
                 Area = 200, 
                 Floor = 25 
@@ -100,9 +142,19 @@ namespace ApartmentManagementSystem.Tests
         }
 
         [Test]
+        public void GetApartment_NonExistingId_ShouldThrowNotFound()
+        {
+            var randomId = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c");
+            var ex = Assert.ThrowsAsync<DomainException>(async () => 
+                await _service.GetApartment(randomId));
+            
+            Assert.That(ex.Message, Is.EqualTo(ErrorMessageConsts.ApartmentNotFound));
+        }
+
+        [Test]
         public async Task UpdateApartment_ValidRequest_ShouldUpdateFields()
         {
-            var id = Guid.NewGuid();
+            var id = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c");
             _dbContext.Apartments.Add(new Apartment 
             { 
                 Id = id, 
@@ -135,20 +187,20 @@ namespace ApartmentManagementSystem.Tests
         {
             var request = new UpdateApartmentDto
             {
-                Id = Guid.NewGuid(),
+                Id = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"),
                 Name = "Ghost Apartment",
                 Area = 100,
                 Floor = 1
             };
              var ex = Assert.ThrowsAsync<DomainException>(async () =>
                 await _service.UpdateApartment(request));
-            Assert.That(ex.Code, Is.EqualTo(ErrorCodeConsts.ApartmentNotFound));
+            Assert.That(ex.Message, Is.EqualTo(ErrorMessageConsts.ApartmentNotFound));
         }
 
         [Test]
         public async Task DeleteApartment_ExistingId_ShouldRemoveFromDb()
         {
-            var id = Guid.NewGuid();
+            var id = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c");
             _dbContext.Apartments.Add(new Apartment { Id = id, Name = "To Delete" });
             await _dbContext.SaveChangesAsync();
 

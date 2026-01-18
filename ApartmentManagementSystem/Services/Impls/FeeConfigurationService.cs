@@ -245,6 +245,8 @@ namespace ApartmentManagementSystem.Services.Impls
             }
             foreach (var feeTierDto in request)
             {
+                if (feeTierDto.ConsumptionStart > feeTierDto.ConsumptionEnd) 
+                    throw new DomainException(ErrorCodeConsts.FeeTierConsumptionStartMustLessThanEnd, ErrorMessageConsts.FeeTierConsumptionStartMustLessThanEnd, System.Net.HttpStatusCode.NotFound);
                 if (feeTierDto.Id == null)
                 {
                     feeTiers.Add(new FeeTier()

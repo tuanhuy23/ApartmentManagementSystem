@@ -1,4 +1,5 @@
-﻿using ApartmentManagementSystem.EF.Context.Base;
+﻿using System.ComponentModel.DataAnnotations;
+using ApartmentManagementSystem.EF.Context.Base;
 
 namespace ApartmentManagementSystem.EF.Context
 {
@@ -6,6 +7,7 @@ namespace ApartmentManagementSystem.EF.Context
     {
         public Guid ApartmentBuildingId { get; set; }
         public ApartmentBuilding ApartmentBuilding { get; set; }
+        [MaxLength(255)]
         public string Name { get; set; }
         public int Floor { get; set; }
         public double Area { get; set; }

@@ -51,6 +51,8 @@
         public static string RequestNotYetCompleted = "The request is currently in progress.";
         public static string DateTimeReadingIncorrectFormat = "DateTime reading incorrect format yyyy-MM-dd.";
         public static string ReadingIncorrectFormat = "Utility reading incorrect format.";
+        public static string FeeTierConsumptionStartMustLessThanEnd = "Start must be less than End";
+        public static string ApartmentAreaGreaterThanZero = "Area must be greater than 0";
     }
 
     public static class ErrorCodeConsts
@@ -69,12 +71,14 @@
         public static string NoPermissionAccessApartmentBuilding = "NO_PERMISSION_ACCESS_APARTMENT_BUILDING";
         public static string ApartmentNotFound = "APARTMENT_NOT_FOUND";
         public static string ApartmentNameIsDuplicate = "APARTMENT_NAME_IS_DUPLICATE";
+        public static string ApartmentAreaGreaterThanZero = "APARTMENT_AREA_GREATER_ZERO";
         public static string ApartmentBuildingNotFound = "APARTMENT_BUILDING_NOT_FOUND";
         public static string ApartmentBuildingStatusInvalidFormat = "APARTMENT_BUILDING_STATUS_INVALID_FORMAT";
         public static string BillingCycleAlreadySet = "BILLING_CYCLE_ALREADY_SET";
         public static string BillingCycleInvalidFormat = "BILLING_CYCLE_INVALID_FORMAT";
         public static string BillingCycleSettingIsNotFound = "BILLING_CYCLE_SETTING_NOT_FOUND";
         public static string FeeTypeNotFound = "FEE_TYPE_NOT_FOUND";
+        public static string FeeTierConsumptionStartMustLessThanEnd = "FEE_TIER_START_MUST_LESS_END";
         public static string FeeTypeIsApply = "FEE_TYPE_ALREADY_APPLIED";
         public static string FeeTypeNotConfigured = "FEE_TYPE_NOT_CONFIGURED";
         public static string FeeTierIsRequired = "FEE_TIER_IS_REQUIRED";

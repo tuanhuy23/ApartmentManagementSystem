@@ -53,15 +53,12 @@ namespace ApartmentManagementSystem.Tests
         [Test]
         public async Task CreateFeeNotice_ValidRequest_ShouldSaveToDb()
         {
-            var apartmentId = Guid.NewGuid();
-            var buildingId = Guid.NewGuid();
-            _dbContext.Apartments.Add(new Apartment { Id = apartmentId, Name = "A101", ApartmentBuildingId = buildingId });
+            _dbContext.Apartments.Add(new Apartment { Id = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"), Name = "A101", ApartmentBuildingId = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c") });
 
-            var feeTypeId = Guid.NewGuid();
-            var feeType = new FeeType { Id = feeTypeId, Name = "Điện", CalculationType = CalculationType.TIERED, IsActive = true };
+            var feeType = new FeeType { Id = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"), Name = "Điện", CalculationType = CalculationType.TIERED, IsActive = true };
 
-            var rateConfig = new FeeRateConfig { Id = Guid.NewGuid(), FeeTypeId = feeTypeId, Name = "Giá điện", UnitName = "kWh", IsActive = true, ApplyDate = new DateTime(2024, 1, 1), VATRate = 5 };
-            var tier = new FeeTier { Id = Guid.NewGuid(), FeeRateConfigId = rateConfig.Id, UnitRate = 2000, ConsumptionStart = 0, ConsumptionEnd = 100 };
+            var rateConfig = new FeeRateConfig { Id = Guid.NewGuid(), FeeTypeId = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"), Name = "Giá điện", UnitName = "kWh", IsActive = true, ApplyDate = new DateTime(2024, 1, 1), VATRate = 5 };
+            var tier = new FeeTier { Id = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"), FeeRateConfigId = rateConfig.Id, UnitRate = 2000, ConsumptionStart = 0, ConsumptionEnd = 100 };
 
             feeType.FeeRateConfigs = new List<FeeRateConfig> { rateConfig };
             rateConfig.FeeTiers = new List<FeeTier> { tier };
@@ -69,8 +66,8 @@ namespace ApartmentManagementSystem.Tests
             _dbContext.FeeTypes.Add(feeType);
             _dbContext.BillingCycleSettings.Add(new BillingCycleSetting
             {
-                Id = Guid.NewGuid(),
-                ApartmentBuildingId = buildingId,
+                Id = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"),
+                ApartmentBuildingId = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"),
                 ClosingDayOfMonth = 31,
                 PaymentDueDate = 15
             });
@@ -81,16 +78,16 @@ namespace ApartmentManagementSystem.Tests
                 new CreateOrUpdateFeeNoticeDto
                 {
                     Id = null,
-                    ApartmentId = apartmentId,
-                    ApartmentBuildingId = buildingId,
+                    ApartmentId = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"),
+                    ApartmentBuildingId = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"),
                     BillingCycle = "2025-11",
-                    FeeTypeIds = new List<Guid> { feeTypeId },
+                    FeeTypeIds = new List<Guid> { new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c") },
                     FeeDetails = new List<CreateOrUpdateFeeDetailDto>
                     {
                         new CreateOrUpdateFeeDetailDto
                         {
-                            ApartmentId = apartmentId,
-                            FeeTypeId = feeTypeId,
+                            ApartmentId = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"),
+                            FeeTypeId = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"),
                             UtilityReading = new CreateUtilityReadingDto
                             {
                                 CurrentReading = 100,
@@ -103,7 +100,7 @@ namespace ApartmentManagementSystem.Tests
 
             await _service.CreateFeeNotice(requests);
 
-            var noticeInDb = await _dbContext.FeeNotices.FirstOrDefaultAsync(x => x.ApartmentId == apartmentId);
+            var noticeInDb = await _dbContext.FeeNotices.FirstOrDefaultAsync(x => x.ApartmentId == new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"));
             Assert.That(noticeInDb, Is.Not.Null);
             Assert.That(noticeInDb.BillingCycle, Is.EqualTo("2025-11"));
 
@@ -115,10 +112,9 @@ namespace ApartmentManagementSystem.Tests
         [Test]
         public async Task GetFeeDetail_ExistingId_ReturnsDtoWithRelations()
         {
-            var noticeId = Guid.NewGuid();
             var feeNotice = new FeeNotice
             {
-                Id = noticeId,
+                Id = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"),
                 BillingCycle = "01/2026",
                 TotalAmount = 500000,
                 Status = FeeNoticeStatus.Issued,
@@ -127,8 +123,8 @@ namespace ApartmentManagementSystem.Tests
 
             var detail = new FeeDetail
             {
-                Id = Guid.NewGuid(),
-                FeeNoticeId = noticeId,
+                Id = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"),
+                FeeNoticeId = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"),
                 SubTotal = 500000
             };
 
@@ -136,10 +132,10 @@ namespace ApartmentManagementSystem.Tests
             _dbContext.FeeDetails.Add(detail);
             await _dbContext.SaveChangesAsync();
 
-            var result = await _service.GetFeeDetail(noticeId);
+            var result = await _service.GetFeeDetail(new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"));
 
             Assert.That(result, Is.Not.Null);
-            Assert.That(result.Id, Is.EqualTo(noticeId));
+            Assert.That(result.Id, Is.EqualTo(new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c")));
             Assert.That(result.TotalAmount, Is.EqualTo(500000));
             Assert.That(result.FeeDetails, Is.Not.Null);
         }
@@ -179,10 +175,9 @@ namespace ApartmentManagementSystem.Tests
         [Test]
         public async Task UpdatePaymentStatus_PendingToPaid_ShouldUpdateDb()
         {
-            var id = Guid.NewGuid();
             _dbContext.FeeNotices.Add(new FeeNotice
             {
-                Id = id,
+                Id = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"),
                 TotalAmount = 100000,
                 BillingCycle = "2025-12",
                 Status = FeeNoticeStatus.Issued,
@@ -190,9 +185,9 @@ namespace ApartmentManagementSystem.Tests
             });
             await _dbContext.SaveChangesAsync();
 
-            await _service.UpdatePaymentStatusFeeNotice(id);
+            await _service.UpdatePaymentStatusFeeNotice(new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"));
 
-            var updatedEntity = await _dbContext.FeeNotices.FindAsync(id);
+            var updatedEntity = await _dbContext.FeeNotices.FindAsync(new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"));
             Assert.That(updatedEntity.PaymentStatus, Is.EqualTo(FeeNoticeStatus.Paid));
         }
 
@@ -200,19 +195,17 @@ namespace ApartmentManagementSystem.Tests
         public async Task DeleteFeeNotice_ValidIds_ShouldRemoveRecords()
         {
             // Arrange
-            var id1 = Guid.NewGuid();
-            var id2 = Guid.NewGuid();
             _dbContext.FeeNotices.AddRange(
                 new FeeNotice
                 {
-                    Id = id1,
+                    Id = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"),
                     BillingCycle = "2025-12",
                     Status = FeeNoticeStatus.Canceled,
                     PaymentStatus = FeeNoticeStatus.UnPaid
                 },
                 new FeeNotice
                 {
-                    Id = id2,
+                    Id = new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d8352"),
                     BillingCycle = "2025-11",
                     Status = FeeNoticeStatus.Canceled,
                     PaymentStatus = FeeNoticeStatus.UnPaid
@@ -220,14 +213,14 @@ namespace ApartmentManagementSystem.Tests
             );
             await _dbContext.SaveChangesAsync();
 
-            var idsToDelete = new List<string> { id1.ToString(), id2.ToString() };
+            var idsToDelete = new List<string> { "8901c8ad-0d02-4d11-85c6-e1e3ba9d835c", "8901c8ad-0d02-4d11-85c6-e1e3ba9d8352" };
 
             await _service.DeletFeeNotice(idsToDelete);
 
             var count = await _dbContext.FeeNotices.CountAsync();
             Assert.That(count, Is.EqualTo(0));
 
-            var deletedItem = await _dbContext.FeeNotices.FindAsync(id1);
+            var deletedItem = await _dbContext.FeeNotices.FindAsync(new Guid("8901c8ad-0d02-4d11-85c6-e1e3ba9d835c"));
             Assert.That(deletedItem, Is.Null);
         }
     }
