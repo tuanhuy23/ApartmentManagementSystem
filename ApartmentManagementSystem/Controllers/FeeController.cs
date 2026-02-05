@@ -24,6 +24,49 @@ namespace ApartmentManagementSystem.Controllers
             _feeSerivce = feeSerivce;
         }
 
+        [HttpGet("resident")]
+        [ProducesResponseType(typeof(ResponseData<IEnumerable<FeeNoticeDto>>), StatusCodes.Status200OK)]
+        [Authorize(Policy = FeeNoticePermissions.ReadRetrict)]
+        public async Task<IActionResult> GetResidentFeeNotices([FromQuery(Name = "filters")] string? filtersJson,
+            [FromQuery(Name = "sorts")] string? sortsJson, [FromHeader] int page = 1, [FromHeader] int limit = 20)
+        {
+            List<FilterQuery> filters = new List<FilterQuery>();
+            if (!string.IsNullOrEmpty(filtersJson))
+            {
+                filters = JsonConvert.DeserializeObject<List<FilterQuery>>(filtersJson);
+            }
+
+            List<SortQuery> sorts = new List<SortQuery>();
+            if (!string.IsNullOrEmpty(sortsJson))
+            {
+                sorts = JsonConvert.DeserializeObject<List<SortQuery>>(sortsJson);
+            }
+            var response = _feeSerivce.GetResidentFeeNotices(new RequestQueryBaseDto<object>()
+            {
+                Filters = filters,
+                Page = page,
+                Sorts = sorts,
+                PageSize = limit,
+                Request = null
+            });
+            return Ok(new ResponseData<IEnumerable<FeeNoticeDto>>(System.Net.HttpStatusCode.OK, response.Items, null, new MetaData()
+            {
+                Page = page,
+                Total = response.Totals,
+                PerPage = limit
+            }));
+        }
+
+        [HttpGet("resident/{id:Guid}")]
+        [ProducesResponseType(typeof(ResponseData<FeeNoticeDto>), StatusCodes.Status200OK)]
+        [Authorize(Policy = FeeNoticePermissions.ReadRetrict)]
+        public async Task<IActionResult> GetResidentFeeNotice([FromRoute] Guid id)
+        {
+            var feeNoticeDetail = await _feeSerivce.GetResidentFeeDetail(id);
+            return Ok(new ResponseData<FeeNoticeDto>(System.Net.HttpStatusCode.OK, feeNoticeDetail, null, null));
+        }
+
+
         [HttpGet("{apartmentId:Guid}")]
         [ProducesResponseType(typeof(ResponseData<IEnumerable<FeeNoticeDto>>), StatusCodes.Status200OK)]
         [Authorize(Policy = FeeNoticePermissions.Read)]

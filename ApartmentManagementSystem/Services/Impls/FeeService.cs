@@ -30,8 +30,9 @@ namespace ApartmentManagementSystem.Services.Impls
         private readonly IFeeTypeRepository _feeTypeRepository;
         private readonly IApartmentRepository _apartmentRepository;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly HttpContext _httpContext = null;
         public FeeService(IUtilityReadingRepository utilityReadingRepository, IFeeNoticeRepository feeNoticeRepository, IBillingCycleSettingRepository billingCycleSettingRepository,
-         IApartmentRepository apartmentRepository, IFeeTypeRepository feeTypeRepository, IUnitOfWork unitOfWork)
+         IApartmentRepository apartmentRepository, IFeeTypeRepository feeTypeRepository, IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor)
         {
             _utilityReadingRepository = utilityReadingRepository;
             _feeNoticeRepository = feeNoticeRepository;
@@ -39,6 +40,10 @@ namespace ApartmentManagementSystem.Services.Impls
             _apartmentRepository = apartmentRepository;
             _feeTypeRepository = feeTypeRepository;
             _unitOfWork = unitOfWork;
+            if (httpContextAccessor.HttpContext != null)
+            {
+                _httpContext = httpContextAccessor.HttpContext;
+            }
         }
         public async Task CreateFeeNotice(IEnumerable<CreateOrUpdateFeeNoticeDto> requests)
         {
@@ -67,65 +72,31 @@ namespace ApartmentManagementSystem.Services.Impls
                                                        .Include(f => f.FeeDetails).ThenInclude(f => f.FeeType).FirstOrDefault(f => f.Id.Equals(id));
             if (feeNotice == null)
                 throw new DomainException(ErrorCodeConsts.FeeNoticeNotFound, ErrorMessageConsts.FeeNoticeNotFound, System.Net.HttpStatusCode.BadRequest);
-            var response = new FeeNoticeDto()
-            {
-                ApartmentBuildingId = feeNotice.ApartmentBuildingId,
-                Id = feeNotice.Id,
-                ApartmentId = feeNotice.ApartmentId,
-                BillingCycle = feeNotice.BillingCycle,
-                DueDate = feeNotice.DueDate,
-                IssueDate = feeNotice.IssueDate,
-                PaymentStatus = feeNotice.PaymentStatus,
-                Status = feeNotice.Status,
-                TotalAmount = feeNotice.TotalAmount,
-            };
-            if (feeNotice.FeeDetails == null) return response;
-            var feeDetailDtos = new List<FeeDetailDto>();
-            foreach (var feeDetail in feeNotice.FeeDetails)
-            {
-                if (feeDetail.FeeType == null) continue;
-                string currentUtilityReadingId = string.Empty;
-                if (feeDetail.CurrentReadingDate != null)
-                {
-                    var currentUtilityReading = _utilityReadingRepository.List().FirstOrDefault(u => u.ReadingDate.Equals(feeDetail.CurrentReadingDate));
-                    if (currentUtilityReading == null) continue;
-                    currentUtilityReadingId = currentUtilityReading.Id.ToString();
-                }
+ 
+            return MapToFeeNoticeDto(feeNotice);
+        }
 
-                var feeDetailDto = new FeeDetailDto()
+         public async Task<FeeNoticeDto> GetResidentFeeDetail(Guid id)
+        {
+            // Verify if user is resident of the apartment retricted to get only their apartment fee notices
+            var accountInfo = IdentityHelper.GetIdentity(_httpContext);
+            if (accountInfo == null) throw new DomainException(ErrorCodeConsts.UserNotFound, ErrorMessageConsts.UserNotFound, System.Net.HttpStatusCode.NotFound);
+            
+
+            var feeNotice = _feeNoticeRepository.List().Include(f => f.FeeDetails).ThenInclude(fd => fd.FeeDetailTiers)
+                                                       .Include(f => f.FeeDetails).ThenInclude(f => f.FeeType).FirstOrDefault(f => f.Id.Equals(id));
+            if (feeNotice == null)
+                throw new DomainException(ErrorCodeConsts.FeeNoticeNotFound, ErrorMessageConsts.FeeNoticeNotFound, System.Net.HttpStatusCode.BadRequest);
+            if (accountInfo.RoleName.Equals(Consts.RoleDefaulConsts.Resident))
+            {
+                var apartment = _apartmentRepository.List().FirstOrDefault(a => a.ApartmentBuildingId.Equals(new Guid(accountInfo.ApartmentBuildingId)) && a.Id.Equals(feeNotice.ApartmentId));
+                if (apartment == null)
                 {
-                    FeeNoticeId = feeDetail.FeeNoticeId,
-                    FeeTypeId = feeDetail.FeeTypeId,
-                    SubTotal = feeDetail.SubTotal,
-                    Consumption = feeDetail.Consumption,
-                    CurrentReadingDate = feeDetail.CurrentReadingDate,
-                    CurrentReading = feeDetail.CurrentReading,
-                    PreviousReading = feeDetail.PreviousReading,
-                    PreviousReadingDate = feeDetail.PreviousReadingDate,
-                    UtilityCurentReadingId = string.IsNullOrEmpty(currentUtilityReadingId) ? null : new Guid(currentUtilityReadingId),
-                    Proration = feeDetail.Proration,
-                    GrossCost = feeDetail.NetCost,
-                    VATRate = feeDetail.VATRate,
-                    VATCost = feeDetail.VATCost,
-                };
-                if (feeDetail.FeeType.CalculationType.Equals(CalculationType.TIERED) && feeDetail.FeeDetailTiers != null)
-                {
-                    feeDetailDto.FeeTierDetails = feeDetail.FeeDetailTiers.Select(f => new FeeTierDetail()
-                    {
-                        Consumption = f.Consumption,
-                        ConsumptionEnd = f.ConsumptionEnd,
-                        ConsumptionStart = f.ConsumptionStart,
-                        TierOrder = f.TierOrder,
-                        UnitName = f.UnitName,
-                        UnitRate = f.UnitRate,
-                        ConsumptionEndOriginal = f.ConsumptionEndOriginal,
-                        ConsumptionStartOriginal = f.ConsumptionStartOriginal,
-                    });
+                    throw new DomainException(ErrorCodeConsts.ApartmentNotFound, ErrorMessageConsts.ApartmentNotFound, System.Net.HttpStatusCode.NotFound);
                 }
-                feeDetailDtos.Add(feeDetailDto);
             }
-            response.FeeDetails = feeDetailDtos;
-            return response;
+            return MapToFeeNoticeDto(feeNotice);
+           
         }
 
         public Pagination<FeeNoticeDto> GetFeeNotices(RequestQueryBaseDto<Guid> request)
@@ -158,6 +129,29 @@ namespace ApartmentManagementSystem.Services.Impls
                 Items = feeNoticeDtos.Skip((request.Page - 1) * request.PageSize).Take(request.PageSize).ToList(),
                 Totals = feeNoticeDtos.Count()
             };
+        }
+
+        public Pagination<FeeNoticeDto> GetResidentFeeNotices(RequestQueryBaseDto<object> request)
+        {
+            // Verify if user is resident of the apartment retricted to get only their apartment fee notices
+            var accountInfo = IdentityHelper.GetIdentity(_httpContext);
+            if (accountInfo == null) throw new DomainException(ErrorCodeConsts.UserNotFound, ErrorMessageConsts.UserNotFound, System.Net.HttpStatusCode.NotFound);
+            if (accountInfo.RoleName.Equals(Consts.RoleDefaulConsts.Resident))
+            {
+                var apartment = _apartmentRepository.List().FirstOrDefault(a => a.ApartmentBuildingId.Equals(new Guid(accountInfo.ApartmentBuildingId)));
+                if (apartment == null)
+                {
+                    throw new DomainException(ErrorCodeConsts.ApartmentNotFound, ErrorMessageConsts.ApartmentNotFound, System.Net.HttpStatusCode.NotFound);
+                }
+            }
+            return GetFeeNotices(new RequestQueryBaseDto<Guid>()
+            {
+                Filters = request.Filters,
+                Page = request.Page,
+                Sorts = request.Sorts,
+                PageSize = request.PageSize,
+                Request = new Guid(accountInfo.ApartmentId)
+            });
         }
 
         public async Task CancelFeeNotice(Guid id)
@@ -418,7 +412,68 @@ namespace ApartmentManagementSystem.Services.Impls
             await _unitOfWork.CommitAsync();
             return result;
         }
+        private FeeNoticeDto MapToFeeNoticeDto(FeeNotice feeNotice)
+        {
+             var response = new FeeNoticeDto()
+            {
+                ApartmentBuildingId = feeNotice.ApartmentBuildingId,
+                Id = feeNotice.Id,
+                ApartmentId = feeNotice.ApartmentId,
+                BillingCycle = feeNotice.BillingCycle,
+                DueDate = feeNotice.DueDate,
+                IssueDate = feeNotice.IssueDate,
+                PaymentStatus = feeNotice.PaymentStatus,
+                Status = feeNotice.Status,
+                TotalAmount = feeNotice.TotalAmount,
+            };
+            if (feeNotice.FeeDetails == null) return response;
+            var feeDetailDtos = new List<FeeDetailDto>();
+            foreach (var feeDetail in feeNotice.FeeDetails)
+            {
+                if (feeDetail.FeeType == null) continue;
+                string currentUtilityReadingId = string.Empty;
+                if (feeDetail.CurrentReadingDate != null)
+                {
+                    var currentUtilityReading = _utilityReadingRepository.List().FirstOrDefault(u => u.ReadingDate.Equals(feeDetail.CurrentReadingDate));
+                    if (currentUtilityReading == null) continue;
+                    currentUtilityReadingId = currentUtilityReading.Id.ToString();
+                }
 
+                var feeDetailDto = new FeeDetailDto()
+                {
+                    FeeNoticeId = feeDetail.FeeNoticeId,
+                    FeeTypeId = feeDetail.FeeTypeId,
+                    SubTotal = feeDetail.SubTotal,
+                    Consumption = feeDetail.Consumption,
+                    CurrentReadingDate = feeDetail.CurrentReadingDate,
+                    CurrentReading = feeDetail.CurrentReading,
+                    PreviousReading = feeDetail.PreviousReading,
+                    PreviousReadingDate = feeDetail.PreviousReadingDate,
+                    UtilityCurentReadingId = string.IsNullOrEmpty(currentUtilityReadingId) ? null : new Guid(currentUtilityReadingId),
+                    Proration = feeDetail.Proration,
+                    GrossCost = feeDetail.NetCost,
+                    VATRate = feeDetail.VATRate,
+                    VATCost = feeDetail.VATCost,
+                };
+                if (feeDetail.FeeType.CalculationType.Equals(CalculationType.TIERED) && feeDetail.FeeDetailTiers != null)
+                {
+                    feeDetailDto.FeeTierDetails = feeDetail.FeeDetailTiers.Select(f => new FeeTierDetail()
+                    {
+                        Consumption = f.Consumption,
+                        ConsumptionEnd = f.ConsumptionEnd,
+                        ConsumptionStart = f.ConsumptionStart,
+                        TierOrder = f.TierOrder,
+                        UnitName = f.UnitName,
+                        UnitRate = f.UnitRate,
+                        ConsumptionEndOriginal = f.ConsumptionEndOriginal,
+                        ConsumptionStartOriginal = f.ConsumptionStartOriginal,
+                    });
+                }
+                feeDetailDtos.Add(feeDetailDto);
+            }
+            response.FeeDetails = feeDetailDtos;
+            return response;
+        }
         private async Task<FeeNotice> CreateOrUpdateFeeNotice(FeeNotice feeNotice, CreateOrUpdateFeeNoticeDto request)
         {
             var billingCycleReqExtract = ExtractBillingCyle(request.BillingCycle);

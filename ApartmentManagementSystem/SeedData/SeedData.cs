@@ -131,10 +131,15 @@ namespace ApartmentManagementSystem.SeedData
         }
         private static List<string> GenerateReadPermissionsForModule(string module)
         {
-            var result = new List<string>()
+            var result = new List<string>();
+            if (module == "FeeNoticePermissions")
             {
-                $"Permissions.{module}.Read",
-            };
+                result.Add($"Permissions.{module}.ReadRetrict");
+            }
+            else
+            {
+                result.Add($"Permissions.{module}.Read");
+            }
             return result;
         }
         private static void AddApartmentBuildingData(IServiceProvider serviceProvider)

@@ -24,6 +24,26 @@ namespace ApartmentManagementSystem.Controllers
             _feeConfigurationService = feeConfigurationService;
         }
 
+        [HttpGet("resident")]
+        [ProducesResponseType(typeof(ResponseData<IEnumerable<FeeNoticeDto>>), StatusCodes.Status200OK)]
+        [Authorize(Policy = FeeNoticePermissions.ReadRetrict)]
+        public async Task<IActionResult> GetFeeConfiguration([FromRoute] string apartmentBuildingId)
+        {
+           
+            var response = _feeConfigurationService.GetFeeTypes(new RequestQueryBaseDto<string>()
+            {
+                Filters = null,
+                Page = 1,
+                Sorts = null,
+                PageSize = 1000,
+                Request = apartmentBuildingId
+            });
+            return Ok(new ResponseData<IEnumerable<FeeTypeDto>>(System.Net.HttpStatusCode.OK, response.Items, null, new MetaData()
+            {
+                Total = response.Totals,
+            }));
+        }
+
         [HttpGet()]
         [ProducesResponseType(typeof(ResponseData<IEnumerable<FeeTypeDto>>), StatusCodes.Status200OK)]
         [Authorize(Policy = FeeConfigurationPermissions.Read)]

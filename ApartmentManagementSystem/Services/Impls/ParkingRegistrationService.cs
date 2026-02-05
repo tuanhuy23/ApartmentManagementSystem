@@ -26,7 +26,9 @@ namespace ApartmentManagementSystem.Services.Impls
                 {
                     ApartmentBuildingId = request.ApartmentBuildingId,
                     ApartmentId = request.ApartmentId,
-                    VehicleType = request.VehicleType
+                    VehicleType = request.VehicleType,
+                    VehicleDescription = request.VehicleDescription,
+                    VehicleNumber = request.VehicleNumber
                 };
                 await _parkingRegistrationRepository.Add(parkingRegistration);
             }
@@ -74,7 +76,9 @@ namespace ApartmentManagementSystem.Services.Impls
                 ApartmentBuildingId = p.ApartmentBuildingId,
                 ApartmentId = p.ApartmentBuildingId,
                 Id = p.Id,
-                VehicleType = p.VehicleType
+                VehicleType = p.VehicleType,
+                VehicleDescription = p.VehicleDescription,
+                VehicleNumber = p.VehicleNumber
             });
             if (request.Filters != null && request.Filters.Any())
             {
