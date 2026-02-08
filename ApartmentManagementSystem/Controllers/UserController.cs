@@ -83,6 +83,15 @@ namespace ApartmentManagementSystem.Controllers
             return Ok(new ResponseData<UserDto>(System.Net.HttpStatusCode.OK, response, null, null));
         }
 
+        [HttpPut("refresh/{userId}")]
+        [ProducesResponseType(typeof(ResponseData<UserDto>), StatusCodes.Status200OK)]
+        [Authorize(Policy = UserPermissions.ReadWrite)]
+        public async Task<IActionResult> RefreshUser(string userId)
+        {
+            await _userService.RefreshUser(userId);
+            return Ok(new ResponseData<object>(System.Net.HttpStatusCode.OK, null, null, null));
+        }
+
         [HttpDelete()]
         [ProducesResponseType(typeof(ResponseData<DeleteUserResponseDto>), StatusCodes.Status200OK)]
         [Authorize(Policy = UserPermissions.ReadWrite)]

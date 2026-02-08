@@ -1,7 +1,6 @@
 using ApartmentManagementSystem.Services.Interfaces;
-using MailKit.Net.Smtp;
-using MailKit.Security;
-using MimeKit;
+using SendGrid;
+using SendGrid.Helpers.Mail;
 
 namespace ApartmentManagementSystem.Services.Impls
 {
@@ -15,33 +14,19 @@ namespace ApartmentManagementSystem.Services.Impls
         }
         public async Task SendEmailAsync(string toEmail, string subject, string message)
         {
-            var email = new MimeMessage();
-            email.From.Add(new MailboxAddress("ApartmentManagementSystem", _emailSetting.Email));
-            email.To.Add(new MailboxAddress("", toEmail));
-
-            email.Subject = subject;
-
-            var bodyBuilder = new BodyBuilder();
-            bodyBuilder.HtmlBody = message;
-            email.Body = bodyBuilder.ToMessageBody();
+            var client = new SendGridClient(_emailSetting.ApiKey);
+    
             try
             {
-                using (var client = new SmtpClient())
-                {
-                    Console.WriteLine("Starting to send email...");
-                    await client.ConnectAsync("smtp-relay.brevo.com", 2525, SecureSocketOptions.StartTls);
-                    await client.AuthenticateAsync("9f5833001@smtp-brevo.com", _emailSetting.Password);
-
-                    await client.SendAsync(email);
-                    await client.DisconnectAsync(true);
-                    Console.WriteLine("Email sent successfully.");
-                }
+                var from = new EmailAddress(_emailSetting.Email, "ApartmentManagementSystem");
+                var to = new EmailAddress(toEmail);
+                var msg = MailHelper.CreateSingleEmail(from, to, subject, "", message);
+                var response = await client.SendEmailAsync(msg);
             }
             catch (Exception ex)
             {
                 throw ex;
             }
-
         }
     }
 }

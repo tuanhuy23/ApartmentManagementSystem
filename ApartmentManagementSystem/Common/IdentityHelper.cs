@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Tasks;
 using ApartmentManagementSystem.Dtos;
 
@@ -67,5 +69,41 @@ namespace ApartmentManagementSystem.Common
             }
             return accountInfo;
         }
+
+        public static string GenerateRandomPassword(int length = 8)
+    {
+        if (length < 4) throw new ArgumentException("Length must be at least 4 to include all required types.");
+
+        const string upperCase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        const string lowerCase = "abcdefghijklmnopqrstuvwxyz";
+        const string digits = "0123456789";
+        const string specials = "!@#$%^&*()_+-=[]{}|;:,.<>?";
+
+        StringBuilder password = new StringBuilder();
+        
+        password.Append(GetRandomChar(upperCase));
+        password.Append(GetRandomChar(specials));
+        password.Append(GetRandomChar(digits));
+        password.Append(GetRandomChar(lowerCase));
+
+        string allChars = upperCase + lowerCase + digits + specials;
+        for (int i = password.Length; i < length; i++)
+        {
+            password.Append(GetRandomChar(allChars));
+        }
+
+        return new string(password.ToString().ToCharArray().OrderBy(s => Guid.NewGuid()).ToArray());
+    }
+
+    private static char GetRandomChar(string charSet)
+    {
+        byte[] randomByte = new byte[1];
+        using (var rng = RandomNumberGenerator.Create())
+        {
+            rng.GetBytes(randomByte);
+        }
+        int index = randomByte[0] % charSet.Length;
+        return charSet[index];
+    }
     }
 }

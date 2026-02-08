@@ -62,12 +62,12 @@ namespace ApartmentManagementSystem.Services.Impls
                 if (!resultUser.Succeeded)
                     throw new DomainException(ErrorCodeConsts.ErrorCreatingUser, ErrorMessageConsts.ErrorCreatingUser, System.Net.HttpStatusCode.NotFound);
 
-                var userNew = await _userManager.FindByEmailAsync(request.Email);
+                var userNew = await _userManager.FindByNameAsync(request.UserName);
                 await _userManager.AddToRoleAsync(userNew, role.Name);
                 result.UserId = userNew.Id;
                 result.RoleName = role.Name;
                 //TODO: send email
-                //await _emailService.SendEmailAsync(request.Email, "Password Active Account", $"<h5>This is my password. Please login to acction. Password : {request.Password}</h5>");
+                await _emailService.SendEmailAsync(request.Email, "Password Active Account", $"<h5>This is my password. Please login to acction. Password : {request.Password}</h5>");
                 return result;
             }
             var user = await _userManager.FindByIdAsync(request.UserId);
@@ -93,6 +93,25 @@ namespace ApartmentManagementSystem.Services.Impls
             result.AppartmentBuildingId = user.AppartmentBuildingId;
             return result;
 
+        }
+        
+        public async Task RefreshUser(string userId)
+        {
+            var user =  await _userManager.FindByIdAsync(userId);
+            if (user == null)
+                throw new DomainException(ErrorCodeConsts.UserNotFound, ErrorMessageConsts.UserNotFound, System.Net.HttpStatusCode.NotFound);
+            string newPassword = IdentityHelper.GenerateRandomPassword();
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var resetPassResult = await _userManager.ResetPasswordAsync(user, token, newPassword);
+            if (!resetPassResult.Succeeded)
+                throw new DomainException(ErrorCodeConsts.ErrorChangingPassword, ErrorMessageConsts.ErrorChangingPassword, System.Net.HttpStatusCode.InternalServerError);
+            if (user.IsActive)
+            {
+                user.IsActive = false;
+                await _userManager.UpdateAsync(user);
+            }
+            //TODO: send email
+            await _emailService.SendEmailAsync(user.Email, "Password Active Account", $"<h5>This is my password. Please login to acction. Password : {newPassword}</h5>");
         }
 
         public async Task<DeleteUserResponseDto> DeleteUsers(IEnumerable<string> userIds)
@@ -153,7 +172,20 @@ namespace ApartmentManagementSystem.Services.Impls
         {
             var accountInfo = IdentityHelper.GetIdentity(_httpContext);
             if (accountInfo == null) throw new DomainException(ErrorCodeConsts.UserNotFound, ErrorMessageConsts.UserNotFound, System.Net.HttpStatusCode.NotFound);
-            var users  = _userManager.Users.Where(u => request.Request.Equals(u.AppartmentBuildingId)).ToList();;
+            bool isGetAllManager = false;
+            if (accountInfo.RoleName.Equals(RoleDefaulConsts.SupperAdmin))
+            {
+                isGetAllManager = true;
+            }
+            List<AppUser> users;
+            if (isGetAllManager)
+            {
+                users = _userManager.Users.Where(u => string.IsNullOrEmpty(u.ApartmentId)).ToList();
+            }
+            else
+            {
+                users = _userManager.Users.Where(u => request.Request.Equals(u.AppartmentBuildingId)).ToList();
+            }
             List<UserDto> userDtos = new List<UserDto>();
             foreach (var user in users)
             {
@@ -161,7 +193,8 @@ namespace ApartmentManagementSystem.Services.Impls
                 var roles = await _userManager.GetRolesAsync(user);
                 var roleName = roles.FirstOrDefault();
                 if (roleName == null) continue;
-                if (roleName.Equals(RoleDefaulConsts.Management) || roleName.Equals(RoleDefaulConsts.Resident)) continue;
+                if (isGetAllManager && !roleName.Equals(RoleDefaulConsts.Management)) continue;
+                if (!isGetAllManager && (roleName.Equals(RoleDefaulConsts.Management) || roleName.Equals(RoleDefaulConsts.Resident))) continue;
                 var userDto = new UserDto()
                 {
                     Email = user.Email,
