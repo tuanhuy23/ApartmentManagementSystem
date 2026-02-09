@@ -594,18 +594,16 @@ namespace ApartmentManagementSystem.Services.Impls
             var feeDetailTiers = new List<FeeDetailTier>();
             foreach (var feeTier in feeRateConfig.FeeTiers.OrderBy(f => f.TierOrder))
             {
-                if (remainCons <= 0) break;
-                double adjustedTierLimit = (feeTier.ConsumptionEnd - feeTier.ConsumptionStart) * ratioChange;
-                var consumptionTier = remainCons - adjustedTierLimit;
-                if (consumptionTier < 0)
-                {
-                    cost = cost + ((decimal)remainCons * feeTier.UnitRate);
-                }
-                else
-                {
-                    cost = cost + ((decimal)adjustedTierLimit * feeTier.UnitRate);
-                }
-                remainCons = consumptionTier;
+               if (remainCons <= 0) break;
+
+                double tierRange = feeTier.ConsumptionEnd - feeTier.ConsumptionStart;
+                double adjustedTierLimit = tierRange * ratioChange;
+
+
+                double actualConsInTier = Math.Min(remainCons, adjustedTierLimit);
+
+                cost += (decimal)actualConsInTier * feeTier.UnitRate;
+                remainCons -= actualConsInTier;
                 feeDetailTiers.Add(new FeeDetailTier()
                 {
                     TierOrder = feeTier.TierOrder,
