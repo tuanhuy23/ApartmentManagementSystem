@@ -565,7 +565,7 @@ namespace ApartmentManagementSystem.Services.Impls
                 throw new DomainException(ErrorCodeConsts.UtilityReadingDataIsRequired, ErrorMessageConsts.UtilityReadingDataIsRequired, System.Net.HttpStatusCode.BadRequest);
 
             var previousUtilityReading = _utilityReadingRepository.List().OrderByDescending(u => u.ReadingDate)
-                                .FirstOrDefault(u => u.ApartmentBuildingId.Equals(feeRateConfig.ApartmentBuildingId) && u.ApartmentId.Equals(feeDetailReq.ApartmentId) && u.FeeTypeId.Equals(feeRateConfig.Id)
+                                .FirstOrDefault(u => u.ApartmentBuildingId.Equals(feeRateConfig.ApartmentBuildingId) && u.ApartmentId.Equals(feeDetailReq.ApartmentId) && u.FeeTypeId.Equals(feeRateConfig.FeeTypeId)
                                 );
             double previousReading = 0;
             double actualUserTotalDays = closingDayOfMonth;
