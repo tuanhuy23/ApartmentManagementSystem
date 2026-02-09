@@ -531,7 +531,7 @@ namespace ApartmentManagementSystem.Services.Impls
                 if (feeDetailReq == null) continue;
                 if (feeType.CalculationType.Equals(CalculationType.TIERED) && feeType.FeeRateConfigs != null && feeDetailReq.UtilityReading != null)
                 {
-                    var feeDetail = CreateFeeDetailByFeeTypeTier(feeType, feeDetailReq, billingSetting.ClosingDayOfMonth);
+                    var feeDetail = CreateFeeDetailByFeeTypeTier(feeType, feeDetailReq, closingDate, billingSetting.ClosingDayOfMonth);
                     feeDetails.Add(feeDetail);
                 }
             }
@@ -550,7 +550,7 @@ namespace ApartmentManagementSystem.Services.Impls
                 SubTotal = (decimal)apartment.Area * feeType.DefaultRate
             };
         }
-        private FeeDetail CreateFeeDetailByFeeTypeTier(FeeType feeType, CreateOrUpdateFeeDetailDto feeDetailReq, int closingDayOfMonth = 30)
+        private FeeDetail CreateFeeDetailByFeeTypeTier(FeeType feeType, CreateOrUpdateFeeDetailDto feeDetailReq, DateTime closingDate, int closingDayOfMonth = 30)
         {
             if (feeType.FeeRateConfigs == null)
                 throw new DomainException(ErrorCodeConsts.FeeTypeNotConfigured, ErrorMessageConsts.FeeTypeNotConfigured, System.Net.HttpStatusCode.BadRequest);
@@ -566,7 +566,7 @@ namespace ApartmentManagementSystem.Services.Impls
 
             var previousUtilityReading = _utilityReadingRepository.List().OrderByDescending(u => u.ReadingDate)
                                 .FirstOrDefault(u => u.ApartmentBuildingId.Equals(feeRateConfig.ApartmentBuildingId) && u.ApartmentId.Equals(feeDetailReq.ApartmentId) && u.FeeTypeId.Equals(feeRateConfig.Id)
-                                && (utilityReadingDto.UtilityCurentReadingId == null ? true : !u.Id.Equals(utilityReadingDto.UtilityCurentReadingId.Value)));
+                                );
             double previousReading = 0;
             double actualUserTotalDays = closingDayOfMonth;
             if (previousUtilityReading != null)
@@ -576,11 +576,18 @@ namespace ApartmentManagementSystem.Services.Impls
                 previousReading = previousUtilityReading.CurrentReading;
                 actualUserTotalDays = (utilityReadingDto.ReadingDate - previousUtilityReading.ReadingDate).TotalDays;
             }
+            else
+            {
+                if (utilityReadingDto.ReadingDate > closingDate) 
+                    throw new DomainException(ErrorCodeConsts.CurrentUtilityReadingDateCannotBeEarlier, ErrorMessageConsts.CurrentUtilityReadingDateCannotBeEarlier, System.Net.HttpStatusCode.BadRequest);
+                actualUserTotalDays = (utilityReadingDto.ReadingDate - closingDate).TotalDays;
+            }
             double consumption = utilityReadingDto.CurrentReading - previousReading;
             double ratioChange = 1;
-            if (actualUserTotalDays != 30)
+            if (actualUserTotalDays != closingDayOfMonth)
             {
-                ratioChange = Math.Truncate(actualUserTotalDays / 30 * 100) / 100;
+                double rawRatio = (double)actualUserTotalDays / closingDayOfMonth;
+                ratioChange = Math.Truncate(rawRatio * 100) / 100;
             }
             double remainCons = consumption;
             decimal cost = 0;
