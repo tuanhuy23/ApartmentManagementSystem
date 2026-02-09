@@ -578,7 +578,7 @@ namespace ApartmentManagementSystem.Services.Impls
             }
             else
             {
-                if (utilityReadingDto.ReadingDate > closingDate) 
+                if (utilityReadingDto.ReadingDate < closingDate) 
                     throw new DomainException(ErrorCodeConsts.CurrentUtilityReadingDateCannotBeEarlier, ErrorMessageConsts.CurrentUtilityReadingDateCannotBeEarlier, System.Net.HttpStatusCode.BadRequest);
                 actualUserTotalDays = (utilityReadingDto.ReadingDate - closingDate).TotalDays;
             }
