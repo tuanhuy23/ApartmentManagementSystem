@@ -502,7 +502,7 @@ namespace ApartmentManagementSystem.Services.Impls
             }
 
             var closingDate = new DateTime(billingCycleReqExtract.Year, billingCycleReqExtract.Month, billingSetting.ClosingDayOfMonth);
-            var caculateStartDate = new DateTime(billingCycleReqExtract.Year, billingCycleReqExtract.Month, 1);
+            var caculateStartDate = new DateTime(billingCycleReqExtract.Year, billingCycleReqExtract.Month, 1).AddDays(-1);
             if (closingDate > DateTime.UtcNow)
                 throw new DomainException(ErrorCodeConsts.FeeNoticeNotDue, ErrorMessageConsts.FeeNoticeNotDue, System.Net.HttpStatusCode.BadRequest);
 
