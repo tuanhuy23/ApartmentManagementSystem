@@ -421,7 +421,7 @@ namespace ApartmentManagementSystem.Services.Impls
                 ApartmentId = feeNotice.ApartmentId,
                 BillingCycle = feeNotice.BillingCycle,
                 DueDate = feeNotice.DueDate,
-                IssueDate = feeNotice.IssueDate,
+                IssueDate = feeNotice.CreatedDate,
                 PaymentStatus = feeNotice.PaymentStatus,
                 Status = feeNotice.Status,
                 TotalAmount = feeNotice.TotalAmount,
