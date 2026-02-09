@@ -19,9 +19,21 @@ namespace ApartmentManagementSystem.Services.Impls
 
         public async Task CreateBillingCycleSetting(BillingCycleSettingDto request)
         {
-            if (_billingCycleSettingRepository.List(b => b.ApartmentBuildingId.Equals(request.ApartmentBuildingId)).Any())
-                throw new DomainException(ErrorCodeConsts.BillingCycleAlreadySet, ErrorCodeConsts.BillingCycleAlreadySet, System.Net.HttpStatusCode.BadRequest);
+            if (request.Id != Guid.Empty)
+            {
+                var existingSetting = _billingCycleSettingRepository.List(b => b.Id == request.Id).FirstOrDefault();
+                if (existingSetting == null)
+                    throw new DomainException(ErrorCodeConsts.BillingCycleSettingIsNotFound, ErrorCodeConsts.BillingCycleSettingIsNotFound, System.Net.HttpStatusCode.NotFound);
 
+                existingSetting.ClosingDayOfMonth = request.ClosingDayOfMonth;
+                existingSetting.PaymentDueDate = request.PaymentDueDate;
+
+                _billingCycleSettingRepository.Update(existingSetting);
+                await _unitOfWork.CommitAsync();
+                return;
+            }
+            if (_billingCycleSettingRepository.List(b => b.ApartmentBuildingId.Equals(request.ApartmentBuildingId)).Any() && request.Id == Guid.Empty)
+                throw new DomainException(ErrorCodeConsts.BillingCycleAlreadySet, ErrorCodeConsts.BillingCycleAlreadySet, System.Net.HttpStatusCode.BadRequest);
             var billingCycleSetting = new BillingCycleSetting()
             {
                 ApartmentBuildingId = request.ApartmentBuildingId,
