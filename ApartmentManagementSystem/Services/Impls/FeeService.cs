@@ -495,14 +495,14 @@ namespace ApartmentManagementSystem.Services.Impls
             if (billingSetting == null)
                 throw new DomainException(ErrorCodeConsts.BillingCycleSettingIsNotFound, ErrorMessageConsts.BillingCycleSettingIsNotFound, System.Net.HttpStatusCode.BadRequest);
             var dayEndMonth = DateTime.DaysInMonth(billingCycleReqExtract.Year, billingCycleReqExtract.Month);
-
+            
             if (billingSetting.ClosingDayOfMonth > dayEndMonth)
             {
                 billingSetting.ClosingDayOfMonth = dayEndMonth;
             }
 
             var closingDate = new DateTime(billingCycleReqExtract.Year, billingCycleReqExtract.Month, billingSetting.ClosingDayOfMonth);
-
+            var caculateStartDate = new DateTime(billingCycleReqExtract.Year, billingCycleReqExtract.Month, 1);
             if (closingDate > DateTime.UtcNow)
                 throw new DomainException(ErrorCodeConsts.FeeNoticeNotDue, ErrorMessageConsts.FeeNoticeNotDue, System.Net.HttpStatusCode.BadRequest);
 
@@ -531,7 +531,7 @@ namespace ApartmentManagementSystem.Services.Impls
                 if (feeDetailReq == null) continue;
                 if (feeType.CalculationType.Equals(CalculationType.TIERED) && feeType.FeeRateConfigs != null && feeDetailReq.UtilityReading != null)
                 {
-                    var feeDetail = CreateFeeDetailByFeeTypeTier(feeType, feeDetailReq, closingDate, billingSetting.ClosingDayOfMonth);
+                    var feeDetail = CreateFeeDetailByFeeTypeTier(feeType, feeDetailReq, closingDate, caculateStartDate, billingSetting.ClosingDayOfMonth);
                     feeDetails.Add(feeDetail);
                 }
             }
@@ -550,7 +550,7 @@ namespace ApartmentManagementSystem.Services.Impls
                 SubTotal = (decimal)apartment.Area * feeType.DefaultRate
             };
         }
-        private FeeDetail CreateFeeDetailByFeeTypeTier(FeeType feeType, CreateOrUpdateFeeDetailDto feeDetailReq, DateTime closingDate, int closingDayOfMonth = 30)
+        private FeeDetail CreateFeeDetailByFeeTypeTier(FeeType feeType, CreateOrUpdateFeeDetailDto feeDetailReq, DateTime closingDate, DateTime caculateStartDate, int closingDayOfMonth = 30)
         {
             if (feeType.FeeRateConfigs == null)
                 throw new DomainException(ErrorCodeConsts.FeeTypeNotConfigured, ErrorMessageConsts.FeeTypeNotConfigured, System.Net.HttpStatusCode.BadRequest);
@@ -580,7 +580,7 @@ namespace ApartmentManagementSystem.Services.Impls
             {
                 if (utilityReadingDto.ReadingDate < closingDate) 
                     throw new DomainException(ErrorCodeConsts.CurrentUtilityReadingDateCannotBeEarlier, ErrorMessageConsts.CurrentUtilityReadingDateCannotBeEarlier, System.Net.HttpStatusCode.BadRequest);
-                actualUserTotalDays = (utilityReadingDto.ReadingDate - closingDate).TotalDays;
+                actualUserTotalDays = (utilityReadingDto.ReadingDate - caculateStartDate).TotalDays;
             }
             double consumption = utilityReadingDto.CurrentReading - previousReading;
             double ratioChange = 1;
